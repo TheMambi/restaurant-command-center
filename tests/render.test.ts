@@ -105,8 +105,8 @@ describe('insights', () => {
     expect(fallingReviews(steady)).toBeUndefined();
   });
   it('describes the difference in years open', () => {
-    expect(yearsGap(17, 12)).toBe('5 years longer');
-    expect(yearsGap(7, 15)).toBe('8 years newer');
+    expect(yearsGap(17, 12)).toBe('5 years more');
+    expect(yearsGap(7, 15)).toBe('8 years fewer');
     expect(yearsGap(3, 3)).toBe('Same');
   });
 });

@@ -1,5 +1,6 @@
 import { html, type SafeHtml } from '../html';
 import type { Profile } from '../schema';
+import { actionValue, doFirst } from './overview';
 import { sectionHeader } from './shared';
 
 type Opportunity = Profile['opportunities'][number];
@@ -21,11 +22,17 @@ export const quadrants = [
 ] as const;
 
 export function renderOpportunities(p: Profile): SafeHtml {
+  const ticket = new Set(doFirst(p.opportunities));
   return html`
     ${sectionHeader('Next steps', `Every recommended action for ${p.restaurant.name}, grouped by when to do it.`)}
 
     ${horizons.map((h) => {
-      const items = p.opportunities.filter((o) => o.horizon === h.id);
+      // Same ranking as the overview ticket, so the order never disagrees with it.
+      const items = p.opportunities
+        .map((o, i) => ({ o, i }))
+        .filter(({ o }) => o.horizon === h.id)
+        .sort((a, b) => actionValue(b.o) - actionValue(a.o) || a.i - b.i)
+        .map(({ o }) => o);
       return (
         items.length > 0 &&
         html`<section class="card" aria-labelledby="h-${h.id}">
@@ -35,7 +42,7 @@ export function renderOpportunities(p: Profile): SafeHtml {
             <tbody>
               ${items.map(
                 (o) => html`<tr>
-                  <th scope="row">${o.title}<span class="row-note">${o.description}${o.fixesGap && html` Fixes: ${o.fixesGap.charAt(0).toLowerCase()}${o.fixesGap.slice(1)}.`}</span></th>
+                  <th scope="row">${o.title}${ticket.has(o) && html` <span class="on-ticket">On this week's ticket</span>`}<span class="row-note">${o.description}${o.fixesGap && html` Fixes: ${o.fixesGap.charAt(0).toLowerCase()}${o.fixesGap.slice(1)}.`}</span></th>
                   <td data-label="Impact"><span class="impact is-${o.impact}">${impactWords[o.impact]}</span></td>
                   <td data-label="Effort">${effortWords[o.effort]}</td>
                   <td data-label="Time">${o.time}</td>

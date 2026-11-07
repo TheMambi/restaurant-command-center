@@ -152,6 +152,14 @@ export const profileSchema = z
         ctx.addIssue({ code: 'custom', path: ['summary', 'criticalGaps', i], message: `No action due now or soon fixes "${gap}"` });
       }
     });
+    const totals = profile.history.map((h) => h.totalReviews);
+    if (totals.some((t, i) => i > 0 && t < totals[i - 1]!)) {
+      ctx.addIssue({ code: 'custom', path: ['history'], message: 'Review totals can only grow from one month to the next' });
+    }
+    const current = profile.reviewPlatforms.reduce((sum, r) => sum + r.reviews, 0);
+    if (totals.length > 0 && current < totals.at(-1)!) {
+      ctx.addIssue({ code: 'custom', path: ['history'], message: `The last recorded month has ${totals.at(-1)} reviews, more than the ${current} the platforms show now` });
+    }
     const months = profile.history.map((h) => h.month);
     if (months.some((m, i) => i > 0 && m <= months[i - 1]!)) {
       ctx.addIssue({ code: 'custom', path: ['history'], message: 'History months must be in order, oldest first' });

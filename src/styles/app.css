@@ -940,7 +940,8 @@ tfoot th {
   }
 
   .score-card,
-  .matrix {
+  .matrix,
+  .ticket {
     break-inside: avoid;
   }
 
@@ -1080,6 +1081,10 @@ tfoot th {
     text-align: left;
   }
 
+  .stack-table .gap {
+    white-space: normal;
+  }
+
   .stack-table td:empty,
   .stack-table .hide-narrow {
     display: none;
@@ -1159,4 +1164,15 @@ tfoot th {
   margin-top: var(--space-1);
   font-size: var(--text-sm);
   color: var(--color-muted);
+}
+
+.on-ticket {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-control);
+  background: var(--color-ticket);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  white-space: nowrap;
 }

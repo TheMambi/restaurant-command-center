@@ -26,7 +26,7 @@ export function gapText(self: Cell, rival: Cell, kind: Row['kind'], names = { se
   if (rival === 0) return self === 0 ? { text: 'Even', tone: 'even' } : { text: 'Ahead', tone: 'ahead' };
   const ratio = self / rival;
   if (ratio >= evenThresholds.timesFrom) return { text: `${ratio.toFixed(1)} times as many`, tone: 'ahead' };
-  if (self > 0 && rival / self >= evenThresholds.timesFrom) return { text: `${names.rival} has ${(rival / self).toFixed(1)} times as many`, tone: 'behind' };
+  if (self > 0 && rival / self >= evenThresholds.timesFrom) return { text: `${(rival / self).toFixed(1)} times fewer`, tone: 'behind' };
   const pct = (ratio - 1) * 100;
   if (Math.abs(pct) < evenThresholds.percent) return { text: 'Even', tone: 'even' };
   return { text: `${signed(pct)}%`, tone: pct > 0 ? 'ahead' : 'behind' };
@@ -71,7 +71,7 @@ export function standing(p: Profile): { ahead: number; behind: number; total: nu
 export function yearsGap(self: number, rival: number): string {
   const d = self - rival;
   if (d === 0) return 'Same';
-  return `${Math.abs(d)} ${Math.abs(d) === 1 ? 'year' : 'years'} ${d > 0 ? 'longer' : 'newer'}`;
+  return `${Math.abs(d)} ${Math.abs(d) === 1 ? 'year' : 'years'} ${d > 0 ? 'more' : 'fewer'}`;
 }
 
 export function renderCompetitor(p: Profile): SafeHtml {
@@ -86,7 +86,7 @@ export function renderCompetitor(p: Profile): SafeHtml {
     v === undefined ? html`<span class="meter is-empty" aria-hidden="true"></span>` : meter(v, max, variant);
 
   return html`
-    ${sectionHeader('Competitor', `${me.name} next to ${c.name}, a nearby ${me.cuisine} restaurant. Ahead on ${s.ahead} of ${s.total} measures, behind on ${s.behind}. A platform only one of them uses counts as one measure.`)}
+    ${sectionHeader('Competitor', `${me.name} next to ${c.name}, a nearby ${me.cuisine} restaurant. Ahead on ${s.ahead} of ${s.total} measures, behind on ${s.behind}.`)}
 
     <section class="card" aria-labelledby="compare-title">
       <div class="block-head">
@@ -111,6 +111,6 @@ export function renderCompetitor(p: Profile): SafeHtml {
           <tr><th scope="row">Price range</th><td class="num" data-label="${me.name}">${me.priceRange}</td><td class="num muted" data-label="${c.name}">${c.priceRange}</td><td data-label="Difference">${me.priceRange === c.priceRange ? 'Same' : 'Different'}</td><td class="hide-narrow"></td></tr>
         </tbody>
       </table></div>
-      <p class="small muted mt-3 hide-narrow">Rating bars run from 0 to 5 stars. Count bars compare the two restaurants on each row, so the longer bar is always the larger number.</p>
+      <p class="small muted mt-3 hide-narrow">Differences are measured from ${c.name}'s figure. Rating bars run from 0 to 5 stars; count bars compare the two restaurants on each row. A platform only one of them uses counts once in the tally above.</p>
     </section>`;
 }
