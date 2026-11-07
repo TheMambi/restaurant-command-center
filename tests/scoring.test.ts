@@ -48,11 +48,15 @@ describe('gapText', () => {
     expect(gapText(0, 0, 'count').text).toBe('Even');
   });
   it('shows percentages for counts and stars for ratings', () => {
-    expect(gapText(50, 100, 'count')).toEqual({ text: '−50%', css: 'gap-behind' });
-    expect(gapText(4.5, 4.2, 'rating')).toEqual({ text: '+0.3 stars', css: 'gap-ahead' });
+    expect(gapText(50, 100, 'count')).toEqual({ text: '−50%', tone: 'behind' });
+    expect(gapText(4.5, 4.2, 'rating')).toEqual({ text: '+0.3 stars', tone: 'ahead' });
   });
-  it('says when data is missing', () => {
-    expect(gapText(undefined, 5, 'count').text).toBe('No data');
+  it('counts a platform only the competitor uses as a gap', () => {
+    expect(gapText(undefined, 5, 'count', { self: 'Osteria', rival: 'Fiorella' })).toEqual({ text: 'Only Fiorella is listed', tone: 'behind' });
+    expect(gapText(5, undefined, 'count', { self: 'Osteria', rival: 'Fiorella' })).toEqual({ text: 'Only Osteria is listed', tone: 'ahead' });
+  });
+  it('switches to "times as many" for large leads', () => {
+    expect(gapText(12800, 900, 'count').text).toBe('14.2 times as many');
   });
 });
 
@@ -63,7 +67,7 @@ describe('html', () => {
 });
 
 describe('scoreBreakdown', () => {
-  it('never goes below 0 when ratings average under 1 star', () => {
+  it('never goes below 0 for low ratings', () => {
     const p = parseProfile(osteria, 'osteria');
     const low = { ...p, reviewPlatforms: [{ id: 'yelp' as const, rating: 0.5, reviews: 10 }] };
     expect(scoreBreakdown(low).reputation).toBe(0);

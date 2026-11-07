@@ -22,6 +22,3 @@ function render(value: Value): string {
 export function html(strings: TemplateStringsArray, ...values: Value[]): SafeHtml {
   return new SafeHtml(strings.reduce((out, str, i) => out + str + (i < values.length ? render(values[i]!) : ''), ''));
 }
-
-export const percentWidth = (value: number, max: number): string =>
-  `${max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)).toFixed(1) : '0'}%`;

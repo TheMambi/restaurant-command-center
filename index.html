@@ -4,42 +4,61 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Restaurant Command Center</title>
-  <meta name="description" content="A dashboard for a restaurant's online presence: reviews, Google profile, website, social media, competitors and next steps. Demo with fictional restaurants.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <meta name="description" content="A report card for a restaurant's online presence: ratings, the Google profile, the website, social media, a competitor and what to do next. Shown with fictional restaurants.">
+  <meta property="og:title" content="Restaurant Command Center">
+  <meta property="og:description" content="A report card for a restaurant's online presence, with the three things to do first. Shown with fictional restaurants.">
+  <meta property="og:image" content="/og.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <script>
+    (() => {
+      let mode = null;
+      try { mode = localStorage.getItem('rcc-mode'); } catch {}
+      if (mode !== 'light' && mode !== 'dark') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.dataset.mode = mode;
+    })();
+  </script>
 </head>
 <body>
-  <div class="dashboard-bg"></div>
+  <a class="skip-link" href="#panels">Skip to the report</a>
+  <p class="sr-only" id="announcer" aria-live="polite"></p>
 
-  <header class="header">
-    <div class="header-inner">
-      <div class="logo">
-        <img src="/logo.svg" alt="" class="logo-img" width="48" height="48">
-        <div>
-          <p class="product-name">Restaurant Command Center</p>
-          <h1 id="restaurant-name">Loading…</h1>
-          <p class="subtitle" id="restaurant-meta"></p>
-        </div>
-      </div>
-      <div class="header-meta">
-        <label class="switcher">
-          <span>Restaurant</span>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="wordmark" href="/" aria-label="Restaurant Command Center, home">
+        <img src="/logo.svg" alt="" width="28" height="28">
+        <span>Restaurant Command Center</span>
+      </a>
+      <div class="topbar-controls">
+        <label class="field">
+          <span class="field-label">Restaurant</span>
           <select id="restaurant-switcher"></select>
         </label>
-        <span class="badge badge-sample" id="sample-badge">Sample data</span>
-        <span class="badge badge-date" id="as-of"></span>
+        <button type="button" class="button" id="mode-toggle">Dark mode</button>
+        <button type="button" class="button" id="print-report" aria-label="Print or save as PDF">Print</button>
       </div>
     </div>
   </header>
 
-  <nav class="nav-tabs" id="nav-tabs" role="tablist" aria-label="Dashboard sections"></nav>
+  <main id="main">
+  <div class="container masthead">
+    <h1 id="restaurant-name">Restaurant Command Center</h1>
+    <p class="masthead-lede" id="restaurant-meta"></p>
+    <p class="masthead-note" id="masthead-note"></p>
+  </div>
 
-  <main class="main-content" id="panels"></main>
+  <nav class="tabs" aria-label="Report sections">
+    <div class="container tablist" id="nav-tabs" role="tablist"></div>
+  </nav>
+
+  <div class="container panels" id="panels" tabindex="-1">
+    <noscript><p>This report is built in the browser. Turn on JavaScript to see it.</p></noscript>
+  </div>
+  </main>
 
   <footer class="footer">
-    <p id="footer-text"></p>
+    <div class="container" id="footer-text"></div>
   </footer>
 
   <script type="module" src="/src/main.ts"></script>

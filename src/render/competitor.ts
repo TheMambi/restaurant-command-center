@@ -1,88 +1,116 @@
 import { num, platformName, signed, stars } from '../format';
-import { html, percentWidth, type SafeHtml } from '../html';
+import { html, type SafeHtml } from '../html';
 import { reviewPlatformIds, socialPlatformIds, type Profile } from '../schema';
 import { evenThresholds } from '../scoring.config';
+import { meter, sectionHeader } from './shared';
 
 type Cell = number | undefined;
 interface Row {
+  platform: string;
   metric: string;
   self: Cell;
   rival: Cell;
   kind: 'rating' | 'count';
 }
+export type Tone = 'ahead' | 'behind' | 'even';
 
-export function gapText(self: Cell, rival: Cell, kind: Row['kind']): { text: string; css: string } {
-  if (self === undefined || rival === undefined) return { text: 'No data', css: '' };
+export function gapText(self: Cell, rival: Cell, kind: Row['kind'], names = { self: 'You', rival: 'They' }): { text: string; tone: Tone } {
+  if (self === undefined && rival === undefined) return { text: 'Neither is listed', tone: 'even' };
+  if (self === undefined) return { text: `Only ${names.rival} is listed`, tone: 'behind' };
+  if (rival === undefined) return { text: `Only ${names.self} is listed`, tone: 'ahead' };
   if (kind === 'rating') {
     const diff = self - rival;
-    if (Math.abs(diff) < evenThresholds.stars) return { text: 'Even', css: 'gap-even' };
-    return { text: `${signed(diff, 1)} stars`, css: diff > 0 ? 'gap-ahead' : 'gap-behind' };
+    if (Math.abs(diff) < evenThresholds.stars) return { text: 'Even', tone: 'even' };
+    return { text: `${signed(diff, 1)} stars`, tone: diff > 0 ? 'ahead' : 'behind' };
   }
-  if (rival === 0) return self === 0 ? { text: 'Even', css: 'gap-even' } : { text: 'Ahead', css: 'gap-ahead' };
-  const pct = ((self - rival) / rival) * 100;
-  if (Math.abs(pct) < evenThresholds.percent) return { text: 'Even', css: 'gap-even' };
-  return { text: `${signed(pct)}%`, css: pct > 0 ? 'gap-ahead' : 'gap-behind' };
+  if (rival === 0) return self === 0 ? { text: 'Even', tone: 'even' } : { text: 'Ahead', tone: 'ahead' };
+  const ratio = self / rival;
+  if (ratio >= evenThresholds.timesFrom) return { text: `${ratio.toFixed(1)} times as many`, tone: 'ahead' };
+  if (self > 0 && rival / self >= evenThresholds.timesFrom) return { text: `${names.rival} has ${(rival / self).toFixed(1)} times as many`, tone: 'behind' };
+  const pct = (ratio - 1) * 100;
+  if (Math.abs(pct) < evenThresholds.percent) return { text: 'Even', tone: 'even' };
+  return { text: `${signed(pct)}%`, tone: pct > 0 ? 'ahead' : 'behind' };
 }
 
-export function renderCompetitor(p: Profile): SafeHtml {
+export function comparisonRows(p: Profile): Row[] {
   const c = p.competitor;
-  const me = p.restaurant;
   const rows: Row[] = [];
   for (const id of reviewPlatformIds) {
     const a = p.reviewPlatforms.find((r) => r.id === id);
     const b = c.reviewPlatforms.find((r) => r.id === id);
     if (!a && !b) continue;
-    rows.push({ metric: `${platformName[id]} rating`, self: a?.rating, rival: b?.rating, kind: 'rating' });
-    rows.push({ metric: `${platformName[id]} reviews`, self: a?.reviews, rival: b?.reviews, kind: 'count' });
+    rows.push({ platform: id, metric: `${platformName[id]} rating`, self: a?.rating, rival: b?.rating, kind: 'rating' });
+    rows.push({ platform: id, metric: `${platformName[id]} reviews`, self: a?.reviews, rival: b?.reviews, kind: 'count' });
     if (a?.photos !== undefined || b?.photos !== undefined) {
-      rows.push({ metric: `${platformName[id]} photos`, self: a?.photos, rival: b?.photos, kind: 'count' });
+      rows.push({ platform: id, metric: `${platformName[id]} photos`, self: a?.photos, rival: b?.photos, kind: 'count' });
     }
   }
   for (const id of socialPlatformIds) {
     const a = p.socialPlatforms.find((s) => s.id === id);
     const b = c.socialPlatforms.find((s) => s.id === id);
     if (!a && !b) continue;
-    rows.push({ metric: `${platformName[id]} followers`, self: a?.followers, rival: b?.followers, kind: 'count' });
+    rows.push({ platform: id, metric: `${platformName[id]} followers`, self: a?.followers, rival: b?.followers, kind: 'count' });
   }
+  return rows;
+}
+
+// A platform only one side uses counts once, not once per measure, so a missing listing isn't triple-counted.
+export function standing(p: Profile): { ahead: number; behind: number; total: number } {
+  const names = { self: p.restaurant.name, rival: p.competitor.name };
+  const seenMissing = new Set<string>();
+  const rows = comparisonRows(p).filter((r) => {
+    if (r.self !== undefined && r.rival !== undefined) return true;
+    if (seenMissing.has(r.platform)) return false;
+    seenMissing.add(r.platform);
+    return true;
+  });
+  const tones = rows.map((r) => gapText(r.self, r.rival, r.kind, names).tone);
+  return { ahead: tones.filter((t) => t === 'ahead').length, behind: tones.filter((t) => t === 'behind').length, total: rows.length };
+}
+
+export function yearsGap(self: number, rival: number): string {
+  const d = self - rival;
+  if (d === 0) return 'Same';
+  return `${Math.abs(d)} ${Math.abs(d) === 1 ? 'year' : 'years'} ${d > 0 ? 'longer' : 'newer'}`;
+}
+
+export function renderCompetitor(p: Profile): SafeHtml {
+  const c = p.competitor;
+  const me = p.restaurant;
+  const names = { self: me.name, rival: c.name };
+  const rows = comparisonRows(p);
+  const s = standing(p);
   const year = Number(p.asOf.slice(0, 4));
-  const versus = rows.filter((r) => r.kind === 'count' && r.self !== undefined && r.rival !== undefined);
-  const show = (v: Cell, kind: Row['kind']) => (v === undefined ? '—' : kind === 'rating' ? `${stars(v)} ★` : num(v));
+  const show = (v: Cell, kind: Row['kind']) => (v === undefined ? 'Not listed' : kind === 'rating' ? stars(v) : num(v));
+  const bar = (v: Cell, max: number, variant: '' | 'is-rival') =>
+    v === undefined ? html`<span class="meter is-empty" aria-hidden="true"></span>` : meter(v, max, variant);
 
   return html`
-    <div class="section-header"><h2>Competitor comparison</h2><p>${me.name} next to ${c.name}, a nearby ${me.cuisine} restaurant</p></div>
-    <div class="card competitor-table-card">
-      <h3 class="card-title">Side by side</h3>
-      <div class="comparison-table-wrapper">
-        <table class="comparison-table">
-          <thead><tr><th scope="col">Measure</th><th scope="col" class="col-self">${me.name}</th><th scope="col" class="col-rival">${c.name}</th><th scope="col">Difference</th></tr></thead>
-          <tbody>
-            ${rows.map((r) => {
-              const gap = gapText(r.self, r.rival, r.kind);
-              return html`<tr><th scope="row">${r.metric}</th><td class="col-self">${show(r.self, r.kind)}</td><td class="col-rival">${show(r.rival, r.kind)}</td><td><span class="${gap.css}">${gap.text}</span></td></tr>`;
-            })}
-            <tr><th scope="row">Years open</th><td class="col-self">${year - me.yearOpened}</td><td class="col-rival">${year - c.yearOpened}</td><td></td></tr>
-            <tr><th scope="row">Price range</th><td class="col-self">${me.priceRange}</td><td class="col-rival">${c.priceRange}</td><td><span class="${me.priceRange === c.priceRange ? 'gap-even' : ''}">${me.priceRange === c.priceRange ? 'Same' : 'Different'}</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    ${sectionHeader('Competitor', `${me.name} next to ${c.name}, a nearby ${me.cuisine} restaurant. Ahead on ${s.ahead} of ${s.total} measures, behind on ${s.behind}. A platform only one of them uses counts as one measure.`)}
 
-    ${versus.length > 0 &&
-    html`<div class="card">
-      <h3 class="card-title">Head to head</h3>
-      <div class="versus-chart">
-        ${versus.map((r) => {
-          const max = Math.max(r.self!, r.rival!);
-          return html`<div class="versus-row">
-            <span class="vs-label">${r.metric}</span>
-            <div class="vs-bars">
-              <div class="vs-bar-left"><div class="vs-fill-left" data-width="${percentWidth(r.self!, max)}"><span>${num(r.self!)}</span></div></div>
-              <div class="vs-divider" aria-hidden="true">vs</div>
-              <div class="vs-bar-right"><div class="vs-fill-right" data-width="${percentWidth(r.rival!, max)}"><span>${num(r.rival!)}</span></div></div>
-            </div>
-          </div>`;
-        })}
+    <section class="card" aria-labelledby="compare-title">
+      <div class="block-head">
+        <h3 class="block-title" id="compare-title">Side by side</h3>
+        <p class="legend hide-narrow" aria-hidden="true"><span><span class="swatch"></span>${me.name}</span><span><span class="swatch is-rival"></span>${c.name}</span></p>
       </div>
-      <div class="versus-legend"><span class="legend-self"><span aria-hidden="true">● </span>${me.name}</span><span class="legend-rival"><span aria-hidden="true">● </span>${c.name}</span></div>
-    </div>`}`;
+      <div class="table-wrap"><table class="stack-table">
+        <thead><tr><th scope="col">Measure</th><th scope="col" class="num">${me.name}</th><th scope="col" class="num">${c.name}</th><th scope="col">Difference</th><th scope="col" class="col-meter-narrow hide-narrow"><span class="sr-only">Bars</span></th></tr></thead>
+        <tbody>
+          ${rows.map((r) => {
+            const gap = gapText(r.self, r.rival, r.kind, names);
+            const max = Math.max(r.self ?? 0, r.rival ?? 0, r.kind === 'rating' ? 5 : 0);
+            return html`<tr>
+              <th scope="row">${r.metric}</th>
+              <td class="num" data-label="${me.name}">${show(r.self, r.kind)}</td>
+              <td class="num muted" data-label="${c.name}">${show(r.rival, r.kind)}</td>
+              <td data-label="Difference"><span class="gap is-${gap.tone}">${gap.text}${gap.tone !== 'even' && html`<span class="sr-only">, ${gap.tone}</span>`}</span></td>
+              <td class="hide-narrow"><span class="pair">${bar(r.self, max, '')}${bar(r.rival, max, 'is-rival')}</span></td>
+            </tr>`;
+          })}
+          <tr><th scope="row">Years open</th><td class="num" data-label="${me.name}">${year - me.yearOpened}</td><td class="num muted" data-label="${c.name}">${year - c.yearOpened}</td><td data-label="Difference">${yearsGap(year - me.yearOpened, year - c.yearOpened)}</td><td class="hide-narrow"></td></tr>
+          <tr><th scope="row">Price range</th><td class="num" data-label="${me.name}">${me.priceRange}</td><td class="num muted" data-label="${c.name}">${c.priceRange}</td><td data-label="Difference">${me.priceRange === c.priceRange ? 'Same' : 'Different'}</td><td class="hide-narrow"></td></tr>
+        </tbody>
+      </table></div>
+      <p class="small muted mt-3 hide-narrow">Rating bars run from 0 to 5 stars. Count bars compare the two restaurants on each row, so the longer bar is always the larger number.</p>
+    </section>`;
 }

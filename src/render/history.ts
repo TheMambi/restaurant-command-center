@@ -1,8 +1,16 @@
-import { monthLabel, num, signed, stars } from '../format';
+import { monthLabel, num, stars } from '../format';
 import { html, type SafeHtml } from '../html';
 import type { Profile } from '../schema';
 import { totalReviews } from '../scoring';
-import { sectionHeader } from './shared';
+import { barChart, lineChart } from './line-chart';
+import { fallingReviews } from './overview';
+import { sectionHeader, stat } from './shared';
+
+function change(diff: number, unit: string, digits = 0): string {
+  const size = Math.abs(diff).toFixed(digits);
+  if (Number(size) === 0) return 'No change';
+  return `${diff > 0 ? 'Up' : 'Down'} ${size}${unit}`;
+}
 
 export interface HistoryPoint {
   month: string;
@@ -12,7 +20,7 @@ export interface HistoryPoint {
   instagramFollowers: number;
 }
 
-// The current month is computed from the profile so the chart's last point always matches the overview.
+// The current month is computed from the profile so the last point always matches the overview.
 export function historySeries(p: Profile, score: number): HistoryPoint[] {
   return [
     ...p.history,
@@ -26,50 +34,57 @@ export function historySeries(p: Profile, score: number): HistoryPoint[] {
   ];
 }
 
-const dotClass = { now: 'dot-current', step: 'dot-success', baseline: 'dot-warning' } as const;
+export function monthsBetween(from: string, to: string): number {
+  const [fy, fm] = from.split('-').map(Number);
+  const [ty, tm] = to.split('-').map(Number);
+  return (ty! - fy!) * 12 + (tm! - fm!);
+}
 
 export function renderHistory(p: Profile, series: HistoryPoint[]): SafeHtml {
   const first = series[0]!;
   const last = series.at(-1)!;
   const since = monthLabel(first.month);
+  const span = monthsBetween(first.month, last.month);
+  const labels = series.map((s) => monthLabel(s.month, 'short'));
   const hasInstagram = p.socialPlatforms.some((s) => s.id === 'instagram');
   const hasGoogle = p.reviewPlatforms.some((r) => r.id === 'google');
-  const delta = (d: number) => (d > 0 ? 'delta-up' : d < 0 ? 'delta-down' : 'delta-same');
 
   return html`
-    ${sectionHeader(`Progress since ${since}`, p.sampleData ? 'How the online presence has changed. All figures here are sample data.' : 'How the online presence has changed.')}
-    <div class="trend-cards-grid">
-      ${trend('Overall score', html`${last.overallScore}<span class="trend-suffix">/100</span>`, `${signed(last.overallScore - first.overallScore)} points`, delta(last.overallScore - first.overallScore), `From ${first.overallScore} in ${since}`)}
-      ${hasGoogle && trend('Google rating', html`${stars(last.googleRating)}<span class="trend-suffix"> ★</span>`, `${signed(last.googleRating - first.googleRating, 1)} stars`, delta(last.googleRating - first.googleRating), `From ${stars(first.googleRating)} in ${since}`)}
-      ${trend('Total reviews', num(last.totalReviews), `${signed(last.totalReviews - first.totalReviews)}`, delta(last.totalReviews - first.totalReviews), `New reviews since ${since}`)}
-      ${hasInstagram && trend('Instagram followers', num(last.instagramFollowers), `${signed(last.instagramFollowers - first.instagramFollowers)}`, delta(last.instagramFollowers - first.instagramFollowers), `Since ${since}`)}
+    ${sectionHeader('Progress', `Change over the last ${span} ${span === 1 ? 'month' : 'months'}, since ${since}.${p.sampleData ? ' Sample figures.' : ''}`)}
+
+    <dl class="stats">
+      ${stat('Score out of 100', String(last.overallScore), `${change(last.overallScore - first.overallScore, ' points')} since ${since}`)}
+      ${hasGoogle && stat('Google rating', stars(last.googleRating), `${change(last.googleRating - first.googleRating, ' stars', 1)} since ${since}`)}
+      ${stat('Reviews, all platforms', num(last.totalReviews), `${change(last.totalReviews - first.totalReviews, '')} since ${since}`)}
+      ${hasInstagram && stat('Instagram followers', num(last.instagramFollowers), `${change(last.instagramFollowers - first.instagramFollowers, '')} since ${since}`)}
+    </dl>
+
+    <div class="grid-2">
+      <section class="card" aria-labelledby="score-trend">
+        <h3 class="block-title" id="score-trend">Score by month</h3>
+        <p class="small muted">Past months show the score as recorded at the time. This month is calculated live.</p>
+        ${lineChart({ labels, values: series.map((s) => s.overallScore), min: 0, max: 100, format: (v) => String(v), title: 'Online presence score by month, out of 100' })}
+      </section>
+      <section class="card" aria-labelledby="reviews-trend">
+        <h3 class="block-title" id="reviews-trend">New reviews each month</h3>
+        ${barChart({
+          labels: labels.slice(1),
+          values: series.slice(1).map((s, i) => s.totalReviews - series[i]!.totalReviews),
+          format: num,
+          title: 'New reviews across all platforms each month',
+        })}
+        ${fallingReviews(series) && html`<p class="small mt-3">${fallingReviews(series)} Asking happy guests for a review at the table is the cheapest fix.</p>`}
+      </section>
     </div>
 
-    <div class="history-grid">
-      <div class="card chart-wrapper">
-        <h3 class="card-title">Score and reviews over time</h3>
-        <div class="chart-container"><canvas id="growthChart" aria-hidden="true"></canvas></div>
-        <table class="sr-only">
-          <caption>Overall score and total reviews by month</caption>
-          <thead><tr><th scope="col">Month</th><th scope="col">Overall score</th><th scope="col">Total reviews</th></tr></thead>
-          <tbody>${series.map((s) => html`<tr><th scope="row">${monthLabel(s.month)}</th><td>${s.overallScore}</td><td>${num(s.totalReviews)}</td></tr>`)}</tbody>
-        </table>
-      </div>
-      ${p.milestones.length > 0 &&
-      html`<div class="card timeline-wrapper">
-        <h3 class="card-title">Milestones</h3>
-        <ol class="history-timeline">
+    <section class="card" aria-labelledby="milestones-title">
+      <h3 class="block-title" id="milestones-title">Milestones</h3>
+      ${p.milestones.length === 0
+        ? html`<p class="muted">No milestones recorded yet.</p>`
+        : html`<ol class="milestones">
           ${p.milestones.map(
-            (m) => html`<li class="timeline-item">
-              <div class="timeline-dot ${dotClass[m.kind]}"></div>
-              <div class="timeline-content"><h4>${monthLabel(m.month)}: ${m.title}</h4><p>${m.note}</p></div>
-            </li>`,
+            (m) => html`<li><time datetime="${m.month}">${monthLabel(m.month)}</time><div><h4>${m.title}</h4><p class="muted">${m.note}</p></div></li>`,
           )}
-        </ol>
-      </div>`}
-    </div>`;
-}
-
-function trend(title: string, value: SafeHtml | string, change: string, css: string, note: string): SafeHtml {
-  return html`<div class="trend-card"><h4>${title}</h4><div class="trend-val">${value}</div><div class="trend-delta ${css}">${change}</div><p>${note}</p></div>`;
+        </ol>`}
+    </section>`;
 }

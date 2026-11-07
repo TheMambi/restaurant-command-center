@@ -1,57 +1,51 @@
 import { num, stars } from '../format';
-import { html, percentWidth, type SafeHtml } from '../html';
+import { html, type SafeHtml } from '../html';
 import type { Profile } from '../schema';
-import { checklist, sectionHeader } from './shared';
+import { ratingWords } from '../scoring.config';
+import { checklist, meter, sectionHeader, share, stat } from './shared';
 
 export function renderGoogle(p: Profile): SafeHtml {
+  const header = sectionHeader('Google Business Profile', 'Where most diners decide. The listing, its stars and how complete it is.');
   const google = p.reviewPlatforms.find((r) => r.id === 'google');
   if (!google) {
-    return html`${sectionHeader('Google Business Profile', 'The most important channel for people deciding where to eat')}
-      <div class="card"><p>No Google listing in this profile yet.</p></div>`;
+    return html`${header}<div class="card"><p>This restaurant has no Google listing in the profile yet. Claiming one is usually the first step.</p></div>`;
   }
   const s = p.googleStars;
   const rows = [
-    { label: '5 ★', count: s.five, css: 'star5' },
-    { label: '4 ★', count: s.four, css: 'star4' },
-    { label: '3 ★', count: s.three, css: 'star3' },
-    { label: '2 ★', count: s.two, css: 'star2' },
-    { label: '1 ★', count: s.one, css: 'star1' },
+    { label: '5 stars', count: s.five },
+    { label: '4 stars', count: s.four },
+    { label: '3 stars', count: s.three },
+    { label: '2 stars', count: s.two },
+    { label: '1 star', count: s.one },
   ];
-  const share = (n: number) => (google.reviews > 0 ? (n / google.reviews) * 100 : 0);
   const negative = s.one + s.two;
+  const words = ratingWords.find((w) => google.rating >= w.min)?.label ?? '';
 
   return html`
-    ${sectionHeader('Google Business Profile', 'The most important channel for people deciding where to eat')}
-    <div class="metrics-grid">
-      ${metric(html`${stars(google.rating)}<span class="metric-unit">/ 5</span>`, 'Rating', google.rating >= 4.5 ? 'Excellent' : google.rating >= 4 ? 'Good, with room to grow' : 'Below what diners expect', google.rating >= 4.5 ? 'trend-up' : 'trend-neutral', 'google-color')}
-      ${metric(num(google.reviews), 'Total reviews', google.photos === undefined ? '' : `${num(google.photos)} photos`, 'trend-neutral')}
-      ${metric(`${share(s.five).toFixed(1)}%`, '5-star reviews', `${num(s.five)} of ${num(google.reviews)}`, 'trend-up')}
-      ${metric(`${share(negative).toFixed(1)}%`, '1 and 2-star reviews', `${num(negative)} negative reviews`, 'trend-down', 'warning-color')}
-    </div>
+    ${header}
+    <dl class="stats">
+      ${stat('Rating', `${stars(google.rating)} out of 5`, words)}
+      ${stat('Reviews', num(google.reviews), google.photos === undefined ? undefined : `${num(google.photos)} photos from diners`)}
+      ${stat('Five-star reviews', share(s.five, google.reviews), `${num(s.five)} reviews`)}
+      ${stat('One and two-star reviews', share(negative, google.reviews), `${num(negative)} reviews`)}
+    </dl>
 
-    <div class="card">
-      <h3 class="card-title">How the stars break down</h3>
-      <div class="review-distribution">
-        ${rows.map(
-          (r) => html`<div class="dist-row">
-            <span class="dist-label">${r.label}</span>
-            <div class="dist-bar-track"><div class="dist-bar-fill ${r.css}" data-width="${percentWidth(r.count, google.reviews)}"></div></div>
-            <span class="dist-count">${num(r.count)}</span>
-          </div>`,
-        )}
-      </div>
-    </div>
+    <div class="grid-2">
+      <section class="card" aria-labelledby="stars-title">
+        <h3 class="block-title" id="stars-title">How the stars break down</h3>
+        <table>
+          <thead><tr><th scope="col">Stars</th><th scope="col" class="col-meter"><span class="sr-only">Share</span></th><th scope="col" class="num">Reviews</th><th scope="col" class="num">Share</th></tr></thead>
+          <tbody>
+            ${rows.map(
+              (r) => html`<tr><th scope="row">${r.label}</th><td>${meter(r.count, google.reviews)}</td><td class="num">${num(r.count)}</td><td class="num muted">${share(r.count, google.reviews)}</td></tr>`,
+            )}
+          </tbody>
+        </table>
+      </section>
 
-    <div class="card">
-      <h3 class="card-title">Profile checklist</h3>
-      ${checklist(p.checklists.googleProfile)}
+      <section class="card" aria-labelledby="gbp-title">
+        <h3 class="block-title" id="gbp-title">Profile checklist</h3>
+        ${checklist(p.checklists.googleProfile)}
+      </section>
     </div>`;
-}
-
-function metric(value: SafeHtml | string, label: string, trend: string, trendCss: string, valueCss = ''): SafeHtml {
-  return html`<div class="metric-card">
-    <div class="metric-value ${valueCss}">${value}</div>
-    <div class="metric-label">${label}</div>
-    ${trend && html`<div class="metric-trend ${trendCss}">${trend}</div>`}
-  </div>`;
 }

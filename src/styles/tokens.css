@@ -1,0 +1,80 @@
+/* Design system: Restaurant Command Center
+   Direction: a restaurant's report card. Warm paper, near-black ink, ruled tables,
+   one ink-blue signal for the score, the bars and the current tab, kept apart from
+   the red, amber and green that mean status. Fraunces names the restaurant and the
+   sections; Onest carries every label, control and figure (tabular numerals).
+   Modes: light + dark. The page script sets data-mode before first paint from the
+   saved choice or the system setting, and switches to light for printing. See DESIGN.md. */
+
+:root {
+  color-scheme: light;
+
+  --color-paper: oklch(97.2% 0.008 75);
+  --color-paper-2: oklch(99.4% 0.004 75);
+  --color-paper-3: oklch(89% 0.012 75);
+  --color-ink: oklch(20% 0.012 50);
+  --color-ink-2: oklch(32% 0.012 50);
+  --color-muted: oklch(46% 0.014 55);
+  --color-rule: oklch(88% 0.012 75);
+  --color-rule-strong: oklch(20% 0.012 50);
+
+  --color-accent: oklch(42% 0.11 255);
+  --color-accent-ink: oklch(99% 0.004 75);
+  --color-accent-soft: oklch(92% 0.03 255);
+  --color-focus: oklch(48% 0.14 255);
+  --color-rival: oklch(64% 0.012 60);
+  --color-ticket: oklch(94.5% 0.022 88);
+
+  --color-good: oklch(47% 0.11 150);
+  --color-warn: oklch(55% 0.13 75);
+  --color-bad: oklch(52% 0.17 28);
+
+  --font-display: "Fraunces Variable", Georgia, serif;
+  --font-body: "Onest Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-title: 1.375rem;
+  --text-display: 2.25rem;
+  --text-figure: 4rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --container: 76rem;
+  --dur-micro: 120ms;
+  --meter-height: 10px;
+  --weight-body: 400;
+}
+
+:root[data-mode='dark'] {
+  color-scheme: dark;
+
+  --color-paper: oklch(17% 0.01 60);
+  --color-paper-2: oklch(21% 0.011 60);
+  --color-paper-3: oklch(32% 0.012 60);
+  --color-ink: oklch(94% 0.008 75);
+  --color-ink-2: oklch(84% 0.009 75);
+  --color-muted: oklch(72% 0.012 70);
+  --color-rule: oklch(32% 0.012 60);
+  --color-rule-strong: oklch(80% 0.01 75);
+  --color-accent: oklch(74% 0.1 255);
+  --color-accent-ink: oklch(17% 0.01 60);
+  --color-accent-soft: oklch(32% 0.05 255);
+  --color-focus: oklch(78% 0.1 255);
+  --color-rival: oklch(55% 0.012 60);
+  --color-ticket: oklch(25% 0.016 80);
+  --color-good: oklch(72% 0.12 150);
+  --color-warn: oklch(78% 0.12 80);
+  --color-bad: oklch(70% 0.14 28);
+  --weight-body: 350;
+}

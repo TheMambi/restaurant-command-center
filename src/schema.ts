@@ -5,6 +5,7 @@ const percent = z.number().min(0).max(100);
 const rating = z.number().min(0).max(5);
 const count = z.number().int().min(0);
 const text = z.string().trim().min(1);
+const level = z.enum(['high', 'medium', 'low']);
 
 export const reviewPlatformIds = ['google', 'yelp', 'tripadvisor'] as const;
 export const socialPlatformIds = ['instagram', 'tiktok', 'x', 'facebook'] as const;
@@ -76,8 +77,8 @@ export const profileSchema = z
       keywords: z.array(
         z.object({
           phrase: text,
-          demand: percent,
-          demandLabel: text,
+          demand: level,
+          intent: text,
           covered: z.boolean(),
         }),
       ),
@@ -86,7 +87,7 @@ export const profileSchema = z
       z.object({ tone: z.enum(['positive', 'negative']), platform: text, message: text }),
     ),
     growthIdeas: z.array(
-      z.object({ title: text, platform: z.enum(socialPlatformIds), potential: percent, note: text }),
+      z.object({ title: text, platform: z.enum(socialPlatformIds), potential: level, note: text }),
     ),
     reviewThemes: z.object({ positive: z.array(text), negative: z.array(text) }),
     competitor,
@@ -100,6 +101,8 @@ export const profileSchema = z
           effort: z.enum(['low', 'high']),
           time: text,
           cost: text,
+          // Names the "Fix soon" gap this action closes, word for word.
+          fixesGap: text.optional(),
         }),
       )
       .min(1),
@@ -115,12 +118,22 @@ export const profileSchema = z
       )
       .min(1),
     milestones: z.array(
-      z.object({ month, title: text, note: text, kind: z.enum(['baseline', 'step', 'now']) }),
+      z.object({ month, title: text, note: text }),
     ),
   })
   .superRefine((profile, ctx) => {
     const google = profile.reviewPlatforms.find((p) => p.id === 'google');
     const starTotal = Object.values(profile.googleStars).reduce((a, b) => a + b, 0);
+    if (google && starTotal > 0) {
+      const average = (5 * profile.googleStars.five + 4 * profile.googleStars.four + 3 * profile.googleStars.three + 2 * profile.googleStars.two + profile.googleStars.one) / starTotal;
+      if (Math.abs(average - google.rating) > 0.05) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['googleStars'],
+          message: `Star counts average ${average.toFixed(2)}, too far from the Google rating of ${google.rating}`,
+        });
+      }
+    }
     if (google && starTotal !== google.reviews) {
       ctx.addIssue({
         code: 'custom',
@@ -128,6 +141,17 @@ export const profileSchema = z
         message: `Star counts add up to ${starTotal}, but Google shows ${google.reviews} reviews`,
       });
     }
+    profile.opportunities.forEach((o, i) => {
+      if (o.fixesGap !== undefined && !profile.summary.criticalGaps.includes(o.fixesGap)) {
+        ctx.addIssue({ code: 'custom', path: ['opportunities', i, 'fixesGap'], message: `"${o.fixesGap}" is not one of the gaps under summary.criticalGaps` });
+      }
+    });
+    profile.summary.criticalGaps.forEach((gap, i) => {
+      const fixed = profile.opportunities.some((o) => o.fixesGap === gap && o.horizon !== 'later');
+      if (!fixed) {
+        ctx.addIssue({ code: 'custom', path: ['summary', 'criticalGaps', i], message: `No action due now or soon fixes "${gap}"` });
+      }
+    });
     const months = profile.history.map((h) => h.month);
     if (months.some((m, i) => i > 0 && m <= months[i - 1]!)) {
       ctx.addIssue({ code: 'custom', path: ['history'], message: 'History months must be in order, oldest first' });

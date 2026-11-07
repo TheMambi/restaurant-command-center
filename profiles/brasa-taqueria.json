@@ -112,10 +112,6 @@
         "status": "fail"
       },
       {
-        "label": "Works well on phones",
-        "status": "partial"
-      },
-      {
         "label": "Restaurant structured data",
         "status": "fail"
       },
@@ -226,27 +222,27 @@
     "keywords": [
       {
         "phrase": "tacos Eastgate",
-        "demand": 88,
-        "demandLabel": "High demand, ready to order",
-        "covered": false
+        "demand": "high",
+        "covered": false,
+        "intent": "Ready to order"
       },
       {
         "phrase": "birria Riverton",
-        "demand": 74,
-        "demandLabel": "Medium demand, ready to order",
-        "covered": false
+        "demand": "medium",
+        "covered": false,
+        "intent": "Ready to order"
       },
       {
         "phrase": "late night food Eastgate",
-        "demand": 60,
-        "demandLabel": "Medium demand, ready to order",
-        "covered": false
+        "demand": "medium",
+        "covered": false,
+        "intent": "Ready to order"
       },
       {
         "phrase": "Mexican restaurant Riverton",
-        "demand": 85,
-        "demandLabel": "High demand, browsing",
-        "covered": false
+        "demand": "high",
+        "covered": false,
+        "intent": "Browsing"
       }
     ]
   },
@@ -266,13 +262,13 @@
     {
       "title": "Reuse TikTok videos on Instagram",
       "platform": "instagram",
-      "potential": 85,
+      "potential": "high",
       "note": "The videos already perform well. Posting them as reels costs almost nothing."
     },
     {
       "title": "Pin the best video with an order link",
       "platform": "tiktok",
-      "potential": 75,
+      "potential": "medium",
       "note": "Once online ordering exists, a pinned video can send viewers straight to it."
     }
   ],
@@ -341,7 +337,8 @@
       "impact": "high",
       "effort": "low",
       "time": "1 hour",
-      "cost": "Free"
+      "cost": "Free",
+      "fixesGap": "Website has no page titles or descriptions set"
     },
     {
       "title": "Reply to Yelp reviews",
@@ -368,7 +365,8 @@
       "impact": "high",
       "effort": "high",
       "time": "2 days",
-      "cost": "Developer time"
+      "cost": "Developer time",
+      "fixesGap": "Website takes over 6 seconds to load on mobile"
     },
     {
       "title": "Claim a Tripadvisor listing",
@@ -392,35 +390,35 @@
   "history": [
     {
       "month": "2026-05",
-      "overallScore": 70,
+      "overallScore": 69,
       "totalReviews": 1180,
       "googleRating": 4.6,
       "instagramFollowers": 3200
     },
     {
       "month": "2026-06",
-      "overallScore": 72,
+      "overallScore": 71,
       "totalReviews": 1230,
       "googleRating": 4.6,
       "instagramFollowers": 3450
     },
     {
       "month": "2026-07",
-      "overallScore": 73,
+      "overallScore": 72,
       "totalReviews": 1285,
       "googleRating": 4.7,
       "instagramFollowers": 3700
     },
     {
       "month": "2026-08",
-      "overallScore": 75,
+      "overallScore": 74,
       "totalReviews": 1330,
       "googleRating": 4.7,
       "instagramFollowers": 3900
     },
     {
       "month": "2026-09",
-      "overallScore": 76,
+      "overallScore": 75,
       "totalReviews": 1362,
       "googleRating": 4.7,
       "instagramFollowers": 4000
@@ -428,22 +426,14 @@
   ],
   "milestones": [
     {
-      "month": "2026-10",
-      "title": "Current snapshot",
-      "note": "Google rating at 4.7. The website is now the weakest link.",
-      "kind": "now"
-    },
-    {
       "month": "2026-07",
       "title": "Birria video took off",
-      "note": "One TikTok video brought a month of record weekend traffic.",
-      "kind": "step"
+      "note": "One TikTok video brought a month of record weekend traffic."
     },
     {
       "month": "2026-05",
       "title": "Baseline",
-      "note": "Loved on Google and TikTok, with a website that loses visitors.",
-      "kind": "baseline"
+      "note": "Loved on Google and TikTok, with a website that loses visitors."
     }
   ]
 }

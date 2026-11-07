@@ -5,58 +5,60 @@ import { sectionHeader } from './shared';
 type Opportunity = Profile['opportunities'][number];
 
 const horizons = [
-  { id: 'now', title: 'Quick wins (this month)', css: 'quick-wins' },
-  { id: 'soon', title: 'Next 1 to 3 months', css: 'medium-term' },
-  { id: 'later', title: '3 to 6 months', css: 'long-term' },
+  { id: 'now', title: 'This month' },
+  { id: 'soon', title: 'In the next 1 to 3 months' },
+  { id: 'later', title: 'In 3 to 6 months' },
 ] as const;
 
-const impactLabel = { high: 'High impact', medium: 'Medium impact', low: 'Lower impact' } as const;
+const impactWords = { high: 'High', medium: 'Medium', low: 'Low' } as const;
+const effortWords = { low: 'Quick', high: 'Bigger job' } as const;
 
 export const quadrants = [
-  { css: 'q1', title: 'Do first', desc: 'High impact, low effort', match: (o: Opportunity) => o.impact === 'high' && o.effort === 'low' },
-  { css: 'q2', title: 'Plan and schedule', desc: 'High impact, more effort', match: (o: Opportunity) => o.impact === 'high' && o.effort === 'high' },
-  { css: 'q3', title: 'Fit in when possible', desc: 'Medium or lower impact, low effort', match: (o: Opportunity) => o.impact !== 'high' && o.effort === 'low' },
-  { css: 'q4', title: 'Save for later', desc: 'Medium or lower impact, more effort', match: (o: Opportunity) => o.impact !== 'high' && o.effort === 'high' },
+  { title: 'Quick wins', desc: 'High impact, quick to do', match: (o: Opportunity) => o.impact === 'high' && o.effort === 'low' },
+  { title: 'Plan and schedule', desc: 'High impact, a bigger job', match: (o: Opportunity) => o.impact === 'high' && o.effort === 'high' },
+  { title: 'Fit in when possible', desc: 'Medium or low impact, quick to do', match: (o: Opportunity) => o.impact !== 'high' && o.effort === 'low' },
+  { title: 'Save for later', desc: 'Medium or low impact, a bigger job', match: (o: Opportunity) => o.impact !== 'high' && o.effort === 'high' },
 ] as const;
 
 export function renderOpportunities(p: Profile): SafeHtml {
   return html`
-    ${sectionHeader('Next steps', `Prioritized actions to strengthen ${p.restaurant.name}'s online presence`)}
-    <div class="opportunity-timeline">
-      ${horizons.map((h) => {
-        const items = p.opportunities.filter((o) => o.horizon === h.id);
-        return (
-          items.length > 0 &&
-          html`<div class="timeline-section">
-            <h3 class="timeline-header ${h.css}">${h.title}</h3>
-            <div class="opp-cards">
-              ${items.map(
-                (o) => html`<div class="opp-card priority-${o.impact}">
-                  <div class="opp-priority">${impactLabel[o.impact]}</div>
-                  <h4>${o.title}</h4>
-                  <p>${o.description}</p>
-                  <div class="opp-meta"><span class="opp-effort">Time: ${o.time}</span><span class="opp-cost">Cost: ${o.cost}</span></div>
-                </div>`,
-              )}
-            </div>
-          </div>`
-        );
-      })}
-    </div>
+    ${sectionHeader('Next steps', `Every recommended action for ${p.restaurant.name}, grouped by when to do it.`)}
 
-    <div class="card">
-      <h3 class="card-title">Impact and effort</h3>
+    ${horizons.map((h) => {
+      const items = p.opportunities.filter((o) => o.horizon === h.id);
+      return (
+        items.length > 0 &&
+        html`<section class="card" aria-labelledby="h-${h.id}">
+          <h3 class="block-title" id="h-${h.id}">${h.title}</h3>
+          <div class="table-wrap"><table class="actions-table stack-table">
+            <thead><tr><th scope="col">Action</th><th scope="col">Impact</th><th scope="col">Effort</th><th scope="col">Time</th><th scope="col">Cost</th></tr></thead>
+            <tbody>
+              ${items.map(
+                (o) => html`<tr>
+                  <th scope="row">${o.title}<span class="row-note">${o.description}${o.fixesGap && html` Fixes: ${o.fixesGap.charAt(0).toLowerCase()}${o.fixesGap.slice(1)}.`}</span></th>
+                  <td data-label="Impact"><span class="impact is-${o.impact}">${impactWords[o.impact]}</span></td>
+                  <td data-label="Effort">${effortWords[o.effort]}</td>
+                  <td data-label="Time">${o.time}</td>
+                  <td data-label="Cost">${o.cost}</td>
+                </tr>`,
+              )}
+            </tbody>
+          </table></div>
+        </section>`
+      );
+    })}
+
+    <section class="card" aria-labelledby="matrix-title">
+      <h3 class="block-title" id="matrix-title">Impact and effort</h3>
       <div class="matrix">
-        <div class="matrix-grid">
-          ${quadrants.map((q) => {
-            const items = p.opportunities.filter(q.match);
-            return html`<div class="matrix-quadrant ${q.css}">
-              <h4>${q.title}</h4>
-              <p class="q-desc">${q.desc}</p>
-              ${items.length > 0 ? html`<ul>${items.map((o) => html`<li>${o.title}</li>`)}</ul>` : html`<p class="q-desc">Nothing here yet</p>`}
-            </div>`;
-          })}
-        </div>
+        ${quadrants.map((q) => {
+          const items = p.opportunities.filter(q.match);
+          return html`<div class="quadrant">
+            <h4>${q.title}</h4>
+            <p class="small muted">${q.desc}</p>
+            ${items.length > 0 ? html`<ul>${items.map((o) => html`<li>${o.title}</li>`)}</ul>` : html`<p class="small muted mt-2">Nothing here.</p>`}
+          </div>`;
+        })}
       </div>
-    </div>`;
+    </section>`;
 }

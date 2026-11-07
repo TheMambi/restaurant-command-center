@@ -24,6 +24,7 @@ export function weightedRating(platforms: ReviewPlatform[]): number {
 }
 
 export function scoreBreakdown(profile: Profile): ScoreBreakdown {
+  if (scoreTargets.ratingCeiling <= scoreTargets.ratingFloor) throw new Error('ratingCeiling must be above ratingFloor');
   const rating = weightedRating(profile.reviewPlatforms);
   const mobilePoints = { good: 1, fair: 0.5, poor: 0 } as const;
   const mobile = profile.website.mobile;
@@ -43,8 +44,10 @@ export function scoreBreakdown(profile: Profile): ScoreBreakdown {
         100;
 
   return {
-    // A 1-star average maps to 0 and a 5-star average to 100.
-    reputation: Math.max(0, ((rating - 1) / 4) * 100),
+    reputation:
+      rating === 0
+        ? 0
+        : Math.max(0, Math.min(1, (rating - scoreTargets.ratingFloor) / (scoreTargets.ratingCeiling - scoreTargets.ratingFloor))) * 100,
     reviewVolume: ratio(totalReviews(profile.reviewPlatforms), scoreTargets.totalReviews) * 100,
     googleProfile: checklistScore(profile.checklists.googleProfile),
     website: (checklistScore(profile.checklists.technicalSeo) + mobileScore) / 2,

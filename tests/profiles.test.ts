@@ -42,6 +42,11 @@ describe('schema rejects broken profiles', () => {
     expect(() => parseProfile({ ...base, history }, 'broken')).toThrow(/past months only/);
   });
 
+  it('flags a "Fix soon" gap that no action fixes', () => {
+    const summary = { ...(base.summary as object), criticalGaps: ['Something nobody plans to fix'] };
+    expect(() => parseProfile({ ...base, summary }, 'broken')).toThrow(/No action due now or soon fixes/);
+  });
+
   it('flags a rating above 5', () => {
     const reviewPlatforms = [{ id: 'yelp', rating: 6, reviews: 10 }];
     expect(() => parseProfile({ ...base, reviewPlatforms }, 'broken')).toThrow(/reviewPlatforms/);

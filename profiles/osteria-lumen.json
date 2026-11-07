@@ -55,8 +55,8 @@
     }
   ],
   "googleStars": {
-    "five": 390,
-    "four": 132,
+    "five": 356,
+    "four": 166,
     "three": 48,
     "two": 30,
     "one": 40
@@ -72,12 +72,12 @@
       "Few replies to Google reviews",
       "Booking sends guests to a third-party site",
       "Google profile has no weekly posts",
-      "Menu on Google is out of date"
+      "Menu on Google is out of date",
+      "TikTok account is nearly inactive"
     ],
     "criticalGaps": [
       "No neighborhood landing pages on the website",
-      "No structured data for search engines",
-      "TikTok account is nearly inactive"
+      "No structured data for search engines"
     ]
   },
   "checklists": {
@@ -122,10 +122,6 @@
       },
       {
         "label": "Meta descriptions on every page",
-        "status": "pass"
-      },
-      {
-        "label": "Works well on phones",
         "status": "pass"
       },
       {
@@ -231,7 +227,7 @@
         "state": "warning"
       },
       {
-        "label": "Some guests give up here",
+        "label": "Booking finishes on someone else's site",
         "state": "drop-off"
       }
     ],
@@ -239,27 +235,27 @@
     "keywords": [
       {
         "phrase": "Italian restaurant Old Mill District",
-        "demand": 82,
-        "demandLabel": "High demand, ready to book",
-        "covered": false
+        "demand": "high",
+        "covered": false,
+        "intent": "Ready to book"
       },
       {
         "phrase": "fresh pasta Riverton",
-        "demand": 68,
-        "demandLabel": "Medium demand, ready to book",
-        "covered": false
+        "demand": "medium",
+        "covered": false,
+        "intent": "Ready to book"
       },
       {
         "phrase": "date night Old Mill District",
-        "demand": 55,
-        "demandLabel": "Medium demand, browsing",
-        "covered": false
+        "demand": "medium",
+        "covered": false,
+        "intent": "Browsing"
       },
       {
         "phrase": "best Italian food Riverton",
-        "demand": 90,
-        "demandLabel": "High demand, already targeted",
-        "covered": true
+        "demand": "high",
+        "covered": true,
+        "intent": "Browsing"
       }
     ]
   },
@@ -279,19 +275,19 @@
     {
       "title": "Short kitchen videos",
       "platform": "tiktok",
-      "potential": 80,
+      "potential": "medium",
       "note": "Engagement is high on the few videos posted. More regular posting would build on it."
     },
     {
       "title": "Local Instagram ads",
       "platform": "instagram",
-      "potential": 65,
+      "potential": "medium",
       "note": "The photography is ready. A small ad budget would reach nearby diners."
     },
     {
       "title": "Facebook event listings",
       "platform": "facebook",
-      "potential": 40,
+      "potential": "low",
       "note": "Wine dinners and holiday menus could fill tables if listed two weeks ahead."
     }
   ],
@@ -388,7 +384,8 @@
       "impact": "high",
       "effort": "high",
       "time": "1 week",
-      "cost": "Writing and design time"
+      "cost": "Writing and design time",
+      "fixesGap": "No neighborhood landing pages on the website"
     },
     {
       "title": "Add restaurant structured data",
@@ -397,7 +394,8 @@
       "impact": "medium",
       "effort": "low",
       "time": "2 to 3 hours",
-      "cost": "Free"
+      "cost": "Free",
+      "fixesGap": "No structured data for search engines"
     },
     {
       "title": "Start a TikTok routine",
@@ -421,35 +419,35 @@
   "history": [
     {
       "month": "2026-05",
-      "overallScore": 55,
+      "overallScore": 47,
       "totalReviews": 1540,
       "googleRating": 4.0,
       "instagramFollowers": 1610
     },
     {
       "month": "2026-06",
-      "overallScore": 57,
+      "overallScore": 49,
       "totalReviews": 1569,
       "googleRating": 4.1,
       "instagramFollowers": 1650
     },
     {
       "month": "2026-07",
-      "overallScore": 59,
+      "overallScore": 51,
       "totalReviews": 1596,
       "googleRating": 4.1,
       "instagramFollowers": 1700
     },
     {
       "month": "2026-08",
-      "overallScore": 61,
+      "overallScore": 53,
       "totalReviews": 1620,
       "googleRating": 4.1,
       "instagramFollowers": 1760
     },
     {
       "month": "2026-09",
-      "overallScore": 62,
+      "overallScore": 54,
       "totalReviews": 1642,
       "googleRating": 4.2,
       "instagramFollowers": 1800
@@ -457,28 +455,19 @@
   ],
   "milestones": [
     {
-      "month": "2026-10",
-      "title": "Current snapshot",
-      "note": "Google rating holding at 4.2 with steady review growth.",
-      "kind": "now"
-    },
-    {
       "month": "2026-07",
       "title": "Fixed page titles",
-      "note": "Every page title now names the cuisine and neighborhood.",
-      "kind": "step"
+      "note": "Every page title now names the cuisine and neighborhood."
     },
     {
       "month": "2026-06",
       "title": "Started answering Yelp reviews",
-      "note": "Yelp replies went from none to most reviews within a month.",
-      "kind": "step"
+      "note": "Yelp replies went from none to most reviews within a month."
     },
     {
       "month": "2026-05",
       "title": "Baseline",
-      "note": "Strong on Yelp, quiet on Google and almost absent on TikTok.",
-      "kind": "baseline"
+      "note": "Strong on Yelp, quiet on Google and almost absent on TikTok."
     }
   ]
 }
