@@ -1,0 +1,484 @@
+{
+  "slug": "osteria-lumen",
+  "sampleData": true,
+  "asOf": "2026-10",
+  "restaurant": {
+    "name": "Osteria Lumen",
+    "cuisine": "Italian",
+    "neighborhood": "Old Mill District",
+    "city": "Riverton",
+    "address": "214 Foundry Lane, Old Mill District, Riverton",
+    "website": "osterialumen.example",
+    "yearOpened": 2009,
+    "priceRange": "$$"
+  },
+  "reviewPlatforms": [
+    {
+      "id": "google",
+      "rating": 4.2,
+      "reviews": 640,
+      "photos": 310
+    },
+    {
+      "id": "yelp",
+      "rating": 4.1,
+      "reviews": 905,
+      "photos": 720
+    },
+    {
+      "id": "tripadvisor",
+      "rating": 4.0,
+      "reviews": 118
+    }
+  ],
+  "socialPlatforms": [
+    {
+      "id": "instagram",
+      "followers": 1840,
+      "posts": 412,
+      "engagementRate": 2.1,
+      "responseHours": 3
+    },
+    {
+      "id": "tiktok",
+      "followers": 260,
+      "posts": 9,
+      "engagementRate": 6.4,
+      "responseHours": 20
+    },
+    {
+      "id": "facebook",
+      "followers": 2900,
+      "posts": 530,
+      "engagementRate": 0.6,
+      "responseHours": 8
+    }
+  ],
+  "googleStars": {
+    "five": 390,
+    "four": 132,
+    "three": 48,
+    "two": 30,
+    "one": 40
+  },
+  "summary": {
+    "strengths": [
+      "Strong Yelp following with over 900 reviews",
+      "Diners regularly praise the handmade pasta",
+      "Instagram posts high-quality food photos every week",
+      "Seventeen years in the same neighborhood"
+    ],
+    "improvements": [
+      "Few replies to Google reviews",
+      "Booking sends guests to a third-party site",
+      "Google profile has no weekly posts",
+      "Menu on Google is out of date"
+    ],
+    "criticalGaps": [
+      "No neighborhood landing pages on the website",
+      "No structured data for search engines",
+      "TikTok account is nearly inactive"
+    ]
+  },
+  "checklists": {
+    "googleProfile": [
+      {
+        "label": "Business claimed and verified",
+        "status": "pass"
+      },
+      {
+        "label": "Address and phone number correct",
+        "status": "pass"
+      },
+      {
+        "label": "Opening hours listed, including holidays",
+        "status": "partial"
+      },
+      {
+        "label": "Website linked",
+        "status": "pass"
+      },
+      {
+        "label": "Menu visible and up to date",
+        "status": "fail"
+      },
+      {
+        "label": "New photos added in the last month",
+        "status": "partial"
+      },
+      {
+        "label": "Weekly posts or offers",
+        "status": "fail"
+      },
+      {
+        "label": "Events listed",
+        "status": "fail"
+      }
+    ],
+    "technicalSeo": [
+      {
+        "label": "Page titles name the cuisine and neighborhood",
+        "status": "pass"
+      },
+      {
+        "label": "Meta descriptions on every page",
+        "status": "pass"
+      },
+      {
+        "label": "Works well on phones",
+        "status": "pass"
+      },
+      {
+        "label": "Restaurant structured data",
+        "status": "fail"
+      },
+      {
+        "label": "Sitemap submitted",
+        "status": "fail"
+      },
+      {
+        "label": "Neighborhood landing pages",
+        "status": "fail"
+      },
+      {
+        "label": "Frequently asked questions page",
+        "status": "partial"
+      },
+      {
+        "label": "Pages load in under 3 seconds on mobile",
+        "status": "partial"
+      }
+    ],
+    "reviewResponse": [
+      {
+        "label": "Negative Google reviews get a reply",
+        "status": "partial"
+      },
+      {
+        "label": "Positive Google reviews get a thank-you",
+        "status": "fail"
+      },
+      {
+        "label": "Yelp reviews get a reply",
+        "status": "pass"
+      },
+      {
+        "label": "Replies sound personal, not copied",
+        "status": "partial"
+      },
+      {
+        "label": "Replies within two days",
+        "status": "fail"
+      }
+    ],
+    "socialContent": [
+      {
+        "label": "Instagram: strong food photography",
+        "status": "pass"
+      },
+      {
+        "label": "Instagram: posts at least weekly",
+        "status": "pass"
+      },
+      {
+        "label": "TikTok: posts at least weekly",
+        "status": "fail"
+      },
+      {
+        "label": "Facebook: events shared ahead of time",
+        "status": "partial"
+      },
+      {
+        "label": "Comments answered the same day",
+        "status": "fail"
+      }
+    ]
+  },
+  "website": {
+    "mobile": [
+      {
+        "label": "Menu readable on a phone",
+        "rating": "good"
+      },
+      {
+        "label": "Booking button easy to find",
+        "rating": "fair"
+      },
+      {
+        "label": "Steps needed to book a table",
+        "rating": "poor"
+      },
+      {
+        "label": "Online ordering",
+        "rating": "good"
+      },
+      {
+        "label": "Photo gallery",
+        "rating": "good"
+      }
+    ],
+    "bookingFlow": [
+      {
+        "label": "Guest opens the website",
+        "state": "ok"
+      },
+      {
+        "label": "Taps \"Book a table\"",
+        "state": "ok"
+      },
+      {
+        "label": "Sent to a third-party booking site",
+        "state": "warning"
+      },
+      {
+        "label": "Some guests give up here",
+        "state": "drop-off"
+      }
+    ],
+    "bookingRecommendation": "Embed a booking widget on the website so guests can reserve without leaving it.",
+    "keywords": [
+      {
+        "phrase": "Italian restaurant Old Mill District",
+        "demand": 82,
+        "demandLabel": "High demand, ready to book",
+        "covered": false
+      },
+      {
+        "phrase": "fresh pasta Riverton",
+        "demand": 68,
+        "demandLabel": "Medium demand, ready to book",
+        "covered": false
+      },
+      {
+        "phrase": "date night Old Mill District",
+        "demand": 55,
+        "demandLabel": "Medium demand, browsing",
+        "covered": false
+      },
+      {
+        "phrase": "best Italian food Riverton",
+        "demand": 90,
+        "demandLabel": "High demand, already targeted",
+        "covered": true
+      }
+    ]
+  },
+  "sampleSignals": [
+    {
+      "tone": "positive",
+      "platform": "Instagram",
+      "message": "A local food account's reel featuring the cacio e pepe drew three times the usual comments."
+    },
+    {
+      "tone": "negative",
+      "platform": "Google",
+      "message": "Two new reviews this week mention long waits for a table on Saturday nights."
+    }
+  ],
+  "growthIdeas": [
+    {
+      "title": "Short kitchen videos",
+      "platform": "tiktok",
+      "potential": 80,
+      "note": "Engagement is high on the few videos posted. More regular posting would build on it."
+    },
+    {
+      "title": "Local Instagram ads",
+      "platform": "instagram",
+      "potential": 65,
+      "note": "The photography is ready. A small ad budget would reach nearby diners."
+    },
+    {
+      "title": "Facebook event listings",
+      "platform": "facebook",
+      "potential": 40,
+      "note": "Wine dinners and holiday menus could fill tables if listed two weeks ahead."
+    }
+  ],
+  "reviewThemes": {
+    "positive": [
+      "Handmade pasta",
+      "Cozy room",
+      "Friendly staff",
+      "Good wine list",
+      "Tiramisu"
+    ],
+    "negative": [
+      "Weekend waits",
+      "Noise level",
+      "Small portions for the price",
+      "Parking"
+    ]
+  },
+  "competitor": {
+    "name": "Trattoria Fiorella",
+    "yearOpened": 2014,
+    "priceRange": "$$",
+    "reviewPlatforms": [
+      {
+        "id": "google",
+        "rating": 4.5,
+        "reviews": 1420,
+        "photos": 980
+      },
+      {
+        "id": "yelp",
+        "rating": 4.0,
+        "reviews": 610,
+        "photos": 350
+      },
+      {
+        "id": "tripadvisor",
+        "rating": 4.4,
+        "reviews": 260
+      }
+    ],
+    "socialPlatforms": [
+      {
+        "id": "instagram",
+        "followers": 6200
+      },
+      {
+        "id": "tiktok",
+        "followers": 3100
+      }
+    ]
+  },
+  "opportunities": [
+    {
+      "title": "Reply to every Google review",
+      "description": "Thank positive reviewers by name and answer complaints with an offer to make it right.",
+      "horizon": "now",
+      "impact": "high",
+      "effort": "low",
+      "time": "20 minutes a day",
+      "cost": "Free"
+    },
+    {
+      "title": "Post weekly on the Google profile",
+      "description": "Share the weekly special, a new dish or an event. Regular posts help the profile show up in map searches.",
+      "horizon": "now",
+      "impact": "high",
+      "effort": "low",
+      "time": "15 minutes a week",
+      "cost": "Free"
+    },
+    {
+      "title": "Update the Google menu",
+      "description": "Upload the current menu so diners searching for a dish find it.",
+      "horizon": "now",
+      "impact": "medium",
+      "effort": "low",
+      "time": "1 hour",
+      "cost": "Free"
+    },
+    {
+      "title": "Embed online booking",
+      "description": "Replace the redirect with a booking widget on the website.",
+      "horizon": "soon",
+      "impact": "high",
+      "effort": "high",
+      "time": "1 day setup",
+      "cost": "Varies by booking service"
+    },
+    {
+      "title": "Build neighborhood landing pages",
+      "description": "One page each for the searches that bring diners in, such as fresh pasta and date night in the Old Mill District.",
+      "horizon": "soon",
+      "impact": "high",
+      "effort": "high",
+      "time": "1 week",
+      "cost": "Writing and design time"
+    },
+    {
+      "title": "Add restaurant structured data",
+      "description": "Tell search engines the hours, menu, price range and booking link in a format they read directly.",
+      "horizon": "soon",
+      "impact": "medium",
+      "effort": "low",
+      "time": "2 to 3 hours",
+      "cost": "Free"
+    },
+    {
+      "title": "Start a TikTok routine",
+      "description": "Two short kitchen videos a week, filmed during prep.",
+      "horizon": "later",
+      "impact": "medium",
+      "effort": "high",
+      "time": "Ongoing",
+      "cost": "Staff time"
+    },
+    {
+      "title": "Monthly email to regulars",
+      "description": "Send specials and event dates to the existing guest list.",
+      "horizon": "later",
+      "impact": "low",
+      "effort": "low",
+      "time": "2 hours a month",
+      "cost": "Free on most email tools"
+    }
+  ],
+  "history": [
+    {
+      "month": "2026-05",
+      "overallScore": 55,
+      "totalReviews": 1540,
+      "googleRating": 4.0,
+      "instagramFollowers": 1610
+    },
+    {
+      "month": "2026-06",
+      "overallScore": 57,
+      "totalReviews": 1569,
+      "googleRating": 4.1,
+      "instagramFollowers": 1650
+    },
+    {
+      "month": "2026-07",
+      "overallScore": 59,
+      "totalReviews": 1596,
+      "googleRating": 4.1,
+      "instagramFollowers": 1700
+    },
+    {
+      "month": "2026-08",
+      "overallScore": 61,
+      "totalReviews": 1620,
+      "googleRating": 4.1,
+      "instagramFollowers": 1760
+    },
+    {
+      "month": "2026-09",
+      "overallScore": 62,
+      "totalReviews": 1642,
+      "googleRating": 4.2,
+      "instagramFollowers": 1800
+    }
+  ],
+  "milestones": [
+    {
+      "month": "2026-10",
+      "title": "Current snapshot",
+      "note": "Google rating holding at 4.2 with steady review growth.",
+      "kind": "now"
+    },
+    {
+      "month": "2026-07",
+      "title": "Fixed page titles",
+      "note": "Every page title now names the cuisine and neighborhood.",
+      "kind": "step"
+    },
+    {
+      "month": "2026-06",
+      "title": "Started answering Yelp reviews",
+      "note": "Yelp replies went from none to most reviews within a month.",
+      "kind": "step"
+    },
+    {
+      "month": "2026-05",
+      "title": "Baseline",
+      "note": "Strong on Yelp, quiet on Google and almost absent on TikTok.",
+      "kind": "baseline"
+    }
+  ]
+}

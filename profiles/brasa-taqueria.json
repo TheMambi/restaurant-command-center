@@ -1,0 +1,449 @@
+{
+  "slug": "brasa-taqueria",
+  "sampleData": true,
+  "asOf": "2026-10",
+  "restaurant": {
+    "name": "Brasa Taquería",
+    "cuisine": "Mexican",
+    "neighborhood": "Eastgate",
+    "city": "Riverton",
+    "address": "88 Commerce Street, Eastgate, Riverton",
+    "website": "brasataqueria.example",
+    "yearOpened": 2019,
+    "priceRange": "$"
+  },
+  "reviewPlatforms": [
+    {
+      "id": "google",
+      "rating": 4.7,
+      "reviews": 1180,
+      "photos": 1450
+    },
+    {
+      "id": "yelp",
+      "rating": 4.3,
+      "reviews": 210,
+      "photos": 160
+    }
+  ],
+  "socialPlatforms": [
+    {
+      "id": "instagram",
+      "followers": 4100,
+      "posts": 290,
+      "engagementRate": 3.8,
+      "responseHours": 2
+    },
+    {
+      "id": "tiktok",
+      "followers": 12800,
+      "posts": 140,
+      "engagementRate": 9.2,
+      "responseHours": 6
+    }
+  ],
+  "googleStars": {
+    "five": 950,
+    "four": 140,
+    "three": 40,
+    "two": 20,
+    "one": 30
+  },
+  "summary": {
+    "strengths": [
+      "4.7 average across nearly 1,200 Google reviews",
+      "TikTok audience larger than most local restaurants",
+      "Owner replies to almost every Google review",
+      "Diners upload hundreds of photos"
+    ],
+    "improvements": [
+      "Website menu is a photo that phones can't zoom well",
+      "No online ordering on the website",
+      "Small Yelp presence compared with Google",
+      "Not listed on Tripadvisor"
+    ],
+    "criticalGaps": [
+      "Website has no page titles or descriptions set",
+      "Website takes over 6 seconds to load on mobile"
+    ]
+  },
+  "checklists": {
+    "googleProfile": [
+      {
+        "label": "Business claimed and verified",
+        "status": "pass"
+      },
+      {
+        "label": "Address and phone number correct",
+        "status": "pass"
+      },
+      {
+        "label": "Opening hours listed, including holidays",
+        "status": "pass"
+      },
+      {
+        "label": "Website linked",
+        "status": "pass"
+      },
+      {
+        "label": "Menu visible and up to date",
+        "status": "pass"
+      },
+      {
+        "label": "New photos added in the last month",
+        "status": "pass"
+      },
+      {
+        "label": "Weekly posts or offers",
+        "status": "partial"
+      },
+      {
+        "label": "Events listed",
+        "status": "fail"
+      }
+    ],
+    "technicalSeo": [
+      {
+        "label": "Page titles name the cuisine and neighborhood",
+        "status": "fail"
+      },
+      {
+        "label": "Meta descriptions on every page",
+        "status": "fail"
+      },
+      {
+        "label": "Works well on phones",
+        "status": "partial"
+      },
+      {
+        "label": "Restaurant structured data",
+        "status": "fail"
+      },
+      {
+        "label": "Sitemap submitted",
+        "status": "fail"
+      },
+      {
+        "label": "Neighborhood landing pages",
+        "status": "fail"
+      },
+      {
+        "label": "Frequently asked questions page",
+        "status": "fail"
+      },
+      {
+        "label": "Pages load in under 3 seconds on mobile",
+        "status": "fail"
+      }
+    ],
+    "reviewResponse": [
+      {
+        "label": "Negative Google reviews get a reply",
+        "status": "pass"
+      },
+      {
+        "label": "Positive Google reviews get a thank-you",
+        "status": "pass"
+      },
+      {
+        "label": "Yelp reviews get a reply",
+        "status": "fail"
+      },
+      {
+        "label": "Replies sound personal, not copied",
+        "status": "pass"
+      },
+      {
+        "label": "Replies within two days",
+        "status": "pass"
+      }
+    ],
+    "socialContent": [
+      {
+        "label": "TikTok: posts several times a week",
+        "status": "pass"
+      },
+      {
+        "label": "TikTok: videos show the kitchen and staff",
+        "status": "pass"
+      },
+      {
+        "label": "Instagram: posts at least weekly",
+        "status": "partial"
+      },
+      {
+        "label": "Instagram: reuses TikTok videos as reels",
+        "status": "fail"
+      },
+      {
+        "label": "Comments answered the same day",
+        "status": "pass"
+      }
+    ]
+  },
+  "website": {
+    "mobile": [
+      {
+        "label": "Menu readable on a phone",
+        "rating": "poor"
+      },
+      {
+        "label": "Order button easy to find",
+        "rating": "fair"
+      },
+      {
+        "label": "Steps needed to order pickup",
+        "rating": "poor"
+      },
+      {
+        "label": "Hours and address on the first screen",
+        "rating": "good"
+      },
+      {
+        "label": "Photo gallery",
+        "rating": "fair"
+      }
+    ],
+    "bookingFlow": [
+      {
+        "label": "Guest finds the restaurant on TikTok",
+        "state": "ok"
+      },
+      {
+        "label": "Opens the website from the profile link",
+        "state": "ok"
+      },
+      {
+        "label": "Menu loads slowly as one large image",
+        "state": "warning"
+      },
+      {
+        "label": "No way to order from the site",
+        "state": "drop-off"
+      }
+    ],
+    "bookingRecommendation": "Turn the menu into text with prices, and add pickup ordering on the website so guests arriving from TikTok can order in a few taps.",
+    "keywords": [
+      {
+        "phrase": "tacos Eastgate",
+        "demand": 88,
+        "demandLabel": "High demand, ready to order",
+        "covered": false
+      },
+      {
+        "phrase": "birria Riverton",
+        "demand": 74,
+        "demandLabel": "Medium demand, ready to order",
+        "covered": false
+      },
+      {
+        "phrase": "late night food Eastgate",
+        "demand": 60,
+        "demandLabel": "Medium demand, ready to order",
+        "covered": false
+      },
+      {
+        "phrase": "Mexican restaurant Riverton",
+        "demand": 85,
+        "demandLabel": "High demand, browsing",
+        "covered": false
+      }
+    ]
+  },
+  "sampleSignals": [
+    {
+      "tone": "positive",
+      "platform": "TikTok",
+      "message": "A birria video passed 200,000 views and brought a wave of first-time visitors."
+    },
+    {
+      "tone": "negative",
+      "platform": "Yelp",
+      "message": "A reviewer could not find the menu online and left a two-star review."
+    }
+  ],
+  "growthIdeas": [
+    {
+      "title": "Reuse TikTok videos on Instagram",
+      "platform": "instagram",
+      "potential": 85,
+      "note": "The videos already perform well. Posting them as reels costs almost nothing."
+    },
+    {
+      "title": "Pin the best video with an order link",
+      "platform": "tiktok",
+      "potential": 75,
+      "note": "Once online ordering exists, a pinned video can send viewers straight to it."
+    }
+  ],
+  "reviewThemes": {
+    "positive": [
+      "Birria tacos",
+      "Fast service",
+      "Fair prices",
+      "Salsa bar",
+      "Friendly owner"
+    ],
+    "negative": [
+      "Lines at lunch",
+      "Hard to find the menu online",
+      "Limited seating"
+    ]
+  },
+  "competitor": {
+    "name": "El Comal Norte",
+    "yearOpened": 2011,
+    "priceRange": "$",
+    "reviewPlatforms": [
+      {
+        "id": "google",
+        "rating": 4.4,
+        "reviews": 870,
+        "photos": 600
+      },
+      {
+        "id": "yelp",
+        "rating": 4.2,
+        "reviews": 540,
+        "photos": 410
+      },
+      {
+        "id": "tripadvisor",
+        "rating": 4.3,
+        "reviews": 95
+      }
+    ],
+    "socialPlatforms": [
+      {
+        "id": "instagram",
+        "followers": 2300
+      },
+      {
+        "id": "tiktok",
+        "followers": 900
+      }
+    ]
+  },
+  "opportunities": [
+    {
+      "title": "Turn the menu into text",
+      "description": "Replace the menu image with text and prices. Phones load it faster and search engines can read it.",
+      "horizon": "now",
+      "impact": "high",
+      "effort": "low",
+      "time": "Half a day",
+      "cost": "Free"
+    },
+    {
+      "title": "Set page titles and descriptions",
+      "description": "Name the cuisine, dishes and neighborhood on every page.",
+      "horizon": "now",
+      "impact": "high",
+      "effort": "low",
+      "time": "1 hour",
+      "cost": "Free"
+    },
+    {
+      "title": "Reply to Yelp reviews",
+      "description": "Bring the habit that works on Google to Yelp.",
+      "horizon": "now",
+      "impact": "medium",
+      "effort": "low",
+      "time": "10 minutes a day",
+      "cost": "Free"
+    },
+    {
+      "title": "Add pickup ordering",
+      "description": "Connect an ordering service to the website so TikTok visitors can order in a few taps.",
+      "horizon": "soon",
+      "impact": "high",
+      "effort": "high",
+      "time": "2 to 3 days",
+      "cost": "Varies by ordering service"
+    },
+    {
+      "title": "Speed up the website",
+      "description": "Compress images and move to a faster host to get under three seconds on mobile.",
+      "horizon": "soon",
+      "impact": "high",
+      "effort": "high",
+      "time": "2 days",
+      "cost": "Developer time"
+    },
+    {
+      "title": "Claim a Tripadvisor listing",
+      "description": "Visitors from out of town still search there.",
+      "horizon": "later",
+      "impact": "low",
+      "effort": "low",
+      "time": "1 hour",
+      "cost": "Free"
+    },
+    {
+      "title": "Dish landing pages",
+      "description": "One page each for birria, tacos al pastor and the salsa bar.",
+      "horizon": "later",
+      "impact": "medium",
+      "effort": "high",
+      "time": "1 week",
+      "cost": "Writing and design time"
+    }
+  ],
+  "history": [
+    {
+      "month": "2026-05",
+      "overallScore": 70,
+      "totalReviews": 1180,
+      "googleRating": 4.6,
+      "instagramFollowers": 3200
+    },
+    {
+      "month": "2026-06",
+      "overallScore": 72,
+      "totalReviews": 1230,
+      "googleRating": 4.6,
+      "instagramFollowers": 3450
+    },
+    {
+      "month": "2026-07",
+      "overallScore": 73,
+      "totalReviews": 1285,
+      "googleRating": 4.7,
+      "instagramFollowers": 3700
+    },
+    {
+      "month": "2026-08",
+      "overallScore": 75,
+      "totalReviews": 1330,
+      "googleRating": 4.7,
+      "instagramFollowers": 3900
+    },
+    {
+      "month": "2026-09",
+      "overallScore": 76,
+      "totalReviews": 1362,
+      "googleRating": 4.7,
+      "instagramFollowers": 4000
+    }
+  ],
+  "milestones": [
+    {
+      "month": "2026-10",
+      "title": "Current snapshot",
+      "note": "Google rating at 4.7. The website is now the weakest link.",
+      "kind": "now"
+    },
+    {
+      "month": "2026-07",
+      "title": "Birria video took off",
+      "note": "One TikTok video brought a month of record weekend traffic.",
+      "kind": "step"
+    },
+    {
+      "month": "2026-05",
+      "title": "Baseline",
+      "note": "Loved on Google and TikTok, with a website that loses visitors.",
+      "kind": "baseline"
+    }
+  ]
+}

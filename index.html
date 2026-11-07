@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurant Command Center</title>
+  <meta name="description" content="A dashboard for a restaurant's online presence: reviews, Google profile, website, social media, competitors and next steps. Demo with fictional restaurants.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+</head>
+<body>
+  <div class="dashboard-bg"></div>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <img src="/logo.svg" alt="" class="logo-img" width="48" height="48">
+        <div>
+          <p class="product-name">Restaurant Command Center</p>
+          <h1 id="restaurant-name">Loading…</h1>
+          <p class="subtitle" id="restaurant-meta"></p>
+        </div>
+      </div>
+      <div class="header-meta">
+        <label class="switcher">
+          <span>Restaurant</span>
+          <select id="restaurant-switcher"></select>
+        </label>
+        <span class="badge badge-sample" id="sample-badge">Sample data</span>
+        <span class="badge badge-date" id="as-of"></span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav-tabs" id="nav-tabs" role="tablist" aria-label="Dashboard sections"></nav>
+
+  <main class="main-content" id="panels"></main>
+
+  <footer class="footer">
+    <p id="footer-text"></p>
+  </footer>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

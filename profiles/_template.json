@@ -1,0 +1,59 @@
+{
+  "slug": "your-restaurant",
+  "sampleData": true,
+  "asOf": "2026-10",
+  "restaurant": {
+    "name": "Your Restaurant",
+    "cuisine": "Cuisine",
+    "neighborhood": "Neighborhood",
+    "city": "City",
+    "address": "Street address",
+    "website": "yourrestaurant.example",
+    "yearOpened": 2020,
+    "priceRange": "$$"
+  },
+  "reviewPlatforms": [
+    { "id": "google", "rating": 4.0, "reviews": 100, "photos": 50 }
+  ],
+  "socialPlatforms": [
+    { "id": "instagram", "followers": 500, "posts": 100, "engagementRate": 2.0, "responseHours": 4 }
+  ],
+  "googleStars": { "five": 60, "four": 20, "three": 10, "two": 5, "one": 5 },
+  "summary": {
+    "strengths": ["What diners already love"],
+    "improvements": ["What could be better"],
+    "criticalGaps": []
+  },
+  "checklists": {
+    "googleProfile": [{ "label": "Business claimed and verified", "status": "pass" }],
+    "technicalSeo": [{ "label": "Works well on phones", "status": "partial" }],
+    "reviewResponse": [{ "label": "Negative reviews get a reply", "status": "fail" }],
+    "socialContent": []
+  },
+  "website": {
+    "mobile": [{ "label": "Menu readable on a phone", "rating": "fair" }],
+    "bookingFlow": [
+      { "label": "Guest opens the website", "state": "ok" },
+      { "label": "Books a table", "state": "ok" }
+    ],
+    "bookingRecommendation": "What would make booking or ordering easier.",
+    "keywords": []
+  },
+  "sampleSignals": [],
+  "growthIdeas": [],
+  "reviewThemes": { "positive": [], "negative": [] },
+  "competitor": {
+    "name": "Nearby Competitor",
+    "yearOpened": 2015,
+    "priceRange": "$$",
+    "reviewPlatforms": [{ "id": "google", "rating": 4.2, "reviews": 300 }],
+    "socialPlatforms": []
+  },
+  "opportunities": [
+    { "title": "First step", "description": "What to do and why it helps.", "horizon": "now", "impact": "high", "effort": "low", "time": "1 hour", "cost": "Free" }
+  ],
+  "history": [
+    { "month": "2026-09", "overallScore": 40, "totalReviews": 90, "googleRating": 4.0, "instagramFollowers": 480 }
+  ],
+  "milestones": []
+}

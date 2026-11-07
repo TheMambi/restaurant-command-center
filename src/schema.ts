@@ -1,0 +1,152 @@
+import { z } from 'zod';
+
+const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use YYYY-MM');
+const percent = z.number().min(0).max(100);
+const rating = z.number().min(0).max(5);
+const count = z.number().int().min(0);
+const text = z.string().trim().min(1);
+
+export const reviewPlatformIds = ['google', 'yelp', 'tripadvisor'] as const;
+export const socialPlatformIds = ['instagram', 'tiktok', 'x', 'facebook'] as const;
+
+const reviewPlatform = z.object({
+  id: z.enum(reviewPlatformIds),
+  rating,
+  reviews: count,
+  photos: count.optional(),
+});
+
+const socialPlatform = z.object({
+  id: z.enum(socialPlatformIds),
+  followers: count,
+  posts: count,
+  engagementRate: percent,
+  responseHours: z.number().positive().optional(),
+});
+
+const checkItem = z.object({
+  label: text,
+  status: z.enum(['pass', 'partial', 'fail']),
+});
+
+const uniqueIds = <T extends { id: string }>(items: T[]) =>
+  new Set(items.map((item) => item.id)).size === items.length;
+
+const competitor = z.object({
+  name: text,
+  yearOpened: z.number().int().min(1800),
+  priceRange: z.enum(['$', '$$', '$$$', '$$$$']),
+  reviewPlatforms: z.array(reviewPlatform).refine(uniqueIds, 'Each platform appears once'),
+  socialPlatforms: z.array(socialPlatform.pick({ id: true, followers: true })).refine(uniqueIds, 'Each platform appears once'),
+});
+
+export const profileSchema = z
+  .object({
+    slug: z.string().regex(/^[a-z0-9-]+$/),
+    sampleData: z.boolean(),
+    asOf: month,
+    restaurant: z.object({
+      name: text,
+      cuisine: text,
+      neighborhood: text,
+      city: text,
+      address: text,
+      website: text,
+      yearOpened: z.number().int().min(1800),
+      priceRange: z.enum(['$', '$$', '$$$', '$$$$']),
+    }),
+    reviewPlatforms: z.array(reviewPlatform).min(1).refine(uniqueIds, 'Each platform appears once'),
+    socialPlatforms: z.array(socialPlatform).refine(uniqueIds, 'Each platform appears once'),
+    googleStars: z.object({ five: count, four: count, three: count, two: count, one: count }),
+    summary: z.object({
+      strengths: z.array(text).min(1),
+      improvements: z.array(text).min(1),
+      criticalGaps: z.array(text),
+    }),
+    checklists: z.object({
+      googleProfile: z.array(checkItem).min(1),
+      technicalSeo: z.array(checkItem).min(1),
+      reviewResponse: z.array(checkItem).min(1),
+      socialContent: z.array(checkItem),
+    }),
+    website: z.object({
+      mobile: z.array(z.object({ label: text, rating: z.enum(['good', 'fair', 'poor']) })).min(1),
+      bookingFlow: z.array(z.object({ label: text, state: z.enum(['ok', 'warning', 'drop-off']) })).min(2),
+      bookingRecommendation: text,
+      keywords: z.array(
+        z.object({
+          phrase: text,
+          demand: percent,
+          demandLabel: text,
+          covered: z.boolean(),
+        }),
+      ),
+    }),
+    sampleSignals: z.array(
+      z.object({ tone: z.enum(['positive', 'negative']), platform: text, message: text }),
+    ),
+    growthIdeas: z.array(
+      z.object({ title: text, platform: z.enum(socialPlatformIds), potential: percent, note: text }),
+    ),
+    reviewThemes: z.object({ positive: z.array(text), negative: z.array(text) }),
+    competitor,
+    opportunities: z
+      .array(
+        z.object({
+          title: text,
+          description: text,
+          horizon: z.enum(['now', 'soon', 'later']),
+          impact: z.enum(['high', 'medium', 'low']),
+          effort: z.enum(['low', 'high']),
+          time: text,
+          cost: text,
+        }),
+      )
+      .min(1),
+    history: z
+      .array(
+        z.object({
+          month,
+          overallScore: percent,
+          totalReviews: count,
+          googleRating: rating,
+          instagramFollowers: count,
+        }),
+      )
+      .min(1),
+    milestones: z.array(
+      z.object({ month, title: text, note: text, kind: z.enum(['baseline', 'step', 'now']) }),
+    ),
+  })
+  .superRefine((profile, ctx) => {
+    const google = profile.reviewPlatforms.find((p) => p.id === 'google');
+    const starTotal = Object.values(profile.googleStars).reduce((a, b) => a + b, 0);
+    if (google && starTotal !== google.reviews) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['googleStars'],
+        message: `Star counts add up to ${starTotal}, but Google shows ${google.reviews} reviews`,
+      });
+    }
+    const months = profile.history.map((h) => h.month);
+    if (months.some((m, i) => i > 0 && m <= months[i - 1]!)) {
+      ctx.addIssue({ code: 'custom', path: ['history'], message: 'History months must be in order, oldest first' });
+    }
+    if (months.at(-1)! >= profile.asOf) {
+      ctx.addIssue({ code: 'custom', path: ['history'], message: 'History holds past months only; the current month is computed' });
+    }
+  });
+
+export type Profile = z.infer<typeof profileSchema>;
+export type ReviewPlatform = z.infer<typeof reviewPlatform>;
+export type SocialPlatform = z.infer<typeof socialPlatform>;
+export type CheckItem = z.infer<typeof checkItem>;
+
+export function parseProfile(raw: unknown, source: string): Profile {
+  const result = profileSchema.safeParse(raw);
+  if (!result.success) {
+    const details = result.error.issues.map((i) => `${i.path.join('.') || '(root)'}: ${i.message}`).join('\n');
+    throw new Error(`Profile "${source}" is invalid:\n${details}`);
+  }
+  return result.data;
+}
