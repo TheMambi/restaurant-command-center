@@ -1,0 +1,95 @@
+{
+  "restaurant": "Brasa Taquería",
+  "asOf": "October 2026",
+  "score": 76,
+  "label": "Room for growth",
+  "trend": "Up 7 points since May 2026.",
+  "parts": [
+    {
+      "label": "Ratings",
+      "weight": 25,
+      "score": 88
+    },
+    {
+      "label": "Review volume",
+      "weight": 15,
+      "score": 93
+    },
+    {
+      "label": "Google profile",
+      "weight": 20,
+      "score": 81
+    },
+    {
+      "label": "Website and search",
+      "weight": 15,
+      "score": 20
+    },
+    {
+      "label": "Social media",
+      "weight": 10,
+      "score": 90
+    },
+    {
+      "label": "Review replies",
+      "weight": 15,
+      "score": 80
+    }
+  ],
+  "actions": [
+    {
+      "title": "Set page titles and descriptions",
+      "time": "1 hour",
+      "cost": "Free"
+    },
+    {
+      "title": "Turn the menu into text",
+      "time": "Half a day",
+      "cost": "Free"
+    },
+    {
+      "title": "Speed up the website",
+      "time": "2 days",
+      "cost": "Developer time"
+    }
+  ],
+  "actionCount": 7,
+  "ratings": [
+    {
+      "platform": "Google",
+      "rating": 4.7,
+      "reviews": 1180
+    },
+    {
+      "platform": "Yelp",
+      "rating": 4.3,
+      "reviews": 210
+    }
+  ],
+  "history": [
+    {
+      "month": "May",
+      "score": 69
+    },
+    {
+      "month": "Jun",
+      "score": 71
+    },
+    {
+      "month": "Jul",
+      "score": 72
+    },
+    {
+      "month": "Aug",
+      "score": 74
+    },
+    {
+      "month": "Sep",
+      "score": 75
+    },
+    {
+      "month": "Oct",
+      "score": 76
+    }
+  ]
+}

@@ -89,7 +89,7 @@ export function renderOverview(p: Profile, score: number, breakdown: ScoreBreakd
         </div>
       </section>
 
-      <section class="ticket" aria-labelledby="first-title">
+      <div class="ticket-lift"><section class="ticket" aria-labelledby="first-title">
         <div class="ticket-head">
           <h3 class="block-title" id="first-title">Do these first</h3>
           <span class="small muted">${actions.length} of ${p.opportunities.length} actions</span>
@@ -105,7 +105,7 @@ export function renderOverview(p: Profile, score: number, breakdown: ScoreBreakd
           )}
         </ol>
         <button type="button" class="link-button no-print" data-goto="opportunities">See all ${p.opportunities.length} next steps</button>
-      </section>
+      </section></div>
 
     <section class="card ratings-card" aria-labelledby="ratings-title">
       <h3 class="block-title" id="ratings-title">Ratings by platform</h3>

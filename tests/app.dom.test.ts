@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import axe from 'axe-core';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-const page = readFileSync(join(import.meta.dirname, '..', 'index.html'), 'utf8');
+const page = readFileSync(join(import.meta.dirname, '..', 'report', 'index.html'), 'utf8');
 const tabIds = ['overview', 'google', 'website', 'social', 'reviews', 'competitor', 'opportunities', 'history'];
 
 beforeAll(async () => {

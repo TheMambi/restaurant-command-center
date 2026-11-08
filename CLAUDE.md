@@ -11,7 +11,8 @@ obvious one-liner), use judgment — not every change needs the full rigor.
 ## 0. Project Specifics
 
 - **Project:** Restaurant Command Center. A public portfolio piece: a report card for a restaurant's online presence, rendered from one JSON profile per restaurant. Fictional sample restaurants only.
-- **Stack:** Vite + TypeScript (no framework), Zod, Vitest with jsdom and axe-core, hand-written SVG charts, self-hosted Fraunces and Onest fonts. npm.
+- **Stack:** Vite + TypeScript (no framework), Zod, Vitest with jsdom and axe-core, hand-written SVG charts, self-hosted Fraunces and Onest fonts, Motion for the landing page's scroll. npm. Two pages: the landing page (`index.html`) and the report (`report/index.html`).
+- **Hero frames:** `public/hero/` holds 120 rendered frames per framing. Their source is `hero-sequence/` (three.js in a HyperFrames composition, its own `package.json`); re-render after changing `--color-stage` or Brasa Taquería's figures.
 - **Hosting:** static build (`dist/`) on Vercel. No backend, database, cache or env vars.
 - **Default branch:** `dev`. `main` is production; merge to it only with the owner's OK.
 - **Session-start reading, in order:** `README.md` (what it is, scoring method, decisions), `DESIGN.md` (the design system), `docs/PITFALLS.md` (known traps), `src/schema.ts` (the data contract), `src/scoring.config.ts` (every tunable number). Confirm where the project stands before changing anything.
@@ -24,7 +25,7 @@ obvious one-liner), use judgment — not every change needs the full rigor.
 - **Data flows one way.** Profile JSON → `parseProfile` (Zod) → scoring and insight functions → `render/*` → `html` tag. Add fields to the schema first and let types follow. All profile text goes through the escaping `html` tag; never assign unescaped strings to `innerHTML`.
 - **Numbers live in config.** Score weights, targets, bands, the "Do these first" ranking and comparison thresholds live in `src/scoring.config.ts`. Change them there, then update README's scoring table and the sample profiles' recorded history if scores shift.
 - **Design system.** Follow `DESIGN.md`: colours and fonts only through tokens in `src/styles/tokens.css`; one ink-blue accent, never on anything meaning good or bad; status always shows a word beside its colour; tables before cards; bars start at zero; one y-axis per chart; estimates as High/Medium/Low, never invented 0 to 100 figures.
-- **Before calling UI work done:** `npm run check`, then look at both light and dark mode, a 390px-wide screen and print preview.
+- **Before calling UI work done:** `npm run check`, then look at both light and dark mode, a 390px-wide screen and print preview. For the landing page, also scroll the hero at 16:9, 16:10 and a phone, and once with reduced motion.
 
 ---
 

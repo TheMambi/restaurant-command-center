@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1350" />
+    <title>Ticket sequence, tall</title>
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <script type="importmap">
+      { "imports": { "three": "./assets/vendor/three.module.js" } }
+    </script>
+    <style>
+      @font-face {
+        font-family: "Fraunces Variable";
+        font-weight: 100 900;
+        src: url(assets/fonts/fraunces.woff2) format("woff2-variations");
+      }
+      @font-face {
+        font-family: "Onest Variable";
+        font-weight: 100 900;
+        src: url(assets/fonts/onest.woff2) format("woff2-variations");
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1350px;
+        overflow: hidden;
+        background: #000;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      #stage {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      /* The vignette settles to the landing page's stage colour at every edge. */
+      #vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 80% 66% at 52% 56%, transparent 52%, var(--color-stage) 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="4"
+      data-width="1080"
+      data-height="1350"
+      data-framing="tall"
+      data-no-timeline
+    >
+      <canvas id="stage" class="clip" data-start="0" data-duration="4" data-track-index="1"></canvas>
+      <div id="vignette" class="clip" data-start="0" data-duration="4" data-track-index="2"></div>
+    </div>
+    <script type="module" src="assets/render.js"></script>
+  </body>
+</html>

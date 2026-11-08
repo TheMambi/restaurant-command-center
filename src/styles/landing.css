@@ -1,0 +1,594 @@
+/* Landing page. One orchestrated moment: the hero's scroll sequence on the dark stage. Everything
+   after it is the ledger on paper, quiet and ruled, ending on a dark bookend. Colours and fonts
+   come from tokens.css; see DESIGN.md, "Landing page". */
+
+.landing {
+  background: var(--color-paper);
+}
+
+/* ---------- Bar ---------- */
+
+.landing-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 5;
+  color: var(--color-stage-ink);
+  background: color-mix(in oklch, var(--color-stage) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border-bottom: 1px solid color-mix(in oklch, var(--color-stage-rule) 60%, transparent);
+  transition:
+    background-color var(--dur-ui) ease,
+    color var(--dur-ui) ease,
+    border-color var(--dur-ui) ease;
+}
+
+/* Over the paper sections the bar turns to paper and ink. */
+.landing-bar.is-on-paper {
+  color: var(--color-ink);
+  background: var(--color-bar);
+  border-bottom-color: var(--color-rule);
+}
+
+.is-on-paper .landing-nav > a:not([class]) {
+  color: var(--color-muted);
+}
+
+.is-on-paper .landing-nav > a:not([class]):hover {
+  color: var(--color-ink);
+}
+
+.is-on-paper .button-quiet {
+  color: var(--color-ink);
+  border-color: var(--color-rule);
+}
+
+.is-on-paper .button-quiet:hover {
+  border-color: var(--color-ink-2);
+}
+
+.landing-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 5rem;
+}
+
+.landing-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  font-size: var(--text-sm);
+}
+
+.landing-nav > a:not([class]) {
+  color: var(--color-stage-muted);
+  text-decoration: none;
+  transition: color var(--dur-micro) ease;
+}
+
+.landing-nav > a:not([class]):hover {
+  color: var(--color-stage-ink);
+}
+
+/* ---------- Buttons ---------- */
+
+.button-cta,
+.button-quiet {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  padding-inline: var(--space-5);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: var(--text-base);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-ui) ease,
+    border-color var(--dur-ui) ease,
+    color var(--dur-ui) ease;
+}
+
+.button-cta {
+  background: var(--color-cta);
+  color: var(--color-cta-ink);
+}
+
+.button-cta:hover {
+  background: var(--color-stage-ink);
+}
+
+.button-quiet {
+  min-height: 2.5rem;
+  padding-inline: var(--space-4);
+  border: 1px solid var(--color-stage-rule);
+  color: var(--color-stage-ink);
+  font-size: var(--text-sm);
+}
+
+.button-quiet:hover {
+  border-color: var(--color-stage-muted);
+}
+
+.landing :focus-visible {
+  outline-color: var(--color-stage-accent);
+}
+
+.ledger :focus-visible {
+  outline-color: var(--color-focus);
+}
+
+/* ---------- Hero: a pinned stage the sequence plays on ---------- */
+
+.hero {
+  position: relative;
+  height: 440vh;
+  background: var(--color-stage);
+  color: var(--color-stage-ink);
+}
+
+.hero-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hero-beats {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, min(26rem, 36vw));
+  align-content: center;
+  height: 100%;
+}
+
+.beat {
+  grid-area: 1 / 1;
+  will-change: opacity, transform;
+}
+
+/* Faded-out blocks stay in the accessibility tree; they only stop catching clicks meant for the
+   block on top. A link focused inside one scrolls the hero to where it shows (landing.ts). */
+.beat.is-off {
+  pointer-events: none;
+}
+
+.beat-intro {
+  width: min(56rem, 52vw);
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: var(--text-hero);
+  font-weight: 360;
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  font-optical-sizing: auto;
+}
+
+.hero-title .line {
+  display: block;
+}
+
+.beat-title {
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: 380;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.beat-text {
+  margin-top: var(--space-5);
+  max-width: 30rem;
+  font-size: var(--text-lg);
+  line-height: 1.6;
+  color: var(--color-stage-muted);
+  text-wrap: pretty;
+}
+
+.beat-intro .beat-text {
+  max-width: 32rem;
+}
+
+.beat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.scroll-cue {
+  margin-top: var(--space-7);
+  font-size: var(--text-sm);
+  color: var(--color-stage-muted);
+}
+
+.scroll-cue::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 2.5rem;
+  margin-top: var(--space-3);
+  background: var(--color-stage-muted);
+}
+
+/* ---------- Ledger sections on paper ---------- */
+
+.ledger {
+  padding-block: clamp(6rem, 12vw, 10rem);
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.ledger + .ledger {
+  padding-top: 0;
+}
+
+/* In dark mode the stage and the paper are close; a hairline makes the change of scene deliberate. */
+.hero + .ledger {
+  border-top: 1px solid var(--color-stage-rule);
+}
+
+.ledger:focus {
+  outline: none;
+}
+
+.ledger-title {
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  max-width: 14ch;
+  text-wrap: balance;
+}
+
+.ledger-lede {
+  margin-top: var(--space-5);
+  max-width: 38rem;
+  font-size: var(--text-lg);
+  line-height: 1.6;
+  color: var(--color-ink-2);
+  text-wrap: pretty;
+}
+
+.parts {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-7) var(--space-6);
+  margin-top: clamp(3rem, 6vw, 5rem);
+}
+
+.part {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-rule-strong);
+}
+
+.part-weight {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  font-family: var(--font-display);
+  color: var(--color-accent);
+  line-height: 1;
+}
+
+.part-figure {
+  font-size: clamp(3.5rem, 6vw, 5rem);
+  font-weight: 350;
+  letter-spacing: -0.04em;
+}
+
+.part-unit {
+  font-size: var(--text-title);
+}
+
+.part-name {
+  margin-top: var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.part-note {
+  margin-top: var(--space-2);
+  max-width: 34ch;
+  color: var(--color-muted);
+}
+
+.samples {
+  list-style: none;
+  margin-top: clamp(3rem, 6vw, 5rem);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.sample {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name score open'
+    'meta score open';
+  align-items: center;
+  gap: var(--space-1) var(--space-6);
+  padding-block: var(--space-6);
+  border-top: 1px solid var(--color-rule-strong);
+  text-decoration: none;
+}
+
+.sample-name {
+  grid-area: name;
+  align-self: end;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.sample-meta {
+  grid-area: meta;
+  align-self: start;
+  color: var(--color-muted);
+}
+
+.sample-score {
+  grid-area: score;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: var(--space-3);
+}
+
+.sample-figure {
+  grid-row: span 2;
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 6vw, 5rem);
+  font-weight: 350;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--color-accent);
+}
+
+.sample-of {
+  align-self: end;
+  color: var(--color-muted);
+}
+
+.sample-label {
+  align-self: start;
+  font-weight: 600;
+}
+
+.sample-open {
+  grid-area: open;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  transition: color var(--dur-micro) ease;
+}
+
+.sample:hover .sample-open,
+.sample:hover .sample-name {
+  color: var(--color-accent);
+}
+
+.principles {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-6);
+  margin-top: clamp(3rem, 6vw, 5rem);
+}
+
+.principles li {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-rule-strong);
+}
+
+.principles h3 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.principles p {
+  margin-top: var(--space-2);
+  color: var(--color-muted);
+}
+
+/* ---------- Closing bookend on the stage ---------- */
+
+.closing {
+  padding-block: clamp(7rem, 14vw, 12rem);
+  background: var(--color-stage);
+  color: var(--color-stage-ink);
+}
+
+.closing .beat-actions {
+  margin-top: var(--space-7);
+}
+
+.closing-title {
+  font-family: var(--font-display);
+  font-size: var(--text-hero);
+  font-weight: 360;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  max-width: 11ch;
+}
+
+.landing .footer {
+  background: var(--color-stage);
+  color: var(--color-stage-muted);
+  border-top: 1px solid var(--color-stage-rule);
+}
+
+/* ---------- Reduced motion: the finished frame, words in order ---------- */
+
+.hero.is-still {
+  height: auto;
+}
+
+.is-still .hero-stage {
+  position: relative;
+  height: auto;
+  min-height: 100svh;
+}
+
+.is-still .hero-beats {
+  align-content: center;
+  gap: var(--space-7);
+  min-height: 100svh;
+  padding-block: 7rem 4rem;
+}
+
+.is-still .beat {
+  grid-area: auto;
+}
+
+.is-still .beat-intro {
+  width: auto;
+}
+
+.is-still .hero-title,
+.is-still .beat-title {
+  font-size: clamp(2.75rem, 5vw, 4.5rem);
+}
+
+.is-still .beat:not(.beat-intro, .beat-end),
+.is-still .scroll-cue {
+  display: none;
+}
+
+/* ---------- Narrow and portrait screens: words on top, the frame below ---------- */
+
+@media (max-aspect-ratio: 1/1) {
+  .hero-beats {
+    align-content: start;
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 6rem;
+  }
+
+  .beat-intro {
+    width: auto;
+  }
+
+  .beat-text {
+    margin-top: var(--space-4);
+    font-size: var(--text-base);
+  }
+
+  .beat-actions {
+    margin-top: var(--space-4);
+  }
+
+  .scroll-cue {
+    display: none;
+  }
+
+  .is-still .hero-beats {
+    padding-bottom: 110vw;
+  }
+}
+
+@media (max-width: 60rem) {
+  .parts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .principles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sample {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'name name'
+      'meta meta'
+      'score open';
+    row-gap: var(--space-2);
+  }
+
+  .sample-score {
+    margin-top: var(--space-3);
+  }
+}
+
+@media (max-width: 40rem) {
+  :root {
+    --text-hero: clamp(2.75rem, 13vw, 3.5rem);
+    --text-section: clamp(2.25rem, 10vw, 2.75rem);
+  }
+
+  .landing-nav > a:not([class]) {
+    display: none;
+  }
+
+  .parts,
+  .principles {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+
+  .sample {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'name'
+      'meta'
+      'score'
+      'open';
+  }
+
+  .sample-open {
+    margin-top: var(--space-2);
+  }
+}
+
+@media print {
+  .landing-bar,
+  .hero-canvas,
+  .scroll-cue {
+    display: none !important;
+  }
+
+  .hero,
+  .closing,
+  .landing .footer {
+    height: auto;
+    background: none;
+    color: var(--color-ink);
+  }
+
+  .beat-text {
+    color: var(--color-ink-2);
+  }
+
+  .beat + .beat {
+    margin-top: var(--space-6);
+  }
+
+  .hero-stage {
+    position: static;
+    height: auto;
+  }
+
+  .beat {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+    grid-area: auto;
+  }
+}

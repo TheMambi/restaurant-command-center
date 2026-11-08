@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Restaurant Command Center</title>
-  <meta name="description" content="A report card for a restaurant's online presence: ratings, the Google profile, the website, social media, a competitor and what to do next. Shown with fictional restaurants.">
+  <title>Restaurant Command Center: know what to fix first</title>
+  <meta name="description" content="A report card for a restaurant's online presence. It scores ratings, reviews, the Google profile, the website, social media and review replies, then leads with the three things to do first. Shown with fictional restaurants.">
+  <meta name="theme-color" content="#0f0b08">
   <meta property="og:title" content="Restaurant Command Center">
   <meta property="og:description" content="A report card for a restaurant's online presence, with the three things to do first. Shown with fictional restaurants.">
   <meta property="og:image" content="https://restaurant-command-center-sable.vercel.app/og.png">
@@ -12,7 +13,15 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="preload" as="image" href="/hero/wide/001.webp" media="(min-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference)">
+  <link rel="preload" as="image" href="/hero/tall/001.webp" media="(max-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference)">
   <script>
+    // Report links from before the landing page existed (/?r=…&tab=…) still open the report.
+    (() => {
+      const params = new URLSearchParams(location.search);
+      if (params.has('r') || params.has('tab')) location.replace('/report/' + location.search);
+    })();
+    // The hero is always dark; the rest of the page follows the light or dark choice made in the report.
     (() => {
       let mode = null;
       try { mode = localStorage.getItem('rcc-mode'); } catch {}
@@ -21,47 +30,117 @@
     })();
   </script>
 </head>
-<body>
-  <a class="skip-link" href="#panels">Skip to the report</a>
-  <p class="sr-only" id="announcer" aria-live="polite"></p>
+<body class="landing">
+  <a class="skip-link" href="#parts-title">Skip the animation</a>
 
-  <header class="topbar">
-    <div class="container topbar-inner">
+  <header class="landing-bar">
+    <div class="container landing-bar-inner">
       <a class="wordmark" href="/" aria-label="Restaurant Command Center, home">
         <img src="/logo.svg" alt="" width="28" height="28">
         <span>Restaurant Command Center</span>
       </a>
-      <div class="topbar-controls">
-        <label class="field">
-          <span class="field-label">Restaurant</span>
-          <select id="restaurant-switcher"></select>
-        </label>
-        <button type="button" class="button" id="mode-toggle">Dark mode</button>
-        <button type="button" class="button" id="print-report" aria-label="Print or save as PDF">Print</button>
-      </div>
+      <nav class="landing-nav" aria-label="Site">
+        <a href="https://github.com/TheMambi/restaurant-command-center">Code</a>
+        <a class="button-quiet" href="/report/">Open the report</a>
+      </nav>
     </div>
   </header>
 
   <main id="main">
-  <div class="container masthead">
-    <h1 id="restaurant-name">Restaurant Command Center</h1>
-    <p class="masthead-lede" id="restaurant-meta"></p>
-    <p class="masthead-note" id="masthead-note"></p>
-  </div>
+    <section class="hero" id="hero" aria-labelledby="hero-title">
+      <div class="hero-stage">
+        <canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"></canvas>
+        <p class="sr-only">An animation plays as you scroll: a kitchen ticket listing three actions lifts off a counter, and the report behind it unfolds into the score, its six parts, ratings by platform and the score by month.</p>
 
-  <nav class="tabs" aria-label="Report sections">
-    <div class="container tablist" id="nav-tabs" role="tablist"></div>
-  </nav>
+        <div class="container hero-beats">
+          <div class="beat beat-intro" data-from="0" data-to="0.12">
+            <h1 class="hero-title" id="hero-title">
+              <span class="line">Know what</span>
+              <span class="line">to fix first.</span>
+            </h1>
+            <p class="beat-text">A report card for a restaurant's online presence. It reads the ratings, the Google profile, the website and social media, then hands the owner three jobs for this week.</p>
+            <p class="scroll-cue" aria-hidden="true">Scroll to open the ticket</p>
+          </div>
 
-  <div class="container panels" id="panels" tabindex="-1">
-    <noscript><p>This report is built in the browser. Turn on JavaScript to see it.</p></noscript>
-  </div>
+          <div class="beat" data-from="0.2" data-to="0.42">
+            <h2 class="beat-title">Three jobs, one ticket.</h2>
+            <p class="beat-text">Each recommendation is ranked by impact, effort and what is due, then printed like an order on the pass. The owner starts at the top.</p>
+          </div>
+
+          <div class="beat" data-from="0.5" data-to="0.7">
+            <h2 class="beat-title">Behind it, the whole picture.</h2>
+            <p class="beat-text">Ratings across platforms, the Google profile, the website, social media and review replies, each scored out of 100 and shown with the numbers behind it.</p>
+          </div>
+
+          <div class="beat beat-end" data-from="0.82" data-to="1">
+            <h2 class="beat-title">One score, with its working shown.</h2>
+            <p class="beat-text" id="end-text">The sample report scores a fictional taquería and shows exactly where every point came from.</p>
+            <p class="beat-actions">
+              <a class="button-cta" href="/report/">Open the sample report</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ledger" aria-labelledby="parts-title" tabindex="-1" id="parts">
+      <div class="container">
+        <h2 class="ledger-title" id="parts-title">Six parts make the score.</h2>
+        <p class="ledger-lede">Each part runs from 0 to 100 and carries a weight. The report always shows the parts beside the total, so nobody has to take the number on trust.</p>
+        <ul class="parts" id="parts-list"></ul>
+      </div>
+    </section>
+
+    <section class="ledger" aria-labelledby="samples-title">
+      <div class="container">
+        <h2 class="ledger-title" id="samples-title">Two sample restaurants.</h2>
+        <p class="ledger-lede">Both are invented for this demo, along with their competitors and every figure. Open either report and switch between them from the top bar.</p>
+        <ul class="samples" id="samples-list"></ul>
+      </div>
+    </section>
+
+    <section class="ledger" aria-labelledby="honest-title">
+      <div class="container">
+        <h2 class="ledger-title" id="honest-title">Numbers you can check.</h2>
+        <ul class="principles">
+          <li>
+            <h3>Bars start at zero</h3>
+            <p>Each chart has one axis. When an axis starts above zero, a caption says where.</p>
+          </li>
+          <li>
+            <h3>Status in words</h3>
+            <p>Done, Partly done and Missing sit beside their colour, so the report reads the same in black and white.</p>
+          </li>
+          <li>
+            <h3>Estimates as levels</h3>
+            <p>Search demand and growth potential show as High, Medium or Low, with a note on where a real figure would come from.</p>
+          </li>
+          <li>
+            <h3>Ready for paper</h3>
+            <p>Print or save as PDF for a light, ordered report an owner can pin up by the pass.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title">
+      <div class="container">
+        <h2 class="closing-title" id="closing-title">See the whole report.</h2>
+        <p class="beat-actions">
+          <a class="button-cta" href="/report/">Open the sample report</a>
+          <a class="button-quiet" href="https://github.com/TheMambi/restaurant-command-center">Read the code</a>
+        </p>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
-    <div class="container" id="footer-text"></div>
+    <div class="container">
+      <p>Every restaurant, competitor and number on this site is fictional sample data.</p>
+      <p>Code under the MIT license. No tracking, no accounts.</p>
+    </div>
   </footer>
 
-  <script type="module" src="/src/main.ts"></script>
+  <script type="module" src="/src/landing.ts"></script>
 </body>
 </html>

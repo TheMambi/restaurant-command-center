@@ -1,5 +1,5 @@
 import '@fontsource-variable/onest';
-import '@fontsource-variable/fraunces';
+import '@fontsource-variable/fraunces/opsz.css';
 import './styles/tokens.css';
 import './styles/app.css';
 import { monthLabel } from './format';

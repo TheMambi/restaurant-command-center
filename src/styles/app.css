@@ -84,7 +84,9 @@ a {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--color-paper);
+  background: var(--color-bar);
+  /* Unprefixed only: the minifier adds the -webkit- copy, and drops this line if both are written. */
+  backdrop-filter: blur(16px) saturate(1.3);
   border-bottom: 1px solid var(--color-rule);
 }
 
@@ -133,9 +135,32 @@ select,
   background: var(--color-paper-2);
   border: 1px solid var(--color-rule);
   border-radius: var(--radius-control);
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-4);
   cursor: pointer;
   transition: border-color var(--dur-micro) ease, background-color var(--dur-micro) ease;
+}
+
+select {
+  appearance: none;
+  padding-right: 2.25rem;
+}
+
+.select-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 0.95rem;
+  top: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 1.5px solid var(--color-ink-2);
+  border-bottom: 1.5px solid var(--color-ink-2);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
 }
 
 select:hover,
@@ -157,7 +182,7 @@ select:hover,
 /* ---------- Restaurant header ---------- */
 
 .masthead {
-  padding-block: var(--space-5) var(--space-3);
+  padding-block: var(--space-7) var(--space-4);
 }
 
 .masthead-row {
@@ -171,15 +196,15 @@ select:hover,
 .masthead h1 {
   font-family: var(--font-display);
   font-size: var(--text-display);
-  font-weight: 600;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  font-weight: 450;
+  line-height: 1;
+  letter-spacing: -0.03em;
   overflow-wrap: break-word;
   min-width: 0;
 }
 
 .masthead-lede {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   color: var(--color-ink-2);
   font-size: var(--text-lg);
 }
@@ -220,7 +245,7 @@ select:hover,
 .tab {
   position: relative;
   flex: none;
-  min-height: 2.75rem;
+  min-height: 3rem;
   padding: 0 var(--space-3);
   font: inherit;
   font-size: var(--text-sm);
@@ -245,7 +270,13 @@ select:hover,
   position: absolute;
   inset: auto var(--space-3) -1px;
   height: 2px;
+  border-radius: 2px;
   background: var(--color-accent);
+  animation: tab-mark var(--dur-ui) var(--ease-out);
+}
+
+@keyframes tab-mark {
+  from { transform: scaleX(0.4); opacity: 0; }
 }
 
 /* ---------- Panels and sections ---------- */
@@ -256,6 +287,23 @@ select:hover,
 
 .panel[hidden] {
   display: none;
+}
+
+/* The one motion in the report: a panel settles in when its tab is chosen, and its bars fill. */
+.panel:not([hidden]) {
+  animation: panel-in 320ms var(--ease-out);
+}
+
+.panel:not([hidden]) .meter-fill {
+  animation: meter-fill 720ms var(--ease-out) both;
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+@keyframes meter-fill {
+  from { transform: scaleX(0); }
 }
 
 .panel > * + * {
@@ -290,7 +338,8 @@ select:hover,
   background: var(--color-paper-2);
   border: 1px solid var(--color-rule);
   border-radius: var(--radius-card);
-  padding: var(--space-5);
+  padding: clamp(var(--space-5), 2.2vw, var(--space-6));
+  box-shadow: var(--shadow-lift);
 }
 
 .grid-2 {
@@ -347,10 +396,11 @@ select:hover,
 }
 
 .score-number {
+  font-family: var(--font-display);
   font-size: var(--text-figure);
-  font-weight: 650;
-  line-height: 1;
-  letter-spacing: -0.04em;
+  font-weight: 450;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
   color: var(--color-accent);
 }
 
@@ -504,13 +554,18 @@ tfoot th {
   min-width: 8rem;
 }
 
+/* The score card's column is narrow between the stacked and wide layouts; its bars give way first. */
+.score-card .col-meter {
+  min-width: 3rem;
+}
+
 /* ---------- Meters (bars) ---------- */
 
 .meter {
   display: block;
   height: var(--meter-height);
   background: var(--color-paper-3);
-  border-radius: 2px;
+  border-radius: 999px;
   overflow: hidden;
 }
 
@@ -520,7 +575,6 @@ tfoot th {
   width: 100%;
   background: var(--color-accent);
   transform-origin: left center;
-  border-radius: 0 2px 2px 0;
 }
 
 .meter-fill.is-rival {
@@ -856,6 +910,45 @@ tfoot th {
     display: none;
   }
 
+  .topbar-controls {
+    gap: var(--space-2);
+  }
+
+  select,
+  .button {
+    padding-inline: var(--space-3);
+  }
+
+  select {
+    padding-right: 1.9rem;
+  }
+
+  .select-wrap::after {
+    right: 0.8rem;
+  }
+}
+
+@media (max-width: 23rem) {
+  .topbar-inner {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+    padding-block: var(--space-2);
+  }
+
+  .topbar-controls {
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  select,
+  .button {
+    font-size: var(--text-xs);
+  }
+
+  select {
+    max-width: 8rem;
+  }
+
   .stat + .stat {
     padding-left: 0;
     border-left: 0;
@@ -898,6 +991,7 @@ tfoot th {
   *::before,
   *::after {
     transition: none !important;
+    animation: none !important;
   }
 }
 
@@ -948,6 +1042,23 @@ tfoot th {
   body,
   .score-card {
     background: none;
+  }
+
+  .scorecard .score-card,
+  .scorecard .ticket-lift {
+    box-shadow: none;
+    filter: none;
+  }
+
+  .score-card,
+  .ticket {
+    padding: var(--space-5);
+  }
+
+  .panel,
+  .meter-fill,
+  .tab::after {
+    animation: none !important;
   }
 
   .meter-fill {
@@ -1093,11 +1204,15 @@ tfoot th {
 
 /* ---------- The ticket: this week's three actions, like an order on the pass ---------- */
 
+.ticket-lift {
+  filter: var(--shadow-ticket);
+}
+
 .ticket {
   position: relative;
   background: var(--color-ticket);
   border-radius: 2px;
-  padding: var(--space-5);
+  padding: var(--space-6);
   mask: radial-gradient(circle 6px at 50% 0, transparent 98%, var(--color-ink)) 50% 0 / 16px 51% repeat-x,
     radial-gradient(circle 6px at 50% 100%, transparent 98%, var(--color-ink)) 50% 100% / 16px 51% repeat-x;
 }

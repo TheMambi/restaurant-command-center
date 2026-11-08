@@ -1,0 +1,7 @@
+assets/vendor/
+assets/fonts/
+assets/tokens.css
+assets/content.json
+renders/
+frames/
+.hyperframes/

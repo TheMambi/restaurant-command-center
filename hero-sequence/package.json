@@ -1,0 +1,16 @@
+{
+  "name": "hero-sequence",
+  "private": true,
+  "description": "Source for the landing page's scroll sequence: a HyperFrames composition rendered to 120 frames.",
+  "type": "module",
+  "scripts": {
+    "prepare-assets": "node scripts/prepare-assets.mjs",
+    "snapshot": "npm run prepare-assets && hyperframes snapshot . --at 0,1,2,3,3.99",
+    "render": "npm run prepare-assets && bash scripts/render.sh"
+  },
+  "devDependencies": {
+    "hyperframes": "0.9.23",
+    "sharp": "0.35.5",
+    "three": "0.187.0"
+  }
+}

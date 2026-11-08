@@ -25,6 +25,17 @@
   --color-rival: oklch(64% 0.012 60);
   --color-ticket: oklch(94.5% 0.022 88);
 
+  /* The landing page's stage: the counter the hero ticket sits on. The rendered frames settle to
+     this colour at every edge, so the canvas and the page meet without a seam. Same in both modes. */
+  --color-stage: oklch(15.5% 0.009 60);
+  /* Receipt paper for the one call to action on the dark stage. Same in both modes. */
+  --color-cta: oklch(94.5% 0.022 88);
+  --color-cta-ink: oklch(20% 0.012 50);
+  --color-stage-ink: oklch(95% 0.008 75);
+  --color-stage-muted: oklch(76% 0.012 70);
+  --color-stage-rule: oklch(30% 0.012 60);
+  --color-stage-accent: oklch(76% 0.1 255);
+
   --color-good: oklch(47% 0.11 150);
   --color-warn: oklch(55% 0.13 75);
   --color-bad: oklch(52% 0.17 28);
@@ -37,8 +48,10 @@
   --text-base: 1rem;
   --text-lg: 1.125rem;
   --text-title: 1.375rem;
-  --text-display: 2.25rem;
-  --text-figure: 4rem;
+  --text-display: clamp(2.5rem, 4.4vw, 3.75rem);
+  --text-figure: 5.75rem;
+  --text-section: clamp(2.5rem, 5.4vw, 4.5rem);
+  --text-hero: clamp(3.25rem, 8.4vw, 8rem);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -48,12 +61,23 @@
   --space-6: 2rem;
   --space-7: 3rem;
 
-  --radius-card: 8px;
-  --radius-control: 6px;
+  --radius-card: 14px;
+  --radius-control: 999px;
   --container: 76rem;
   --dur-micro: 120ms;
+  --dur-ui: 220ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --meter-height: 10px;
   --weight-body: 400;
+
+  /* Soft studio light from above: a tight contact shadow plus a wide, faint fall-off. Used only on
+     the two objects with their own surface, the score card and the ticket. */
+  --shadow-lift:
+    0 1px 2px oklch(25% 0.02 55 / 0.06),
+    0 10px 24px -10px oklch(25% 0.02 55 / 0.16),
+    0 28px 56px -28px oklch(25% 0.02 55 / 0.22);
+  --shadow-ticket: drop-shadow(0 1px 1px oklch(25% 0.02 55 / 0.1)) drop-shadow(0 14px 22px oklch(25% 0.02 55 / 0.16));
+  --color-bar: oklch(97.2% 0.008 75 / 0.82);
 }
 
 :root[data-mode='dark'] {
@@ -77,4 +101,10 @@
   --color-warn: oklch(78% 0.12 80);
   --color-bad: oklch(70% 0.14 28);
   --weight-body: 350;
+  --shadow-lift:
+    inset 0 1px 0 oklch(100% 0 0 / 0.05),
+    0 1px 2px oklch(0% 0 0 / 0.4),
+    0 18px 40px -16px oklch(0% 0 0 / 0.65);
+  --shadow-ticket: drop-shadow(0 1px 1px oklch(0% 0 0 / 0.4)) drop-shadow(0 16px 26px oklch(0% 0 0 / 0.55));
+  --color-bar: oklch(17% 0.01 60 / 0.8);
 }
