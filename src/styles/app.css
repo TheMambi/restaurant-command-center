@@ -926,28 +926,6 @@ tfoot th {
   .select-wrap::after {
     right: 0.8rem;
   }
-}
-
-@media (max-width: 23rem) {
-  .topbar-inner {
-    flex-wrap: wrap;
-    row-gap: var(--space-2);
-    padding-block: var(--space-2);
-  }
-
-  .topbar-controls {
-    flex-wrap: wrap;
-    gap: var(--space-1);
-  }
-
-  select,
-  .button {
-    font-size: var(--text-xs);
-  }
-
-  select {
-    max-width: 8rem;
-  }
 
   .stat + .stat {
     padding-left: 0;
@@ -983,6 +961,29 @@ tfoot th {
   .score-card,
   .ticket {
     padding: var(--space-4);
+  }
+}
+
+/* The smallest phones: the controls get their own row under the logo. */
+@media (max-width: 23rem) {
+  .topbar-inner {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+    padding-block: var(--space-2);
+  }
+
+  .topbar-controls {
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  select,
+  .button {
+    font-size: var(--text-xs);
+  }
+
+  select {
+    max-width: 8.75rem;
   }
 }
 

@@ -1,19 +1,20 @@
-// Encodes a folder of PNG frames to numbered WebP files (001.webp ...) at the given width and quality.
-// Smart chroma subsampling keeps the dark counter free of blocky colour speckles.
+// Encodes a folder of PNG frames to numbered AVIF files (001.avif ...) at the given width, plus
+// end.webp, the last frame for browsers that can't decode AVIF. AVIF keeps the dark counter
+// smooth where WebP breaks it into blocks; full-resolution colour keeps the ink blue crisp.
 import { mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import sharp from 'sharp';
 
-const [from, to, width, quality] = process.argv.slice(2);
+const [from, to, width] = process.argv.slice(2);
 const frames = readdirSync(from).filter((f) => f.endsWith('.png')).sort();
 if (frames.length === 0) throw new Error(`No PNG frames in ${from}`);
 rmSync(to, { recursive: true, force: true });
 mkdirSync(to, { recursive: true });
+const resized = (f) => sharp(join(from, f)).resize({ width: Number(width) });
 for (const [i, f] of frames.entries()) {
-  const name = `${String(i + 1).padStart(3, '0')}.webp`;
-  await sharp(join(from, f))
-    .resize({ width: Number(width) })
-    .webp({ quality: Number(quality), smartSubsample: true, effort: 6 })
-    .toFile(join(to, name));
+  await resized(f)
+    .avif({ quality: 55, effort: 5, chromaSubsampling: '4:4:4' })
+    .toFile(join(to, `${String(i + 1).padStart(3, '0')}.avif`));
 }
-console.log(`Encoded ${frames.length} frames into ${to}`);
+await resized(frames.at(-1)).webp({ quality: 88, smartSubsample: true, effort: 6 }).toFile(join(to, 'end.webp'));
+console.log(`Encoded ${frames.length} frames and end.webp into ${to}`);

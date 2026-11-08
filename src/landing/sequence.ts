@@ -13,7 +13,10 @@ export const WIDE_FROM = 1.45;
 
 export const framingFor = (width: number, height: number): Framing => (height > 0 && width / height >= WIDE_FROM ? 'wide' : 'tall');
 
-export const frameUrl = (framing: Framing, index: number): string => `/hero/${framing}/${String(index + 1).padStart(3, '0')}.webp`;
+export const frameUrl = (framing: Framing, index: number): string => `/hero/${framing}/${String(index + 1).padStart(3, '0')}.avif`;
+
+// The finished frame as WebP, for a browser that can't decode AVIF.
+export const endFrameFallbackUrl = (framing: Framing): string => `/hero/${framing}/end.webp`;
 
 export function frameIndex(progress: number, count = FRAME_COUNT): number {
   return Math.round(clamp01(progress) * (count - 1));
@@ -58,7 +61,7 @@ export function fitRect(imageW: number, imageH: number, boxW: number, boxH: numb
     const s = Math.max(boxW / imageW, boxH / imageH);
     const w = imageW * s;
     const h = imageH * s;
-    return { x: (boxW - w) * 0.85, y: (boxH - h) * 0.45, w, h };
+    return { x: (boxW - w) * 0.75, y: (boxH - h) * 0.45, w, h };
   }
   const s = Math.min(boxW / imageW, boxH / imageH);
   const w = imageW * s;
@@ -85,6 +88,7 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
   let images: HTMLImageElement[] = [];
   let loaded = new Set<number>();
   let wanted = still ? FRAME_COUNT - 1 : 0;
+  let fallback = false;
 
   function draw(): void {
     const dpr = Math.min(2, devicePixelRatio || 1);
@@ -101,6 +105,34 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
     const image = images[index]!;
     const r = fitRect(image.naturalWidth, image.naturalHeight, w, h, framing);
     ctx!.drawImage(image, r.x, r.y, r.w, r.h);
+    feather(r, w, h);
+  }
+
+  // Canvas gradients fade through black when the far stop is 'transparent', so the clear end of
+  // each band is the stage colour itself at zero alpha.
+  const clearStage = (() => {
+    const probe = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d');
+    if (!probe) return 'transparent';
+    probe.fillStyle = background;
+    probe.fillRect(0, 0, 1, 1);
+    const [r, g, b] = probe.getImageData(0, 0, 1, 1).data;
+    return `rgba(${r}, ${g}, ${b}, 0)`;
+  })();
+
+  // Where a fitted frame stops short of the canvas, fade its edges into the stage so no seam shows.
+  function feather(r: Rect, w: number, h: number): void {
+    const size = Math.round(r.w * 0.2);
+    const band = (x0: number, y0: number, x1: number, y1: number, x: number, y: number, bw: number, bh: number) => {
+      const g = ctx!.createLinearGradient(x0, y0, x1, y1);
+      g.addColorStop(0, background);
+      g.addColorStop(1, clearStage);
+      ctx!.fillStyle = g;
+      ctx!.fillRect(x, y, bw, bh);
+    };
+    if (r.x > 0) band(r.x, 0, r.x + size, 0, r.x, r.y, size, r.h);
+    if (r.x + r.w < w) band(r.x + r.w, 0, r.x + r.w - size, 0, r.x + r.w - size, r.y, size, r.h);
+    if (r.y > 0) band(0, r.y, 0, r.y + size, r.x, r.y, r.w, size);
+    if (r.y + r.h < h) band(0, r.y + r.h, 0, r.y + r.h - size, r.x, r.y + r.h - size, r.w, size);
   }
 
   let frame = 0;
@@ -112,6 +144,17 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
   function load(): void {
     images = [];
     loaded = new Set();
+    if (fallback) {
+      wanted = FRAME_COUNT - 1;
+      const image = new Image();
+      image.onload = () => {
+        loaded.add(FRAME_COUNT - 1);
+        schedule();
+      };
+      image.src = endFrameFallbackUrl(framing);
+      images[FRAME_COUNT - 1] = image;
+      return;
+    }
     const order = still ? [FRAME_COUNT - 1] : loadOrder();
     for (const i of order) {
       const image = new Image();
@@ -120,6 +163,12 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
         loaded.add(i);
         schedule();
       };
+      if (i === order[0]) {
+        image.onerror = () => {
+          fallback = true;
+          load();
+        };
+      }
       image.src = frameUrl(framing, i);
       images[i] = image;
     }
@@ -137,7 +186,7 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
   load();
   return {
     show(progress: number) {
-      if (still) return;
+      if (still || fallback) return;
       const next = frameIndex(progress);
       if (next === wanted) return;
       wanted = next;

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import axe from 'axe-core';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { monthLabel, platformName } from '../src/format';
-import { beatOpacity, FRAME_COUNT, fitRect, frameIndex, frameUrl, framingFor, loadOrder, nearestLoaded } from '../src/landing/sequence';
+import { beatOpacity, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameUrl, framingFor, loadOrder, nearestLoaded } from '../src/landing/sequence';
 import { loadProfiles } from '../src/profiles';
 import { historySeries } from '../src/render/history';
 import { doFirst, trendSentence } from '../src/render/overview';
@@ -55,7 +55,8 @@ describe('the scroll sequence helpers', () => {
     expect(framingFor(1024, 768)).toBe('tall');
     expect(framingFor(390, 844)).toBe('tall');
     expect(framingFor(100, 0)).toBe('tall');
-    expect(frameUrl('wide', 0)).toBe('/hero/wide/001.webp');
+    expect(frameUrl('wide', 0)).toBe('/hero/wide/001.avif');
+    expect(endFrameFallbackUrl('tall')).toBe('/hero/tall/end.webp');
   });
 
   it('fades each block of words in and out around its range', () => {
@@ -72,10 +73,11 @@ describe('the rendered frames', () => {
     it(`has all ${FRAME_COUNT} ${framing} frames`, () => {
       const dir = join(root, 'public', 'hero', framing);
       expect(existsSync(dir)).toBe(true);
-      const files = readdirSync(dir).filter((f) => f.endsWith('.webp')).sort();
+      const files = readdirSync(dir).filter((f) => f.endsWith('.avif')).sort();
       expect(files).toHaveLength(FRAME_COUNT);
-      expect(files[0]).toBe('001.webp');
-      expect(files.at(-1)).toBe(`${FRAME_COUNT}.webp`);
+      expect(files[0]).toBe('001.avif');
+      expect(files.at(-1)).toBe(`${FRAME_COUNT}.avif`);
+      expect(existsSync(join(dir, 'end.webp'))).toBe(true);
     });
   }
 
@@ -175,6 +177,28 @@ describe('styles that survive the production build', () => {
     for (const file of ['app.css', 'landing.css', 'tokens.css']) {
       const css = readFileSync(join(root, 'src', 'styles', file), 'utf8');
       expect(css, file).not.toMatch(/-webkit-backdrop-filter/);
+    }
+  });
+});
+
+describe('phone layout rules in the report stylesheet', () => {
+  // A new media block once landed inside the 40rem block and silently moved its rules to 23rem.
+  it('keeps the phone rules under the 40rem breakpoint', () => {
+    const css = readFileSync(join(root, 'src', 'styles', 'app.css'), 'utf8');
+    const blockOf = (selector: string): string | undefined => {
+      const at = css.indexOf(`${selector} {`);
+      let depth = 0;
+      for (let i = at; i >= 0; i--) {
+        if (css[i] === '}') depth++;
+        if (css[i] === '{') {
+          if (depth === 0) return css.slice(css.lastIndexOf('@media', i), i).trim();
+          depth--;
+        }
+      }
+      return undefined;
+    };
+    for (const selector of ['  .hide-narrow', '  .stat + .stat', '  .matrix', '  .milestones li']) {
+      expect(blockOf(selector), selector).toBe('@media (max-width: 40rem)');
     }
   });
 });

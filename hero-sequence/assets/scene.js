@@ -5,6 +5,7 @@
 
 const DURATION = 4;
 const DESIGN_PX_PER_UNIT = 200;
+const LENS_FOV = 30;
 const TEXTURE_SCALE = 3.5;
 
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
@@ -194,15 +195,14 @@ function drawRatings(ctx, w, h, c, content) {
 function drawProgress(ctx, w, h, c, content) {
   const pad = 26;
   write(ctx, 'Score by month', pad, 46, { size: 21, weight: 600, color: c.ink });
-  const floor = 60;
-  const ceil = 80;
-  write(ctx, `Axis starts at ${floor}`, w - pad, 45, { size: 14, color: c['ink-2'], align: 'right' });
+  const floor = 0;
+  const ceil = 100;
   const x0 = pad + 26;
   const x1 = w - pad - 14;
   const y0 = 210;
   const y1 = 80;
   const yOf = (v) => y0 - ((v - floor) / (ceil - floor)) * (y0 - y1);
-  for (let v = floor; v <= ceil; v += 5) {
+  for (let v = floor; v <= ceil; v += 25) {
     rule(ctx, x0, x1, yOf(v), c.rule);
     write(ctx, String(v), x0 - 8, yOf(v) + 4, { size: 13, color: c['ink-2'], align: 'right' });
   }
@@ -292,7 +292,7 @@ export function createScene(THREE, { width, height, framing, content, environmen
   const dark = readTokens('dark');
   const scene = new THREE.Scene();
   scene.environment = environment;
-  scene.environmentIntensity = 0.3;
+  scene.environmentIntensity = 0.36;
 
   const stage = toColor(THREE, light.stage);
   scene.background = stage;
@@ -321,11 +321,11 @@ export function createScene(THREE, { width, height, framing, content, environmen
   key.shadow.intensity = 0.8;
   scene.add(key, key.target);
 
-  const rim = new THREE.DirectionalLight(0xd9e6ff, 1.3);
+  const rim = new THREE.DirectionalLight(0xd9e6ff, 2.2);
   rim.position.set(7, 6, -8);
   scene.add(rim);
 
-  const edge = new THREE.MeshStandardMaterial({ color: toColor(THREE, light['paper-2']).multiplyScalar(0.9), roughness: 0.55 });
+  const edge = new THREE.MeshStandardMaterial({ color: toColor(THREE, light['paper-2']).multiplyScalar(0.96), roughness: 0.38 });
   const ticketEdge = new THREE.MeshStandardMaterial({ color: toColor(THREE, light.ticket).multiplyScalar(0.92), roughness: 0.9 });
 
   const unit = (px) => px / DESIGN_PX_PER_UNIT;
@@ -354,10 +354,10 @@ export function createScene(THREE, { width, height, framing, content, environmen
     const face = new THREE.MeshPhysicalMaterial({
       map: painter(THREE, renderer, spec.w, spec.h, light['paper-2'], (ctx) => spec.draw(ctx, spec.w, spec.h, light, content)),
       roughness: 0.5,
-      clearcoat: 0.35,
-      clearcoatRoughness: 0.4,
+      clearcoat: 0.5,
+      clearcoatRoughness: 0.3,
     });
-    const mesh = slab(THREE, roundedRect(THREE, unit(spec.w), unit(spec.h), 0.06), unit(spec.w), unit(spec.h), 0.02, 0.008, face, edge);
+    const mesh = slab(THREE, roundedRect(THREE, unit(spec.w), unit(spec.h), 0.06), unit(spec.w), unit(spec.h), 0.045, 0.014, face, edge);
     scene.add(mesh);
     return mesh;
   });
@@ -409,12 +409,12 @@ export function createScene(THREE, { width, height, framing, content, environmen
   }
 
   // Camera: high over the counter, down and round to face the unfolded report, then a slow push in.
-  const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(LENS_FOV, width / height, 0.1, 100);
   const keys = wide
     ? [
-        { t: 0, pos: [0.75, 6.6, 5.6], at: [0.6, 0.15, 0.6], shift: 0.5, lift: 0.1 },
-        { t: 2.7, pos: [-0.6, 4.5, 14.2], at: [0.95, 1.95, 0], shift: 0.33, lift: 0 },
-        { t: 4, pos: [-0.5, 4.1, 12.4], at: [0.95, 2.0, 0], shift: 0.3, lift: 0 },
+        { t: 0, pos: [0.75, 6.6, 5.6], at: [0.6, 0.15, 0.6], shift: 0.5, lift: 0.12 },
+        { t: 2.7, pos: [-0.6, 4.5, 14.2], at: [0.95, 1.95, 0], shift: 0.33, lift: 0.16 },
+        { t: 4, pos: [-0.5, 4.1, 12.4], at: [0.95, 2.0, 0], shift: 0.3, lift: 0.17 },
       ]
     : [
         { t: 0, pos: [0.6, 8.0, 6.6], at: [0.55, 0.0, 0.6], shift: 0, lift: 0 },
@@ -430,8 +430,11 @@ export function createScene(THREE, { width, height, framing, content, environmen
     camera.position.set(mix(a.pos[0], b.pos[0]), mix(a.pos[1], b.pos[1]), mix(a.pos[2], b.pos[2]));
     camera.lookAt(mix(a.at[0], b.at[0]), mix(a.at[1], b.at[1]), mix(a.at[2], b.at[2]));
     // A lens shift moves the subject off centre without tilting the verticals.
+    const lift = mix(a.lift, b.lift);
     const fullW = width * (1 + mix(a.shift, b.shift));
-    const fullH = height * (1 + mix(a.lift, b.lift));
+    const fullH = height * (1 + lift);
+    // A taller virtual frame would also zoom in; widening the lens by the same amount cancels that.
+    camera.fov = (2 * Math.atan(Math.tan((LENS_FOV / 2) * (Math.PI / 180)) * (1 + lift)) * 180) / Math.PI;
     camera.aspect = fullW / fullH;
     camera.setViewOffset(fullW, fullH, 0, 0, width, height);
     camera.updateProjectionMatrix();

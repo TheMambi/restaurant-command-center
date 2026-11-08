@@ -93,9 +93,11 @@ A kitchen ticket on ink: three ruled lines and a short ink-blue line for the one
 
 - **Order:** a see-through dark bar pinned to the top; a pinned hero that plays the 120-frame sequence across about three and a half screens of scroll, with four blocks of words that fade in and out beside it; then three ledger sections on paper (the six score parts, the two sample restaurants, how the numbers stay honest); then a dark closing bookend with the call to action.
 - **Frames:** 16:9 frames (2560 wide, sharp on high-density screens) cover screens wider than 1.45:1 and crop from the empty left side. Squarer and portrait screens get 4:5 frames, fitted on the right of a landscape screen or at the bottom of a portrait one, so the words never sit on the scene.
-- **Words in the hero** stay in a left column (`min(26rem, 36vw)`); on portrait screens they sit above the frame.
+- **Words in the hero** stay in a left column (`min(24rem, 33vw)`); on portrait screens they sit above the frame.
 - **Figures** on the landing page come from the same scoring code and config as the report. The frames themselves bake in Brasa Taquería's report; a test fails if that report changes without a re-render.
-- **Colour:** the hero and the closing use the stage tokens whatever the visitor's mode; the ledger sections follow the light or dark choice made in the report.
+- **Colour:** the hero and the closing use the stage tokens whatever the visitor's mode; the ledger sections follow the light or dark choice made in the report, on `--color-paper-2` in dark mode so the change of scene stays visible.
+- **Bar:** pinned, see-through stage over the hero and the closing; paper and ink over the ledger sections. The frames are composed to stay clear of it.
+- **Frames as files:** AVIF (smooth in the dark counter where WebP breaks into blocks), with a WebP of the finished frame for browsers without AVIF.
 
 ## 8. Responsive behaviour
 

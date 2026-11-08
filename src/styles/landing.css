@@ -46,6 +46,10 @@
   border-color: var(--color-ink-2);
 }
 
+.is-on-paper :focus-visible {
+  outline-color: var(--color-focus);
+}
+
 .landing-bar-inner {
   display: flex;
   align-items: center;
@@ -147,7 +151,7 @@
 .hero-beats {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, min(26rem, 36vw));
+  grid-template-columns: minmax(0, min(24rem, 33vw));
   align-content: center;
   height: 100%;
 }
@@ -231,6 +235,11 @@
   padding-block: clamp(6rem, 12vw, 10rem);
   background: var(--color-paper);
   color: var(--color-ink);
+}
+
+/* Dark paper sits too close to the stage; the card surface keeps the change of scene visible. */
+:root[data-mode='dark'] .ledger {
+  background: var(--color-paper-2);
 }
 
 .ledger + .ledger {
@@ -450,7 +459,7 @@
 
 .is-still .hero-beats {
   align-content: center;
-  gap: var(--space-7);
+  gap: var(--space-6);
   min-height: 100svh;
   padding-block: 7rem 4rem;
 }
@@ -461,6 +470,10 @@
 
 .is-still .beat-intro {
   width: auto;
+}
+
+.is-still .beat-text {
+  max-width: none;
 }
 
 .is-still .hero-title,
@@ -578,6 +591,27 @@
 
   .beat + .beat {
     margin-top: var(--space-6);
+  }
+
+  .button-quiet,
+  .button-cta {
+    color: var(--color-ink);
+    background: none;
+    border: 1px solid var(--color-rule-strong);
+  }
+
+  .hero-title,
+  .beat-title,
+  .ledger-title,
+  .ledger-lede,
+  .closing-title {
+    break-after: avoid;
+  }
+
+  .part,
+  .sample,
+  .principles li {
+    break-inside: avoid;
   }
 
   .hero-stage {

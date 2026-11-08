@@ -29,7 +29,7 @@ Run in the repo root first (`npm ci`), then:
 cd hero-sequence
 npm ci
 npm run snapshot   # five stills of the wide framing, to check before a full render
-npm run render     # both framings to PNG, then WebP into ../public/hero/
+npm run render     # both framings to PNG, then AVIF (and an end-frame WebP) into ../public/hero/
 ```
 
 A full render takes a few minutes per framing on a laptop. Keep the terminal open until it finishes: HyperFrames stops a render whose parent process exits.
