@@ -4,7 +4,7 @@ A report card for a restaurant's online presence. It scores how the restaurant l
 
 Every restaurant is one JSON file. Drop a new file into `profiles/` and the dashboard renders it, scores it and adds it to the restaurant switcher.
 
-**Live demo:** _link goes here after the first deploy_
+**Live demo:** [restaurant-command-center-sable.vercel.app](https://restaurant-command-center-sable.vercel.app/)
 
 ![Overview of a sample restaurant: the score beside the three actions to do first](docs/overview.png)
 
