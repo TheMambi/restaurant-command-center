@@ -28,7 +28,6 @@ All colours are OKLCH tokens. Nothing outside `tokens.css` names a colour.
 | `--color-stage` | deep warm charcoal, same in both modes | the landing page's hero and closing; the rendered frames settle to it at every edge |
 | `--color-stage-ink` / `-muted` / `-rule` / `-accent` | light ink, grey, hairline and ink blue for the stage | words and controls on the stage |
 | `--color-cta` / `--color-cta-ink` | receipt paper and ink | the one call to action on the stage |
-| `--color-bar` | paper at about 80% | the report's see-through top bar |
 
 Dark mode re-derives every token (paper about 17% lightness, ink about 94%, accent lighter and less saturated). The hue never moves between modes. A small script sets the mode before first paint from the saved choice or the system setting, and printing always uses light.
 
@@ -96,7 +95,8 @@ A kitchen ticket on ink: three ruled lines and a short ink-blue line for the one
 - **Words in the hero** stay in a left column (`min(24rem, 33vw)`); on portrait screens they sit above the frame.
 - **Figures** on the landing page come from the same scoring code and config as the report. The frames themselves bake in Brasa Taquería's report; a test fails if that report changes without a re-render.
 - **Colour:** the hero and the closing use the stage tokens whatever the visitor's mode; the ledger sections follow the light or dark choice made in the report, on `--color-paper-2` in dark mode so the change of scene stays visible.
-- **Bar:** pinned and nearly opaque, with no blur (a blur smears paper and stage together where they meet): stage over the hero and the closing, paper and ink over the ledger sections, switching on whatever sits just below it. The frames are composed to stay clear of it.
+- **Bar:** pinned and solid, with no blur or see-through (both smear or ghost whatever passes under them): stage over the hero and the closing, paper and ink over the ledger sections, switching on whatever sits just below it. The frames are composed to stay clear of it. The report's top bar is solid paper for the same reason.
+- **Frame fitting:** wide frames cover the screen. Tall frames fit into the space the words leave (right of the column on a landscape screen, below the words on a portrait one), and where a frame stops short of the screen its own edge carries on outward and eases into the stage. Nothing is painted over the frame.
 - **Frames as files:** AVIF (smooth in the dark counter where WebP breaks into blocks), with a WebP of the finished frame for browsers without AVIF.
 
 ## 8. Responsive behaviour

@@ -63,10 +63,16 @@ export interface Rect {
   h: number;
 }
 
+// Space the words take: a column on the left of a landscape screen, a block on top of a portrait one.
+export interface Reserve {
+  left: number;
+  top: number;
+}
+
 // Wide frames cover the screen and crop mostly from the empty left side, where the words sit.
-// Tall frames fit inside the screen: on the right of a landscape screen, at the bottom of a portrait
-// one, leaving the words their own space.
-export function fitRect(imageW: number, imageH: number, boxW: number, boxH: number, framing: Framing): Rect {
+// Tall frames fit into the space the words leave: right of the column on a landscape screen, below
+// the block on a portrait one. A floor keeps the frame from shrinking to nothing.
+export function fitRect(imageW: number, imageH: number, boxW: number, boxH: number, framing: Framing, reserve: Reserve = { left: 0, top: 0 }): Rect {
   if (imageW <= 0 || imageH <= 0) return { x: 0, y: 0, w: 0, h: 0 };
   if (framing === 'wide') {
     const s = Math.max(boxW / imageW, boxH / imageH);
@@ -74,11 +80,14 @@ export function fitRect(imageW: number, imageH: number, boxW: number, boxH: numb
     const h = imageH * s;
     return { x: (boxW - w) * 0.75, y: (boxH - h) * 0.45, w, h };
   }
-  const s = Math.min(boxW / imageW, boxH / imageH);
-  const w = imageW * s;
-  const h = imageH * s;
-  if (boxW > boxH) return { x: boxW - w, y: (boxH - h) / 2, w, h };
-  return { x: (boxW - w) / 2, y: boxH - h, w, h };
+  if (boxW > boxH) {
+    const room = Math.max(boxW * 0.45, boxW - reserve.left);
+    const s = Math.min(room / imageW, boxH / imageH);
+    return { x: boxW - imageW * s, y: (boxH - imageH * s) / 2, w: imageW * s, h: imageH * s };
+  }
+  const room = Math.max(boxH * 0.4, boxH - reserve.top);
+  const s = Math.min(boxW / imageW, room / imageH);
+  return { x: (boxW - imageW * s) / 2, y: boxH - imageH * s, w: imageW * s, h: imageH * s };
 }
 
 // Opacity of a block of words shown between two points of the hero's scroll progress. Both fades
@@ -93,7 +102,7 @@ export interface Sequence {
   show(progress: number): void;
 }
 
-export function mountSequence(canvas: HTMLCanvasElement, background: string, still: boolean): Sequence {
+export function mountSequence(canvas: HTMLCanvasElement, background: string, still: boolean, reserve: () => Reserve): Sequence {
   const ctx = canvas.getContext('2d');
   if (!ctx) return { show() {} };
   let set: FrameSet = frameSetFor(innerWidth, innerHeight, devicePixelRatio);
@@ -101,6 +110,7 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
   let loaded = new Set<number>();
   let wanted = still ? FRAME_COUNT - 1 : 0;
   let fallback = false;
+  let reserved = reserve();
 
   function draw(): void {
     const dpr = Math.min(2, devicePixelRatio || 1);
@@ -115,36 +125,57 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
     const index = nearestLoaded(wanted, loaded);
     if (index === undefined) return;
     const image = images[index]!;
-    const r = fitRect(image.naturalWidth, image.naturalHeight, w, h, framingOf(set));
+    const r = fitRect(image.naturalWidth, image.naturalHeight, w, h, framingOf(set), { left: reserved.left * dpr, top: reserved.top * dpr });
     ctx!.drawImage(image, r.x, r.y, r.w, r.h);
-    feather(r, w, h);
+    extend(image, r, w, h);
   }
 
-  // Canvas gradients fade through black when the far stop is 'transparent', so the clear end of
-  // each band is the stage colour itself at zero alpha.
-  const clearStage = (() => {
+  // The stage colour at any opacity. Canvas gradients fade through black when a stop is
+  // 'transparent', so every stop is the stage colour itself.
+  const stageAt = (() => {
     const probe = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d');
-    if (!probe) return 'transparent';
+    if (!probe) return (a: number) => (a > 0.5 ? background : 'transparent');
     probe.fillStyle = background;
     probe.fillRect(0, 0, 1, 1);
     const [r, g, b] = probe.getImageData(0, 0, 1, 1).data;
-    return `rgba(${r}, ${g}, ${b}, 0)`;
+    return (a: number) => `rgba(${r}, ${g}, ${b}, ${a})`;
   })();
 
-  // Where a fitted frame stops short of the canvas, fade its edges into the stage so no seam shows.
-  function feather(r: Rect, w: number, h: number): void {
-    const size = Math.round(r.w * 0.2);
-    const band = (x0: number, y0: number, x1: number, y1: number, x: number, y: number, bw: number, bh: number) => {
+  // Where a fitted frame stops short of the canvas, its outer edge (averaged, so the counter's
+  // grain doesn't streak) carries on outward and eases into the stage. The light pool falls off
+  // instead of ending in a seam, and nothing is painted over the frame itself: the end frame's
+  // plates run close to its sides.
+  const strip = document.createElement('canvas');
+  const stripCtx = strip.getContext('2d');
+  function extend(image: HTMLImageElement, r: Rect, w: number, h: number): void {
+    if (!stripCtx) return;
+    const iw = image.naturalWidth;
+    const ih = image.naturalHeight;
+    const reach = r.w * 0.35;
+    const fade = (x0: number, y0: number, x1: number, y1: number) => {
       const g = ctx!.createLinearGradient(x0, y0, x1, y1);
-      g.addColorStop(0, background);
-      g.addColorStop(1, clearStage);
-      ctx!.fillStyle = g;
-      ctx!.fillRect(x, y, bw, bh);
+      for (const t of [0, 0.25, 0.5, 0.75, 1]) g.addColorStop(t, stageAt(t * t * (3 - 2 * t)));
+      return g;
     };
-    if (r.x > 0) band(r.x, 0, r.x + size, 0, r.x, r.y, size, r.h);
-    if (r.x + r.w < w) band(r.x + r.w, 0, r.x + r.w - size, 0, r.x + r.w - size, r.y, size, r.h);
-    if (r.y > 0) band(0, r.y, 0, r.y + size, r.x, r.y, r.w, size);
-    if (r.y + r.h < h) band(0, r.y + r.h, 0, r.y + r.h - size, r.x, r.y + r.h - size, r.w, size);
+    // One side at a time: copy a few pixels of the frame's edge into a short strip, stretch it over
+    // the gap, then lay the fade from the frame's edge out to the canvas edge.
+    const side = (vertical: boolean, src: [number, number, number, number], gap: [number, number, number, number], from: number, to: number) => {
+      const [gx, gy, gw, gh] = gap;
+      if (Math.min(gw, gh) < 2) return;
+      strip.width = vertical ? 1 : 48;
+      strip.height = vertical ? 48 : 1;
+      stripCtx.imageSmoothingQuality = 'high';
+      stripCtx.drawImage(image, ...src, 0, 0, strip.width, strip.height);
+      ctx!.drawImage(strip, gx, gy, gw, gh);
+      const end = from + Math.sign(to - from) * Math.min(Math.abs(to - from), reach);
+      ctx!.fillStyle = vertical ? fade(from, 0, end, 0) : fade(0, from, 0, end);
+      ctx!.fillRect(gx, gy, gw, gh);
+    };
+    // Each gap overlaps the frame by a pixel so no hairline shows at fractional edges.
+    side(true, [0, 0, 4, ih], [0, r.y, r.x + 1, r.h], r.x, 0);
+    side(true, [iw - 4, 0, 4, ih], [r.x + r.w - 1, r.y, w - r.x - r.w + 1, r.h], r.x + r.w, w);
+    side(false, [0, 0, iw, 4], [r.x, 0, r.w, r.y + 1], r.y, 0);
+    side(false, [0, ih - 4, iw, 4], [r.x, r.y + r.h - 1, r.w, h - r.y - r.h + 1], r.y + r.h, h);
   }
 
   let frame = 0;
@@ -186,7 +217,13 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
     }
   }
 
+  // The words reflow when the fonts arrive and on every resize; measure them again then.
+  void document.fonts?.ready.then(() => {
+    reserved = reserve();
+    schedule();
+  });
   addEventListener('resize', () => {
+    reserved = reserve();
     const next = frameSetFor(innerWidth, innerHeight, devicePixelRatio);
     if (next !== set) {
       set = next;

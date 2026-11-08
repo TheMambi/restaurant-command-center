@@ -63,17 +63,23 @@ function setupHero(): void {
   const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
   const still = saveData || matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stage = getComputedStyle(document.documentElement).getPropertyValue('--color-stage').trim();
-  const sequence = mountSequence(el<HTMLCanvasElement>('hero-canvas'), stage, still);
   const beats = [...hero.querySelectorAll<HTMLElement>('.beat')].map((node) => ({
     node,
     from: Number(node.dataset.from),
     to: Number(node.dataset.to),
   }));
-
-  if (still) {
-    hero.classList.add('is-still');
-    return;
-  }
+  // The words' footprint inside the pinned stage. Offsets ignore the fades' transforms, so the
+  // measure holds wherever the scroll is. The opening block is left out of the column: the ticket
+  // starts clear of it.
+  const column = hero.querySelector<HTMLElement>('.hero-beats')!;
+  const canvas = el<HTMLCanvasElement>('hero-canvas');
+  const reserve = () => ({
+    left: Math.max(0, column.offsetLeft - canvas.offsetLeft + Math.max(0, ...beats.filter((b) => !b.node.classList.contains('beat-intro')).map((b) => b.node.offsetLeft + b.node.offsetWidth)) + 24),
+    top: Math.max(0, column.offsetTop - canvas.offsetTop + Math.max(0, ...beats.map((b) => b.node.offsetTop + b.node.offsetHeight)) + 16),
+  });
+  hero.classList.toggle('is-still', still);
+  const sequence = mountSequence(canvas, stage, still, reserve);
+  if (still) return;
 
   const show = (progress: number) => {
     sequence.show(progress);
@@ -103,6 +109,19 @@ function setupHero(): void {
   animate('.beat-intro .beat-text, .scroll-cue', { opacity: [0, 1] }, { duration: 0.9, delay: 0.55 });
 }
 
+// The page prints on light paper whatever mode the visitor uses, like the report.
+function setupPrint(): void {
+  const root = document.documentElement;
+  let before: string | undefined;
+  addEventListener('beforeprint', () => {
+    before = root.dataset.mode;
+    root.dataset.mode = 'light';
+  });
+  addEventListener('afterprint', () => {
+    if (before) root.dataset.mode = before;
+  });
+}
+
 function setupBar(): void {
   const bar = document.querySelector<HTMLElement>('.landing-bar');
   if (!bar) throw new Error('Missing .landing-bar in index.html');
@@ -127,6 +146,7 @@ try {
   renderSamples();
   setupHero();
   setupBar();
+  setupPrint();
 } catch (error) {
   const box = document.createElement('div');
   box.className = 'load-error';

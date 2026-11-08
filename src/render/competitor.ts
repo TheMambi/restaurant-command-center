@@ -103,7 +103,7 @@ export function renderCompetitor(p: Profile): SafeHtml {
               <th scope="row">${r.metric}</th>
               <td class="num" data-label="${me.name}">${show(r.self, r.kind)}</td>
               <td class="num muted" data-label="${c.name}">${show(r.rival, r.kind)}</td>
-              <td data-label="Difference"><span class="gap is-${gap.tone}">${gap.text}${gap.tone !== 'even' && html`<span class="sr-only">, ${gap.tone}</span>`}</span></td>
+              <td data-label="Difference"><span><span class="gap is-${gap.tone}">${gap.text}</span>${gap.tone !== 'even' && gap.text !== 'Ahead' && html` <span class="gap-word">${gap.tone === 'ahead' ? 'Ahead' : 'Behind'}</span>`}</span></td>
               <td class="hide-narrow"><span class="pair">${bar(r.self, max, '')}${bar(r.rival, max, 'is-rival')}</span></td>
             </tr>`;
           })}

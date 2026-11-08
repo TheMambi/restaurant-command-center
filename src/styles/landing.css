@@ -8,13 +8,13 @@
 
 /* ---------- Bar ---------- */
 
-/* Nearly opaque and unblurred: a blur would smear paper and stage together wherever they meet. */
+/* Solid and unblurred: a see-through bar ghosts the text under it and smears stage into paper. */
 .landing-bar {
   position: fixed;
   inset: 0 0 auto;
   z-index: 5;
   color: var(--color-stage-ink);
-  background: color-mix(in oklch, var(--color-stage) 94%, transparent);
+  background: var(--color-stage);
   border-bottom: 1px solid var(--color-stage-rule);
   transition:
     background-color var(--dur-ui) ease,
@@ -25,12 +25,12 @@
 /* Over the paper sections the bar turns to paper and ink. */
 .landing-bar.is-on-paper {
   color: var(--color-ink);
-  background: color-mix(in oklch, var(--color-paper) 96%, transparent);
+  background: var(--color-paper);
   border-bottom-color: var(--color-rule);
 }
 
 :root[data-mode='dark'] .landing-bar.is-on-paper {
-  background: color-mix(in oklch, var(--color-paper-2) 96%, transparent);
+  background: var(--color-paper-2);
 }
 
 .is-on-paper .landing-nav > a:not([class]) {
@@ -478,13 +478,18 @@
 .is-still .hero-canvas {
   bottom: auto;
   height: 100svh;
+  mask-image: linear-gradient(to bottom, var(--color-ink) 82%, transparent);
+}
+
+.is-still .beat:not(.beat-intro, .beat-end) .beat-text {
+  display: none;
 }
 
 .is-still .hero-beats {
   align-content: center;
-  gap: var(--space-5);
+  gap: var(--space-4);
   min-height: 100svh;
-  padding-block: 7rem 4rem;
+  padding-block: 6.5rem 3rem;
 }
 
 .is-still .beat {
@@ -523,7 +528,7 @@
   .hero-beats {
     align-content: start;
     grid-template-columns: minmax(0, 1fr);
-    padding-top: 6rem;
+    padding-top: 7rem;
   }
 
   .beat-intro {
@@ -543,8 +548,18 @@
     display: none;
   }
 
+  /* The finished frame gets its own space below the words and the canvas runs the stage's full
+     height, so the frame fits under the button rather than behind it. 125vw is the tall frame's
+     height at full width. */
   .is-still .hero-beats {
-    padding-bottom: 110vw;
+    align-content: start;
+    min-height: 0;
+    padding-bottom: min(calc(125vw + 1rem), 75svh);
+  }
+
+  .is-still .hero-canvas {
+    bottom: 0;
+    height: 100%;
   }
 }
 
@@ -622,6 +637,15 @@
 
   .beat + .beat {
     margin-top: var(--space-6);
+  }
+
+  .closing {
+    min-height: auto;
+    padding-block: var(--space-6);
+  }
+
+  .ledger {
+    padding-block: var(--space-6);
   }
 
   .button-quiet,

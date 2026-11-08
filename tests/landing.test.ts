@@ -50,6 +50,22 @@ describe('the scroll sequence helpers', () => {
     expect(fitRect(0, 0, 100, 100, 'wide').w).toBe(0);
   });
 
+  it('fits tall frames into the space the words leave, down to a floor', () => {
+    // Portrait: words take the top 500px, so the frame fits the 524px below them.
+    const below = fitRect(1080, 1350, 768, 1024, 'tall', { left: 0, top: 500 });
+    expect(below.y).toBeGreaterThanOrEqual(500);
+    expect(below.y + below.h).toBeCloseTo(1024);
+    expect(below.h).toBeCloseTo(524);
+    // Landscape: the column ends at 420px, so the frame stays right of it.
+    const beside = fitRect(1080, 1350, 1024, 768, 'tall', { left: 420, top: 0 });
+    expect(beside.x).toBeGreaterThanOrEqual(420);
+    expect(beside.x + beside.w).toBeCloseTo(1024);
+    // Words that fill the screen leave the frame its floor instead of nothing.
+    expect(fitRect(1080, 1350, 390, 844, 'tall', { left: 0, top: 844 }).h).toBeCloseTo(844 * 0.4);
+    // Wide frames still cover the screen whatever the words take.
+    expect(fitRect(1920, 1080, 1440, 900, 'wide', { left: 600, top: 600 }).h).toBeCloseTo(900);
+  });
+
   it('picks the framing from the screen shape', () => {
     expect(framingFor(1440, 900)).toBe('wide');
     expect(framingFor(1024, 768)).toBe('tall');
