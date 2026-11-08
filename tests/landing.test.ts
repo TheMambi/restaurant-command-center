@@ -66,6 +66,16 @@ describe('the scroll sequence helpers', () => {
     expect(fitRect(1920, 1080, 1440, 900, 'wide', { left: 600, top: 600 }).h).toBeCloseTo(900);
   });
 
+  it('fits wide frames to the height on screens wider than the frame, so nothing is cropped', () => {
+    const ultrawide = fitRect(1920, 1080, 2560, 1080, 'wide');
+    expect(ultrawide).toEqual({ x: 320, y: 0, w: 1920, h: 1080 });
+    const sideways = fitRect(1920, 1080, 844, 390, 'wide');
+    expect(sideways.h).toBe(390);
+    expect(sideways.x + sideways.w / 2).toBeCloseTo(422);
+    // Exactly the frame's shape: cover and fit agree.
+    expect(fitRect(1920, 1080, 1920, 1080, 'wide')).toEqual({ x: 0, y: 0, w: 1920, h: 1080 });
+  });
+
   it('picks the framing from the screen shape', () => {
     expect(framingFor(1440, 900)).toBe('wide');
     expect(framingFor(1024, 768)).toBe('tall');
@@ -166,6 +176,8 @@ describe('the landing page in a browser-like DOM', () => {
       unobserve() {}
       disconnect() {}
     } as unknown as typeof ResizeObserver;
+    // jsdom has no canvas; answering null is what the hero already handles, without jsdom's warning.
+    HTMLCanvasElement.prototype.getContext = (() => null) as typeof HTMLCanvasElement.prototype.getContext;
     document.body.innerHTML = page.slice(page.indexOf('<body class="landing">') + 22, page.indexOf('<script type="module"'));
     document.body.className = 'landing';
     await import('../src/landing');

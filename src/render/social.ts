@@ -14,11 +14,11 @@ export function renderSocial(p: Profile): SafeHtml {
       <h3 class="block-title" id="audience-title">Accounts</h3>
       ${socials.length === 0
         ? html`<p class="muted">No social accounts in this profile yet.</p>`
-        : html`<div class="table-wrap"><table>
+        : html`<div class="table-wrap"><table class="stack-table">
           <thead><tr><th scope="col">Platform</th><th scope="col" class="num">Followers</th><th scope="col" class="col-meter hide-narrow"><span class="sr-only">Followers compared</span></th><th scope="col" class="num">Posts</th><th scope="col" class="num">Engagement</th><th scope="col" class="num">Typical reply</th></tr></thead>
           <tbody>
             ${socials.map(
-              (s) => html`<tr><th scope="row">${platformName[s.id]}</th><td class="num">${num(s.followers)}</td><td class="hide-narrow">${meter(s.followers, maxFollowers)}</td><td class="num">${num(s.posts)}</td><td class="num">${s.engagementRate}%</td><td class="num">${s.responseHours === undefined ? 'Not measured' : hours(s.responseHours)}</td></tr>`,
+              (s) => html`<tr><th scope="row">${platformName[s.id]}</th><td class="num" data-label="Followers">${num(s.followers)}</td><td class="hide-narrow">${meter(s.followers, maxFollowers)}</td><td class="num" data-label="Posts">${num(s.posts)}</td><td class="num" data-label="Engagement">${s.engagementRate}%</td><td class="num" data-label="Typical reply">${s.responseHours === undefined ? 'Not measured' : hours(s.responseHours)}</td></tr>`,
             )}
           </tbody>
         </table></div>

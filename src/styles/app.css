@@ -263,6 +263,11 @@ select:hover,
   color: var(--color-ink);
 }
 
+/* The row scrolls sideways, which clips anything drawn outside it, so the ring sits inside the tab. */
+.tab:focus-visible {
+  outline-offset: -2px;
+}
+
 .tab[aria-selected='true']::after {
   content: '';
   position: absolute;
@@ -545,6 +550,11 @@ tfoot th {
 .num {
   text-align: right !important;
   white-space: nowrap;
+}
+
+/* Words standing in for a missing figure may wrap where a number would not. */
+.num .missing {
+  white-space: normal;
 }
 
 .col-meter {
@@ -882,8 +892,18 @@ tfoot th {
 /* ---------- Responsive ---------- */
 
 @media (max-width: 60rem) {
+  /* The fade marks that the row scrolls. The same width pads the scroll, so a focused or open tab
+     stops clear of it, and a spacer after the last tab lets that one scroll clear too. */
   .tablist {
-    mask-image: linear-gradient(to right, var(--color-ink) 85%, transparent);
+    --tab-fade: 3.5rem;
+    mask-image: linear-gradient(to left, transparent, var(--color-ink) var(--tab-fade));
+    scroll-padding-inline-end: var(--tab-fade);
+  }
+
+  .tablist::after {
+    content: '';
+    flex: none;
+    width: var(--tab-fade);
   }
 
   .scorecard,

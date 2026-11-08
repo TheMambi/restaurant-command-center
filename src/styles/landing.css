@@ -616,6 +616,47 @@
   }
 }
 
+/* ---------- Short landscape screens (a phone held sideways) ---------- */
+
+/* Sizes follow the screen's height as well as its width, the bar gets slimmer, and the words centre
+   in the space under it, so each block fits whole between the bar and the bottom edge. */
+@media (max-height: 30rem) and (min-aspect-ratio: 1/1) {
+  :root {
+    --text-hero: clamp(2rem, 10vh, 3.25rem);
+    --text-section: clamp(1.75rem, 8.5vh, 2.5rem);
+  }
+
+  .landing-bar-inner {
+    min-height: 3.5rem;
+  }
+
+  .hero-beats {
+    padding-block: 3.5rem 0;
+  }
+
+  .beat-intro {
+    width: min(56rem, 44vw);
+  }
+
+  .beat-text {
+    margin-top: var(--space-3);
+    font-size: var(--text-base);
+    line-height: 1.5;
+  }
+
+  .beat-actions {
+    margin-top: var(--space-4);
+  }
+
+  .scroll-cue {
+    display: none;
+  }
+
+  .is-still .hero-beats {
+    padding-block: 4.5rem 2rem;
+  }
+}
+
 @media print {
   .landing-bar,
   .hero-canvas,

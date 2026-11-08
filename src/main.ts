@@ -84,7 +84,19 @@ function selectTab(id: TabId, focus: boolean): void {
     button.tabIndex = selected ? 0 : -1;
     el(`tab-${t.id}`).hidden = !selected;
     if (selected && focus) button.focus();
+    if (selected) revealTab(button);
   }
+}
+
+// On narrow screens the tab row scrolls sideways under a fade at its right edge. Keep the open tab
+// in view and clear of the fade, whose width is the row's own end scroll padding.
+function revealTab(button: HTMLElement): void {
+  const row = button.parentElement!;
+  const fade = parseFloat(getComputedStyle(row).scrollPaddingInlineEnd) || 0;
+  const r = row.getBoundingClientRect();
+  const b = button.getBoundingClientRect();
+  if (b.left < r.left) row.scrollLeft -= r.left - b.left;
+  else if (b.right > r.right - fade) row.scrollLeft += b.right - (r.right - fade);
 }
 
 function writeUrl(slug: string, tab: TabId): void {

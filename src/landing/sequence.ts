@@ -69,12 +69,18 @@ export interface Reserve {
   top: number;
 }
 
-// Wide frames cover the screen and crop mostly from the empty left side, where the words sit.
+// Wide frames cover screens up to their own shape and crop mostly from the empty left side, where
+// the words sit. On wider screens (ultrawide, a phone held sideways) they fit the height instead and
+// sit centred like the page's column, so the ticket's footer and the top plates stay whole.
 // Tall frames fit into the space the words leave: right of the column on a landscape screen, below
 // the block on a portrait one. A floor keeps the frame from shrinking to nothing.
 export function fitRect(imageW: number, imageH: number, boxW: number, boxH: number, framing: Framing, reserve: Reserve = { left: 0, top: 0 }): Rect {
   if (imageW <= 0 || imageH <= 0) return { x: 0, y: 0, w: 0, h: 0 };
   if (framing === 'wide') {
+    if (boxW * imageH > imageW * boxH) {
+      const w = (imageW * boxH) / imageH;
+      return { x: (boxW - w) / 2, y: 0, w, h: boxH };
+    }
     const s = Math.max(boxW / imageW, boxH / imageH);
     const w = imageW * s;
     const h = imageH * s;
@@ -184,37 +190,52 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
     frame = requestAnimationFrame(draw);
   };
 
+  // Frames join `loaded` only once decoded, so a scrub never waits on a decode at draw time. A load
+  // started for an earlier frame set (before a resize) is ignored when it lands.
+  let generation = 0;
+  function fetchFrame(i: number, url: string, onFail?: () => void): void {
+    const mine = generation;
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = url;
+    images[i] = image;
+    image.decode().then(
+      () => {
+        if (mine !== generation) return;
+        loaded.add(i);
+        schedule();
+      },
+      () => {
+        if (mine === generation) onFail?.();
+      },
+    );
+  }
+
+  // The first and last frames and every sixteenth come at once; that is enough to scrub with. The
+  // rest wait for the first scroll, so a visitor who never scrolls downloads about a tenth.
   function load(): void {
+    generation++;
     images = [];
     loaded = new Set();
     if (fallback) {
       wanted = FRAME_COUNT - 1;
-      const image = new Image();
-      image.onload = () => {
-        loaded.add(FRAME_COUNT - 1);
-        schedule();
-      };
-      image.src = endFrameFallbackUrl(set);
-      images[FRAME_COUNT - 1] = image;
+      fetchFrame(FRAME_COUNT - 1, endFrameFallbackUrl(set));
       return;
     }
     const order = still ? [FRAME_COUNT - 1] : loadOrder();
-    for (const i of order) {
-      const image = new Image();
-      image.decoding = 'async';
-      image.onload = () => {
-        loaded.add(i);
-        schedule();
-      };
-      if (i === order[0]) {
-        image.onerror = () => {
-          fallback = true;
-          load();
-        };
-      }
-      image.src = frameUrl(set, i);
-      images[i] = image;
-    }
+    const eager = order.filter((i) => i % 16 === 0 || i === FRAME_COUNT - 1);
+    const rest = order.filter((i) => !eager.includes(i));
+    eager.forEach((i, n) => {
+      const onFail = n === 0 ? () => { fallback = true; load(); } : undefined;
+      fetchFrame(i, frameUrl(set, i), onFail);
+    });
+    if (rest.length === 0) return;
+    const mine = generation;
+    const more = () => {
+      if (mine === generation) for (const i of rest) fetchFrame(i, frameUrl(set, i));
+    };
+    if (scrollY > 0) more();
+    else addEventListener('scroll', more, { once: true, passive: true });
   }
 
   // The words reflow when the fonts arrive and on every resize; measure them again then.

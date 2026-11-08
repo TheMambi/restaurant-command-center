@@ -24,6 +24,18 @@ describe('the app in a browser-like DOM', () => {
     expect(document.getElementById('tab-overview')?.hidden).toBe(true);
   });
 
+  it('says ahead or behind in words beside every coloured difference', () => {
+    // Years open and price range read as plain words with no colour, so only coloured cells count.
+    const cells = [...document.querySelectorAll('#tab-competitor td[data-label="Difference"]')].filter((c) => c.querySelector('.gap'));
+    expect(cells.length).toBeGreaterThan(0);
+    for (const cell of cells) {
+      const tone = cell.querySelector('.gap')!.className;
+      const said = cell.textContent!.trim();
+      if (tone.includes('is-even')) expect(said).not.toMatch(/Ahead|Behind/);
+      else expect(said).toMatch(tone.includes('is-ahead') ? /Ahead$/ : /Behind$/);
+    }
+  });
+
   it('moves between tabs with the arrow, Home and End keys and keeps the address in step', () => {
     const nav = document.getElementById('nav-tabs')!;
     nav.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));

@@ -103,7 +103,8 @@ A kitchen ticket on ink: three ruled lines and a short ink-blue line for the one
 
 - Under 60rem: grids stack, the picker loses its visible label (it keeps an accessible one).
 - Under 40rem: the wordmark shows only the logo, meter columns hide (the numbers stay), wide tables restack into labelled rows, stat rows stack, cards tighten, and the tab row fades at the edge to show it scrolls.
-- The tab row scrolls sideways instead of wrapping.
+- The tab row scrolls sideways instead of wrapping. The open tab scrolls into view clear of the edge fade, and the focus ring sits inside each tab so the row's clipping doesn't cut it.
+- Short landscape screens (a phone held sideways, under 30rem tall): the landing bar slims to 3.5rem, display sizes follow the screen's height, and each block of words centres in the space under the bar.
 - Print: every section prints in order, one section per page, on light paper, controls hidden.
 
 ## 9. Agent prompt guide

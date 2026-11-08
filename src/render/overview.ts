@@ -114,7 +114,7 @@ export function renderOverview(p: Profile, score: number, breakdown: ScoreBreakd
           <thead><tr><th scope="col">Platform</th><th scope="col" class="num">Rating</th><th scope="col" class="col-meter hide-narrow"><span class="sr-only">Rating out of 5</span></th><th scope="col" class="num">Reviews</th><th scope="col" class="num">Photos</th></tr></thead>
           <tbody>
             ${p.reviewPlatforms.map(
-              (r) => html`<tr><th scope="row">${platformName[r.id]}</th><td class="num">${stars(r.rating)}</td><td class="hide-narrow">${meter(r.rating, 5)}</td><td class="num">${num(r.reviews)}</td><td class="num">${r.photos === undefined ? 'Not counted' : num(r.photos)}</td></tr>`,
+              (r) => html`<tr><th scope="row">${platformName[r.id]}</th><td class="num">${stars(r.rating)}</td><td class="hide-narrow">${meter(r.rating, 5)}</td><td class="num">${num(r.reviews)}</td><td class="num">${r.photos === undefined ? html`<span class="missing">Not counted</span>` : num(r.photos)}</td></tr>`,
             )}
           </tbody>
         </table>
