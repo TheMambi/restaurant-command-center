@@ -298,9 +298,31 @@ export function createScene(THREE, { width, height, framing, content, environmen
   scene.background = stage;
   scene.fog = new THREE.Fog(stage, 13, 26);
 
+  // The pass: dark brushed stainless steel, the surface tickets sit on in a restaurant kitchen.
+  // Fine streaks in the roughness give the brushed grain; they are hashed from their index, not random.
+  const grain = document.createElement('canvas');
+  grain.width = 8;
+  grain.height = 1024;
+  const g = grain.getContext('2d');
+  for (let y = 0; y < grain.height; y++) {
+    const h = Math.sin(y * 12.9898) * 43758.5453;
+    const v = 150 + Math.round((h - Math.floor(h)) * 70);
+    g.fillStyle = `rgb(${v}, ${v}, ${v})`;
+    g.fillRect(0, y, grain.width, 1);
+  }
+  const grainMap = new THREE.CanvasTexture(grain);
+  grainMap.wrapS = grainMap.wrapT = THREE.RepeatWrapping;
+  grainMap.repeat.set(1, 18);
   const counter = new THREE.Mesh(
     new THREE.PlaneGeometry(80, 80),
-    new THREE.MeshStandardMaterial({ color: toColor(THREE, dark.paper), roughness: 0.82, metalness: 0, envMapIntensity: 0.5, dithering: true }),
+    new THREE.MeshPhysicalMaterial({
+      color: toColor(THREE, dark['paper-3']),
+      metalness: 0.6,
+      roughness: 1,
+      roughnessMap: grainMap,
+      envMapIntensity: 0.45,
+      dithering: true,
+    }),
   );
   counter.rotation.x = -Math.PI / 2;
   counter.receiveShadow = true;
@@ -308,7 +330,8 @@ export function createScene(THREE, { width, height, framing, content, environmen
 
   // Soft key from front left, warm; cool rim from behind right; the key's falloff on the
   // counter is the vignette.
-  const key = new THREE.SpotLight(0xfff0dc, 560, 0, 0.44, 0.9, 2);
+  // A warm heat lamp over the pass.
+  const key = new THREE.SpotLight(0xffe6c8, 560, 0, 0.44, 0.9, 2);
   key.position.set(-2.2, 10, 9.5);
   key.target.position.set(1.0, 0.9, 0.2);
   key.castShadow = true;
@@ -320,6 +343,12 @@ export function createScene(THREE, { width, height, framing, content, environmen
   key.shadow.bias = -0.0004;
   key.shadow.intensity = 0.8;
   scene.add(key, key.target);
+
+  // A soft rectangular heat lamp over the pass; its long reflection is what reads as steel.
+  const lamp = new THREE.RectAreaLight(0xffd9b0, 2.2, 9, 1.1);
+  lamp.position.set(0.8, 6.5, -2.5);
+  lamp.lookAt(0.8, 0, -2.5);
+  scene.add(lamp);
 
   const rim = new THREE.DirectionalLight(0xd9e6ff, 2.2);
   rim.position.set(7, 6, -8);
@@ -414,12 +443,12 @@ export function createScene(THREE, { width, height, framing, content, environmen
     ? [
         { t: 0, pos: [0.75, 6.6, 5.6], at: [0.6, 0.15, 0.6], shift: 0.5, lift: 0.12 },
         { t: 2.7, pos: [-0.6, 4.5, 14.2], at: [0.95, 1.95, 0], shift: 0.33, lift: 0.16 },
-        { t: 4, pos: [-0.5, 4.1, 12.4], at: [0.95, 2.0, 0], shift: 0.3, lift: 0.17 },
+        { t: 4, pos: [-0.5, 4.15, 12.9], at: [0.95, 2.0, 0], shift: 0.28, lift: 0.17 },
       ]
     : [
         { t: 0, pos: [0.6, 8.0, 6.6], at: [0.55, 0.0, 0.6], shift: 0, lift: 0 },
-        { t: 2.7, pos: [0.3, 4.9, 15.8], at: [0.6, 2.15, 0], shift: 0, lift: 0 },
-        { t: 4, pos: [0.3, 4.7, 14.6], at: [0.65, 2.2, 0], shift: 0, lift: 0 },
+        { t: 2.7, pos: [0.3, 4.8, 14.6], at: [0.6, 2.15, 0], shift: 0, lift: 0 },
+        { t: 4, pos: [0.42, 4.5, 12.9], at: [0.8, 2.2, 0], shift: 0, lift: 0 },
       ];
 
   function cameraAt(t) {

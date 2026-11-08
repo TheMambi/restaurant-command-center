@@ -107,13 +107,14 @@ function setupBar(): void {
   const bar = document.querySelector<HTMLElement>('.landing-bar');
   if (!bar) throw new Error('Missing .landing-bar in index.html');
   const paper = [...document.querySelectorAll<HTMLElement>('.ledger')];
+  // The bar takes the look of whatever sits just below its bottom edge.
   const update = () => {
-    const y = bar.offsetHeight / 2;
+    const y = bar.offsetHeight + 1;
     bar.classList.toggle(
       'is-on-paper',
       paper.some((s) => {
         const r = s.getBoundingClientRect();
-        return r.top <= y && r.bottom >= y;
+        return r.top <= y && r.bottom > y;
       }),
     );
   };

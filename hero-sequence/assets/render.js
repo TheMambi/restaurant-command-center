@@ -2,6 +2,7 @@
 // the seek time alone, so frames can be captured in any order by several workers.
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
+import { RectAreaLightUniformsLib } from './vendor/RectAreaLightUniformsLib.js';
 import { createScene } from './scene.js';
 import content from './content.json' with { type: 'json' };
 
@@ -39,6 +40,7 @@ async function setup() {
   await Promise.all(
     ['600 64px "Fraunces Variable"', '400 32px "Onest Variable"', '600 32px "Onest Variable"'].map((f) => document.fonts.load(f)),
   );
+  RectAreaLightUniformsLib.init();
   const pmrem = new THREE.PMREMGenerator(renderer);
   const environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   ({ scene, camera, poseAt } = createScene(THREE, { width, height, framing, content, environment, renderer }));

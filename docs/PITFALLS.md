@@ -25,3 +25,7 @@ Symptom, cause and fix for traps this project has already hit. Read before touch
 | Landing | The hero's plates slide under the pinned top bar | The frames were composed for the full screen height | The wide camera keys carry a `lift`; `cameraAt` widens the lens by the same factor so the lift moves the picture down without zooming in |
 | Landing | The dark counter shows blocks and bands | WebP splits low-contrast darks into 16px blocks at any quality | Frames are AVIF with full-resolution colour; `end.webp` is the fallback for browsers without AVIF |
 | Styles | Phone tables show meters and cut off columns at 390px | A new `@media` block was pasted inside the 40rem block, moving its rules to a narrower breakpoint | Keep each breakpoint's rules in one block; a test checks the phone rules sit under 40rem |
+| Landing | Two blocks of hero words show at once, both half faded | A fade that starts before a block's range and ends after it overlaps the next block | `beatOpacity` fades inside each range; a test sweeps the scroll and allows one block at a time |
+| Landing | A grey smear in the bar where the hero meets paper | The bar's backdrop blur mixes the dark stage and the paper behind it | The landing bar is nearly opaque with no blur and takes the look of the section just below it |
+| Landing | With reduced motion the finished frame slides under the words | The stage grows taller than the screen, and covering it scales the frame up | The still canvas keeps one screen's height |
+

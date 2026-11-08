@@ -312,10 +312,10 @@ select:hover,
 
 .section-title {
   font-family: var(--font-display);
-  font-size: var(--text-title);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  font-size: clamp(1.75rem, 2.6vw, 2.375rem);
+  font-weight: 450;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .section-intro {
@@ -680,15 +680,18 @@ tfoot th {
 }
 
 .stat dd {
-  font-size: 2rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 450;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
 .stat .stat-note {
   display: block;
   margin-top: var(--space-1);
+  font-family: var(--font-body);
+  line-height: 1.4;
   font-size: var(--text-sm);
   font-weight: 400;
   letter-spacing: 0;
@@ -739,7 +742,7 @@ tfoot th {
   padding: var(--space-4);
   border: 1px solid var(--color-rule);
   background: var(--color-paper-2);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-card);
 }
 
 .tags {
@@ -964,8 +967,13 @@ tfoot th {
   }
 }
 
-/* The smallest phones: the controls get their own row under the logo. */
+/* The smallest phones: the controls get their own row under the logo, and the two-row bar scrolls
+   away instead of covering a fifth of the screen. */
 @media (max-width: 23rem) {
+  .topbar {
+    position: static;
+  }
+
   .topbar-inner {
     flex-wrap: wrap;
     row-gap: var(--space-2);
@@ -982,8 +990,18 @@ tfoot th {
     font-size: var(--text-xs);
   }
 
+  select,
+  .button {
+    padding-inline: 0.65rem;
+  }
+
   select {
     max-width: 8.75rem;
+    padding-right: 1.6rem;
+  }
+
+  .select-wrap::after {
+    right: 0.65rem;
   }
 }
 

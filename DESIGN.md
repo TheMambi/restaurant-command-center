@@ -37,7 +37,7 @@ Dark mode re-derives every token (paper about 17% lightness, ink about 94%, acce
 Type scale note: body steps (13, 14, 16, 18, 22) follow roughly a 1.125 to 1.2 ratio. The restaurant name (40 to 60) and the score (92) jump on purpose so the two things that matter most lead the page. The landing page adds two display steps: section titles up to 72 and the hero title up to 128.
 
 
-- **Fraunces** (variable, self-hosted, with its optical-size axis) for the restaurant name, the score figure, section titles and every landing headline. At display sizes the optical-size axis switches to Fraunces's high-contrast cut; set light (350 to 450) with tight tracking. Section titles inside the report stay at 600.
+- **Fraunces** (variable, self-hosted, with its optical-size axis) for the restaurant name, the score figure, section titles and every landing headline. At display sizes the optical-size axis switches to Fraunces's high-contrast cut; set light (350 to 450) with tight tracking. Section titles inside the report are Fraunces at 28 to 38 px, weight 450.
 - **Onest** (variable, self-hosted) for everything else: labels, controls, table cells, figures. Tabular numerals everywhere.
 - Scale: 13, 14, 16, 18, 22 px; the restaurant name at `clamp(40px, 4.4vw, 60px)`; the score at 92 px. Landing: `--text-section` up to 72 px and `--text-hero` up to 128 px, both fluid.
 - Labels and table heads are sentence case, untracked, a step smaller and muted. No uppercase labels.
@@ -49,7 +49,7 @@ Type scale note: body steps (13, 14, 16, 18, 22) follow roughly a 1.125 to 1.2 r
 - **Table:** full width, 2px ink rule under the head, 1px hairlines between rows, no vertical lines. Numbers right-aligned.
 - **Meter:** 10px bar on a rounded `paper-3` track, filled with the accent from zero, drawn with `transform: scaleX`. The competitor's meter uses `--color-rival`.
 - **Status:** a mark (✓, !, ✗) in its status colour followed by the word (Done, Partly done, Missing). Colour never carries meaning alone.
-- **Stat row:** label, large figure, one plain-English note ("Up 9 points since May 2026"). No icons, no arrows.
+- **Stat row:** label, large figure in Fraunces, one plain-English note in Onest ("Up 9 points since May 2026"). No icons, no arrows.
 - **Ticket:** receipt-yellow paper with perforated top and bottom edges and a dashed tear line under the heading. Holds the action list: numbered in the accent, title, one-sentence description, time and cost as a definition list. Used once per page.
 - **Line chart:** inline SVG, one series, one y-axis, 2px accent line, 4 to 5 gridlines, value on the last point. A hidden table carries the same numbers for screen readers. If the axis doesn't start at zero, a caption says so.
 - **Bar chart:** inline SVG, bars from zero, at most 24px wide, value above each bar. Used for counts per month.
@@ -66,7 +66,7 @@ Type scale note: body steps (13, 14, 16, 18, 22) follow roughly a 1.125 to 1.2 r
 
 Soft studio light from above, and only on the two raised objects. `--shadow-lift` pairs a tight contact shadow with a wide, faint fall-off; `--shadow-ticket` does the same as drop shadows that follow the ticket's perforated edge. In dark mode the shadows deepen and the score card gets a one-pixel top highlight, so elevation still reads as lightness. Tables, notes and everything else stay flat on the paper. Printing removes every shadow.
 
-The landing hero is the one place with real lighting: rendered frames of the ticket and the report lit by a warm key from the front left and a cool rim from behind, with soft blurred shadows on the counter and the key's fall-off as the vignette (see `hero-sequence/`).
+The landing hero is the one place with real lighting: rendered frames of the ticket and the report on a brushed stainless-steel pass, lit by a warm heat lamp from the front left, a soft rectangular lamp overhead whose reflection reads as steel, and a cool rim from behind, with soft blurred shadows and the key's fall-off as the vignette (see `hero-sequence/`).
 
 ## 7. Do's and don'ts
 
@@ -91,12 +91,12 @@ A kitchen ticket on ink: three ruled lines and a short ink-blue line for the one
 
 ## Landing page
 
-- **Order:** a see-through dark bar pinned to the top; a pinned hero that plays the 120-frame sequence across about three and a half screens of scroll, with four blocks of words that fade in and out beside it; then three ledger sections on paper (the six score parts, the two sample restaurants, how the numbers stay honest); then a dark closing bookend with the call to action.
-- **Frames:** 16:9 frames (2560 wide, sharp on high-density screens) cover screens wider than 1.45:1 and crop from the empty left side. Squarer and portrait screens get 4:5 frames, fitted on the right of a landscape screen or at the bottom of a portrait one, so the words never sit on the scene.
+- **Order:** a dark bar pinned to the top; a pinned hero that plays the 120-frame sequence across about three and a half screens of scroll, with four blocks of words that fade in and out beside it; then three ledger sections on paper (the six score parts, the two sample restaurants, how the numbers stay honest); then a dark closing bookend with the call to action.
+- **Frames:** 16:9 frames (3200 wide on high-density screens, 2560 otherwise) cover screens wider than 1.45:1 and crop from the empty left side. Squarer and portrait screens get 4:5 frames, fitted on the right of a landscape screen or at the bottom of a portrait one, so the words never sit on the scene.
 - **Words in the hero** stay in a left column (`min(24rem, 33vw)`); on portrait screens they sit above the frame.
 - **Figures** on the landing page come from the same scoring code and config as the report. The frames themselves bake in Brasa Taquería's report; a test fails if that report changes without a re-render.
 - **Colour:** the hero and the closing use the stage tokens whatever the visitor's mode; the ledger sections follow the light or dark choice made in the report, on `--color-paper-2` in dark mode so the change of scene stays visible.
-- **Bar:** pinned, see-through stage over the hero and the closing; paper and ink over the ledger sections. The frames are composed to stay clear of it.
+- **Bar:** pinned and nearly opaque, with no blur (a blur smears paper and stage together where they meet): stage over the hero and the closing, paper and ink over the ledger sections, switching on whatever sits just below it. The frames are composed to stay clear of it.
 - **Frames as files:** AVIF (smooth in the dark counter where WebP breaks into blocks), with a WebP of the finished frame for browsers without AVIF.
 
 ## 8. Responsive behaviour

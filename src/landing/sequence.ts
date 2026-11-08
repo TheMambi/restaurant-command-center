@@ -4,6 +4,8 @@
 
 export const FRAME_COUNT = 120;
 export type Framing = 'wide' | 'tall';
+// Each set is a folder under /hero/. Wide frames come in two sizes from one render.
+export type FrameSet = 'wide' | 'wide-hd' | 'tall';
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
@@ -13,10 +15,19 @@ export const WIDE_FROM = 1.45;
 
 export const framingFor = (width: number, height: number): Framing => (height > 0 && width / height >= WIDE_FROM ? 'wide' : 'tall');
 
-export const frameUrl = (framing: Framing, index: number): string => `/hero/${framing}/${String(index + 1).padStart(3, '0')}.avif`;
+// High-density screens, and any screen that would stretch the 2560 set, get the 3200 set.
+export function frameSetFor(width: number, height: number, dpr: number): FrameSet {
+  if (framingFor(width, height) === 'tall') return 'tall';
+  const needed = Math.max(width, (height * 16) / 9) * Math.min(2, dpr || 1);
+  return dpr >= 1.5 || needed > 2600 ? 'wide-hd' : 'wide';
+}
+
+export const framingOf = (set: FrameSet): Framing => (set === 'tall' ? 'tall' : 'wide');
+
+export const frameUrl = (set: FrameSet, index: number): string => `/hero/${set}/${String(index + 1).padStart(3, '0')}.avif`;
 
 // The finished frame as WebP, for a browser that can't decode AVIF.
-export const endFrameFallbackUrl = (framing: Framing): string => `/hero/${framing}/end.webp`;
+export const endFrameFallbackUrl = (set: FrameSet): string => `/hero/${set}/end.webp`;
 
 export function frameIndex(progress: number, count = FRAME_COUNT): number {
   return Math.round(clamp01(progress) * (count - 1));
@@ -70,10 +81,11 @@ export function fitRect(imageW: number, imageH: number, boxW: number, boxH: numb
   return { x: (boxW - w) / 2, y: boxH - h, w, h };
 }
 
-// Opacity of a block of words shown between two points of the hero's scroll progress.
-export function beatOpacity(progress: number, from: number, to: number, fade = 0.06): number {
-  const fadeIn = from <= 0 ? 1 : clamp01((progress - from + fade) / fade);
-  const fadeOut = to >= 1 ? 1 : 1 - clamp01((progress - to) / fade);
+// Opacity of a block of words shown between two points of the hero's scroll progress. Both fades
+// happen inside the block's own range, so neighbouring blocks never show at once.
+export function beatOpacity(progress: number, from: number, to: number, fade = 0.05): number {
+  const fadeIn = from <= 0 ? 1 : clamp01((progress - from) / fade);
+  const fadeOut = to >= 1 ? 1 : clamp01((to - progress) / fade);
   return Math.min(fadeIn, fadeOut);
 }
 
@@ -84,7 +96,7 @@ export interface Sequence {
 export function mountSequence(canvas: HTMLCanvasElement, background: string, still: boolean): Sequence {
   const ctx = canvas.getContext('2d');
   if (!ctx) return { show() {} };
-  let framing: Framing = framingFor(innerWidth, innerHeight);
+  let set: FrameSet = frameSetFor(innerWidth, innerHeight, devicePixelRatio);
   let images: HTMLImageElement[] = [];
   let loaded = new Set<number>();
   let wanted = still ? FRAME_COUNT - 1 : 0;
@@ -103,7 +115,7 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
     const index = nearestLoaded(wanted, loaded);
     if (index === undefined) return;
     const image = images[index]!;
-    const r = fitRect(image.naturalWidth, image.naturalHeight, w, h, framing);
+    const r = fitRect(image.naturalWidth, image.naturalHeight, w, h, framingOf(set));
     ctx!.drawImage(image, r.x, r.y, r.w, r.h);
     feather(r, w, h);
   }
@@ -151,7 +163,7 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
         loaded.add(FRAME_COUNT - 1);
         schedule();
       };
-      image.src = endFrameFallbackUrl(framing);
+      image.src = endFrameFallbackUrl(set);
       images[FRAME_COUNT - 1] = image;
       return;
     }
@@ -169,15 +181,15 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
           load();
         };
       }
-      image.src = frameUrl(framing, i);
+      image.src = frameUrl(set, i);
       images[i] = image;
     }
   }
 
   addEventListener('resize', () => {
-    const next = framingFor(innerWidth, innerHeight);
-    if (next !== framing) {
-      framing = next;
+    const next = frameSetFor(innerWidth, innerHeight, devicePixelRatio);
+    if (next !== set) {
+      set = next;
       load();
     }
     schedule();

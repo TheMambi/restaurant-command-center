@@ -16,7 +16,7 @@ Nothing here ships with the site except the frames it writes to `../public/hero/
 
 | File | Size | Used on |
 |---|---|---|
-| `index.html` | 2560 × 1440 | screens wider than 1.45:1 |
+| `index.html` | 3200 × 1800, encoded at 3200 and 2560 wide | screens wider than 1.45:1; the 3200 set for high-density screens |
 | `tall.html` | 1080 × 1350 | squarer and portrait screens, with a narrower end layout |
 
 `hyperframes lint` reports two root compositions. That rule guards against duplicate audio; this piece has none, and each framing is rendered on its own with `-c`.

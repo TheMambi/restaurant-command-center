@@ -13,7 +13,7 @@ mkdirSync(to, { recursive: true });
 const resized = (f) => sharp(join(from, f)).resize({ width: Number(width) });
 for (const [i, f] of frames.entries()) {
   await resized(f)
-    .avif({ quality: 55, effort: 5, chromaSubsampling: '4:4:4' })
+    .avif({ quality: 55, effort: 4, chromaSubsampling: '4:4:4' })
     .toFile(join(to, `${String(i + 1).padStart(3, '0')}.avif`));
 }
 await resized(frames.at(-1)).webp({ quality: 88, smartSubsample: true, effort: 6 }).toFile(join(to, 'end.webp'));

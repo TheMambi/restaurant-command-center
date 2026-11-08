@@ -76,7 +76,8 @@
     0 1px 2px oklch(25% 0.02 55 / 0.06),
     0 10px 24px -10px oklch(25% 0.02 55 / 0.16),
     0 28px 56px -28px oklch(25% 0.02 55 / 0.22);
-  --shadow-ticket: drop-shadow(0 1px 1px oklch(25% 0.02 55 / 0.1)) drop-shadow(0 14px 22px oklch(25% 0.02 55 / 0.16));
+  /* Offset well below the ticket so the perforations along its top edge stay clean. */
+  --shadow-ticket: drop-shadow(0 2px 1px oklch(25% 0.02 55 / 0.07)) drop-shadow(0 20px 18px oklch(25% 0.02 55 / 0.13));
   --color-bar: oklch(97.2% 0.008 75 / 0.82);
 }
 

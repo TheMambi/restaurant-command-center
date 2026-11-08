@@ -8,14 +8,14 @@
 
 /* ---------- Bar ---------- */
 
+/* Nearly opaque and unblurred: a blur would smear paper and stage together wherever they meet. */
 .landing-bar {
   position: fixed;
   inset: 0 0 auto;
   z-index: 5;
   color: var(--color-stage-ink);
-  background: color-mix(in oklch, var(--color-stage) 72%, transparent);
-  backdrop-filter: blur(16px) saturate(1.2);
-  border-bottom: 1px solid color-mix(in oklch, var(--color-stage-rule) 60%, transparent);
+  background: color-mix(in oklch, var(--color-stage) 94%, transparent);
+  border-bottom: 1px solid var(--color-stage-rule);
   transition:
     background-color var(--dur-ui) ease,
     color var(--dur-ui) ease,
@@ -25,8 +25,12 @@
 /* Over the paper sections the bar turns to paper and ink. */
 .landing-bar.is-on-paper {
   color: var(--color-ink);
-  background: var(--color-bar);
+  background: color-mix(in oklch, var(--color-paper) 96%, transparent);
   border-bottom-color: var(--color-rule);
+}
+
+:root[data-mode='dark'] .landing-bar.is-on-paper {
+  background: color-mix(in oklch, var(--color-paper-2) 96%, transparent);
 }
 
 .is-on-paper .landing-nav > a:not([class]) {
@@ -430,6 +434,19 @@
   margin-top: var(--space-7);
 }
 
+.closing .button-quiet {
+  min-height: 3rem;
+  padding-inline: var(--space-5);
+  font-size: var(--text-base);
+}
+
+/* Tall enough that the paper above never shows under the bar at the foot of the page. */
+.closing {
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+}
+
 .closing-title {
   font-family: var(--font-display);
   font-size: var(--text-hero);
@@ -457,9 +474,15 @@
   min-height: 100svh;
 }
 
+/* The finished frame keeps one screen's height while the words run on below it. */
+.is-still .hero-canvas {
+  bottom: auto;
+  height: 100svh;
+}
+
 .is-still .hero-beats {
   align-content: center;
-  gap: var(--space-6);
+  gap: var(--space-5);
   min-height: 100svh;
   padding-block: 7rem 4rem;
 }
@@ -481,9 +504,17 @@
   font-size: clamp(2.75rem, 5vw, 4.5rem);
 }
 
-.is-still .beat:not(.beat-intro, .beat-end),
 .is-still .scroll-cue {
   display: none;
+}
+
+.is-still .beat:not(.beat-intro) .beat-title {
+  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+}
+
+.is-still .beat:not(.beat-intro) .beat-text {
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
 }
 
 /* ---------- Narrow and portrait screens: words on top, the frame below ---------- */
@@ -605,6 +636,7 @@
   .ledger-title,
   .ledger-lede,
   .closing-title {
+    break-inside: avoid;
     break-after: avoid;
   }
 

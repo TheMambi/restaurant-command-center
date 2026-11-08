@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import axe from 'axe-core';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { monthLabel, platformName } from '../src/format';
-import { beatOpacity, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameUrl, framingFor, loadOrder, nearestLoaded } from '../src/landing/sequence';
+import { beatOpacity, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameSetFor, frameUrl, framingFor, loadOrder, nearestLoaded } from '../src/landing/sequence';
 import { loadProfiles } from '../src/profiles';
 import { historySeries } from '../src/render/history';
 import { doFirst, trendSentence } from '../src/render/overview';
@@ -56,22 +56,35 @@ describe('the scroll sequence helpers', () => {
     expect(framingFor(390, 844)).toBe('tall');
     expect(framingFor(100, 0)).toBe('tall');
     expect(frameUrl('wide', 0)).toBe('/hero/wide/001.avif');
+    expect(frameSetFor(1920, 1080, 1)).toBe('wide');
+    expect(frameSetFor(1440, 900, 2)).toBe('wide-hd');
+    expect(frameSetFor(3840, 2160, 1)).toBe('wide-hd');
+    expect(frameSetFor(390, 844, 3)).toBe('tall');
     expect(endFrameFallbackUrl('tall')).toBe('/hero/tall/end.webp');
   });
 
-  it('fades each block of words in and out around its range', () => {
+  it('fades each block of words in and out inside its range', () => {
     expect(beatOpacity(0, 0, 0.12)).toBe(1);
-    expect(beatOpacity(0.3, 0, 0.12)).toBe(0);
+    expect(beatOpacity(0.12, 0, 0.12)).toBe(0);
     expect(beatOpacity(0.3, 0.2, 0.42)).toBe(1);
-    expect(beatOpacity(0.1, 0.2, 0.42)).toBe(0);
+    expect(beatOpacity(0.2, 0.2, 0.42)).toBe(0);
     expect(beatOpacity(1, 0.82, 1)).toBe(1);
+  });
+
+  it('never shows two blocks of words at once on the landing page', () => {
+    const ranges = [...page.matchAll(/data-from="([\d.]+)" data-to="([\d.]+)"/g)].map((m) => [Number(m[1]), Number(m[2])] as const);
+    expect(ranges.length).toBe(4);
+    for (let p = 0; p <= 1; p += 0.0025) {
+      const visible = ranges.filter(([from, to]) => beatOpacity(p, from, to) > 0.01);
+      expect(visible.length, `at ${p.toFixed(4)}`).toBeLessThanOrEqual(1);
+    }
   });
 });
 
 describe('the rendered frames', () => {
-  for (const framing of ['wide', 'tall'] as const) {
-    it(`has all ${FRAME_COUNT} ${framing} frames`, () => {
-      const dir = join(root, 'public', 'hero', framing);
+  for (const set of ['wide', 'wide-hd', 'tall'] as const) {
+    it(`has all ${FRAME_COUNT} frames in the ${set} set`, () => {
+      const dir = join(root, 'public', 'hero', set);
       expect(existsSync(dir)).toBe(true);
       const files = readdirSync(dir).filter((f) => f.endsWith('.avif')).sort();
       expect(files).toHaveLength(FRAME_COUNT);
