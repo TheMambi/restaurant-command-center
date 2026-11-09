@@ -73,7 +73,9 @@ function setupHero(): void {
   // starts clear of it.
   const column = hero.querySelector<HTMLElement>('.hero-beats')!;
   const canvas = el<HTMLCanvasElement>('hero-canvas');
+  const bar = document.querySelector<HTMLElement>('.landing-bar')!;
   const reserve = () => ({
+    bar: bar.offsetHeight,
     left: Math.max(0, column.offsetLeft - canvas.offsetLeft + Math.max(0, ...beats.filter((b) => !b.node.classList.contains('beat-intro')).map((b) => b.node.offsetLeft + b.node.offsetWidth)) + 24),
     top: Math.max(0, column.offsetTop - canvas.offsetTop + Math.max(0, ...beats.map((b) => b.node.offsetTop + b.node.offsetHeight)) + 16),
   });

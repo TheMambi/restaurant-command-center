@@ -63,23 +63,27 @@ export interface Rect {
   h: number;
 }
 
-// Space the words take: a column on the left of a landscape screen, a block on top of a portrait one.
+// Space the words take (a column on the left of a landscape screen, a block on top of a portrait
+// one) and the height of the pinned bar over the top of the stage.
 export interface Reserve {
   left: number;
   top: number;
+  bar: number;
 }
 
 // Wide frames cover screens up to their own shape and crop mostly from the empty left side, where
-// the words sit. On wider screens (ultrawide, a phone held sideways) they fit the height instead and
-// sit centred like the page's column, so the ticket's footer and the top plates stay whole.
-// Tall frames fit into the space the words leave: right of the column on a landscape screen, below
-// the block on a portrait one. A floor keeps the frame from shrinking to nothing.
-export function fitRect(imageW: number, imageH: number, boxW: number, boxH: number, framing: Framing, reserve: Reserve = { left: 0, top: 0 }): Rect {
+// the words sit. On wider screens (ultrawide, a phone held sideways) they fit the height under the
+// bar instead and sit centred like the page's column, so the ticket and the top plates stay whole.
+// Tall frames fit into the space the words leave: right of the column and under the bar on a
+// landscape screen, below the block on a portrait one. A floor keeps the frame from shrinking to
+// nothing.
+export function fitRect(imageW: number, imageH: number, boxW: number, boxH: number, framing: Framing, reserve: Reserve = { left: 0, top: 0, bar: 0 }): Rect {
   if (imageW <= 0 || imageH <= 0) return { x: 0, y: 0, w: 0, h: 0 };
   if (framing === 'wide') {
     if (boxW * imageH > imageW * boxH) {
-      const w = (imageW * boxH) / imageH;
-      return { x: (boxW - w) / 2, y: 0, w, h: boxH };
+      const h = boxH - reserve.bar;
+      const w = (imageW * h) / imageH;
+      return { x: (boxW - w) / 2, y: reserve.bar, w, h };
     }
     const s = Math.max(boxW / imageW, boxH / imageH);
     const w = imageW * s;
@@ -88,8 +92,9 @@ export function fitRect(imageW: number, imageH: number, boxW: number, boxH: numb
   }
   if (boxW > boxH) {
     const room = Math.max(boxW * 0.45, boxW - reserve.left);
-    const s = Math.min(room / imageW, boxH / imageH);
-    return { x: boxW - imageW * s, y: (boxH - imageH * s) / 2, w: imageW * s, h: imageH * s };
+    const below = boxH - reserve.bar;
+    const s = Math.min(room / imageW, below / imageH);
+    return { x: boxW - imageW * s, y: reserve.bar + (below - imageH * s) / 2, w: imageW * s, h: imageH * s };
   }
   const room = Math.max(boxH * 0.4, boxH - reserve.top);
   const s = Math.min(boxW / imageW, room / imageH);
@@ -131,7 +136,7 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
     const index = nearestLoaded(wanted, loaded);
     if (index === undefined) return;
     const image = images[index]!;
-    const r = fitRect(image.naturalWidth, image.naturalHeight, w, h, framingOf(set), { left: reserved.left * dpr, top: reserved.top * dpr });
+    const r = fitRect(image.naturalWidth, image.naturalHeight, w, h, framingOf(set), { left: reserved.left * dpr, top: reserved.top * dpr, bar: reserved.bar * dpr });
     ctx!.drawImage(image, r.x, r.y, r.w, r.h);
     extend(image, r, w, h);
   }

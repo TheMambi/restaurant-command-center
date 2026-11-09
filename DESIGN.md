@@ -96,7 +96,7 @@ A kitchen ticket on ink: three ruled lines and a short ink-blue line for the one
 - **Figures** on the landing page come from the same scoring code and config as the report. The frames themselves bake in Brasa Taquería's report; a test fails if that report changes without a re-render.
 - **Colour:** the hero and the closing use the stage tokens whatever the visitor's mode; the ledger sections follow the light or dark choice made in the report, on `--color-paper-2` in dark mode so the change of scene stays visible.
 - **Bar:** pinned and solid, with no blur or see-through (both smear or ghost whatever passes under them): stage over the hero and the closing, paper and ink over the ledger sections, switching on whatever sits just below it. The frames are composed to stay clear of it. The report's top bar is solid paper for the same reason.
-- **Frame fitting:** wide frames cover the screen. Tall frames fit into the space the words leave (right of the column on a landscape screen, below the words on a portrait one), and where a frame stops short of the screen its own edge carries on outward and eases into the stage. Nothing is painted over the frame.
+- **Frame fitting:** wide frames cover the screen. Screens wider than the frame (ultrawide, a phone held sideways) fit its height under the bar. Tall frames fit into the space the words leave (right of the column and under the bar on a landscape screen, below the words on a portrait one), and where a frame stops short of the screen its own edge carries on outward and eases into the stage. Nothing is painted over the frame.
 - **Frames as files:** AVIF (smooth in the dark counter where WebP breaks into blocks), with a WebP of the finished frame for browsers without AVIF.
 
 ## 8. Responsive behaviour

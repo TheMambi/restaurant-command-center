@@ -66,14 +66,21 @@ function render(profile: Profile, active: TabId): void {
     history: renderHistory(profile, series).value,
   };
   for (const t of tabs) el(`tab-${t.id}`).innerHTML = panels[t.id];
-  // Wide tables can scroll sideways on small screens, so keyboard users need to reach them.
   document.querySelectorAll<HTMLElement>('.table-wrap').forEach((wrap) => {
     const title = wrap.closest('section')?.querySelector('.block-title')?.textContent ?? 'Table';
-    wrap.tabIndex = 0;
     wrap.setAttribute('role', 'region');
     wrap.setAttribute('aria-label', `${title}, table`);
   });
   selectTab(active, false);
+}
+
+// A table that scrolls sideways needs a tab stop so keyboard users can scroll it. One that fits
+// would only add a stop that rings the whole table, so it gets none.
+function updateTableStops(): void {
+  document.querySelectorAll<HTMLElement>('.panel:not([hidden]) .table-wrap').forEach((wrap) => {
+    if (wrap.scrollWidth > wrap.clientWidth) wrap.tabIndex = 0;
+    else wrap.removeAttribute('tabindex');
+  });
 }
 
 function selectTab(id: TabId, focus: boolean): void {
@@ -86,6 +93,7 @@ function selectTab(id: TabId, focus: boolean): void {
     if (selected && focus) button.focus();
     if (selected) revealTab(button);
   }
+  updateTableStops();
 }
 
 // On narrow screens the tab row scrolls sideways under a fade at its right edge. Keep the open tab
@@ -153,6 +161,8 @@ function start(): void {
   let profile = profiles.find((p) => p.slug === params.get('r')) ?? profiles[0]!;
   const requested = params.get('tab');
   let active: TabId = isTab(requested) ? requested : 'overview';
+  // An unknown restaurant or tab opens the first restaurant's overview; the address says so too.
+  if ((params.has('r') && params.get('r') !== profile.slug) || (requested !== null && requested !== active)) writeUrl(profile.slug, active);
 
   const switcher = el<HTMLSelectElement>('restaurant-switcher');
   switcher.innerHTML = profiles.map((p) => html`<option value="${p.slug}">${p.restaurant.name}</option>`.value).join('');
@@ -202,6 +212,7 @@ function start(): void {
   });
 
   el('print-report').addEventListener('click', () => window.print());
+  addEventListener('resize', updateTableStops);
   setupMode();
   render(profile, active);
 }
