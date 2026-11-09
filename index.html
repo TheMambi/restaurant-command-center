@@ -13,9 +13,11 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
-  <link rel="preload" as="image" type="image/avif" href="/hero/wide/001.avif" media="(min-aspect-ratio: 29/20) and (max-resolution: 1.49dppx) and (prefers-reduced-motion: no-preference)">
-  <link rel="preload" as="image" type="image/avif" href="/hero/wide-hd/001.avif" media="(min-aspect-ratio: 29/20) and (min-resolution: 1.5dppx) and (prefers-reduced-motion: no-preference)">
-  <link rel="preload" as="image" type="image/avif" href="/hero/tall/001.avif" media="(max-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference)">
+  <!-- The hero fetches its first frame as data (see src/landing/sequence.ts). These match its choice
+       of frame set on standard and 2x screens; other densities start the fetch from the script. -->
+  <link rel="preload" as="fetch" crossorigin href="/hero/wide/001.avif" media="(min-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference) and (max-resolution: 1dppx) and (max-width: 2600px) and (max-height: 1462px), (min-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference) and (min-resolution: 2dppx) and (max-width: 1300px) and (max-height: 731px)">
+  <link rel="preload" as="fetch" crossorigin href="/hero/wide-hd/001.avif" media="(min-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference) and (min-resolution: 2dppx) and (min-width: 1301px), (min-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference) and (min-resolution: 2dppx) and (min-height: 732px)">
+  <link rel="preload" as="fetch" crossorigin href="/hero/tall/001.avif" media="(max-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference)">
   <script>
     // Report links from before the landing page existed (/?r=…&tab=…) still open the report.
     (() => {

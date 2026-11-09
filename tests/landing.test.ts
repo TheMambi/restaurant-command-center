@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import axe from 'axe-core';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { monthLabel, platformName } from '../src/format';
-import { beatOpacity, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameSetFor, frameUrl, framingFor, loadOrder, nearestLoaded } from '../src/landing/sequence';
+import { beatOpacity, decodeWindow, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameSetFor, frameUrl, framingFor, loadOrder, nearestLoaded } from '../src/landing/sequence';
 import { loadProfiles } from '../src/profiles';
 import { historySeries } from '../src/render/history';
 import { doFirst, trendSentence } from '../src/render/overview';
@@ -34,6 +34,21 @@ describe('the scroll sequence helpers', () => {
     expect(nearestLoaded(10, new Set([0, 16, 119]))).toBe(16);
     expect(nearestLoaded(5, new Set([0, 16]))).toBe(0);
     expect(nearestLoaded(5, new Set())).toBeUndefined();
+  });
+
+  it('keeps a decode window around the wanted frame, reaching further ahead', () => {
+    const forward = decodeWindow(50, 1, 9);
+    expect(forward[0]).toBe(50);
+    expect(forward).toHaveLength(9);
+    expect(new Set(forward).size).toBe(9);
+    expect(forward.filter((i) => i > 50).length).toBeGreaterThan(forward.filter((i) => i < 50).length * 2);
+    expect(decodeWindow(50, -1, 9).filter((i) => i < 50).length).toBeGreaterThan(5);
+    // At the ends it stays inside the sequence and still fills up from behind.
+    const end = decodeWindow(FRAME_COUNT - 1, 1, 6);
+    expect(end).toHaveLength(6);
+    expect(Math.max(...end)).toBe(FRAME_COUNT - 1);
+    expect(decodeWindow(0, -1, 4).every((i) => i >= 0)).toBe(true);
+    expect(decodeWindow(7, 1, 1)).toEqual([7]);
   });
 
   it('covers landscape screens and fits portrait screens to the width, sitting at the bottom', () => {
@@ -95,6 +110,8 @@ describe('the scroll sequence helpers', () => {
     expect(frameUrl('wide', 0)).toBe('/hero/wide/001.avif');
     expect(frameSetFor(1920, 1080, 1)).toBe('wide');
     expect(frameSetFor(1440, 900, 2)).toBe('wide-hd');
+    // A retina window that needs 2556 pixels across gets the lighter 2560 set.
+    expect(frameSetFor(1224, 719, 2)).toBe('wide');
     expect(frameSetFor(3840, 2160, 1)).toBe('wide-hd');
     expect(frameSetFor(390, 844, 3)).toBe('tall');
     expect(endFrameFallbackUrl('tall')).toBe('/hero/tall/end.webp');
