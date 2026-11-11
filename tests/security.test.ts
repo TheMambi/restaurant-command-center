@@ -137,4 +137,11 @@ describe('drawings', () => {
     expect(sparkline([5, 5, 5]).value).not.toMatch(/NaN|Infinity/);
     expect(sparkline([5]).value).toBe('');
   });
+
+  it('name colours in tokens.css alone', () => {
+    for (const file of ['app.css', 'landing.css']) {
+      const css = read('src', 'styles', file).replace(/\/\*[\s\S]*?\*\//g, '');
+      expect(css, file).not.toMatch(/oklch\(|rgba?\(|hsla?\(|#[0-9a-f]{3,8}\b/i);
+    }
+  });
 });

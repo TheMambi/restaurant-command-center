@@ -65,7 +65,7 @@
 }
 
 .button-cta {
-  box-shadow: 0 10px 30px -10px var(--color-lamp-glow), 0 2px 0 oklch(0% 0 0 / 0.4);
+  box-shadow: 0 10px 30px -10px var(--color-lamp-glow), 0 2px 0 var(--color-shade);
 }
 
 .button-cta:hover {
@@ -714,7 +714,8 @@
 
   .part,
   .sample,
-  .principles li {
+  .principles li,
+  .closing .container {
     break-inside: avoid;
   }
 

@@ -449,7 +449,7 @@ select:hover,
   display: grid;
   grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 1.05fr);
   gap: var(--space-6) clamp(var(--space-5), 3vw, var(--space-7));
-  align-items: center;
+  align-items: start;
 }
 
 .score-plate {
@@ -1025,7 +1025,6 @@ tfoot tr > :last-child {
 .spark {
   display: block;
   width: 100%;
-  max-width: 11rem;
   height: 2.75rem;
   margin-top: var(--space-3);
   overflow: visible;
@@ -1406,9 +1405,14 @@ tfoot tr > :last-child {
   }
 
 
+  /* Narrower tickets hang straight, so their edges never meet. */
   .tickets {
-    gap: var(--space-3);
+    gap: var(--space-4);
     padding-inline: var(--space-2);
+  }
+
+  .ticket-lift:nth-child(n) {
+    transform: none;
   }
 
   .ticket {
@@ -1424,15 +1428,32 @@ tfoot tr > :last-child {
   }
 }
 
-/* Under three tickets' width they hang one under the other, straight, across the whole rail. */
+/* Under three tickets' width they hang one under the other, each from its own stretch of rail. */
 @media (max-width: 46rem) {
   .tickets {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-4);
+    gap: var(--space-5);
+    padding-top: 0;
   }
 
-  .ticket-lift:nth-child(n) {
-    transform: none;
+  .tickets::before {
+    content: none;
+  }
+
+  .ticket-lift {
+    position: relative;
+    padding-top: 0.5rem;
+  }
+
+  .ticket-lift::before {
+    content: '';
+    position: absolute;
+    inset: 0 calc(var(--space-2) * -1) auto;
+    z-index: 2;
+    height: 1.125rem;
+    border-radius: 5px;
+    background: linear-gradient(180deg, var(--color-steel-1), var(--color-steel-2) 22%, var(--color-steel-3) 60%, var(--color-steel-4));
+    box-shadow: inset 0 1px 0 var(--color-steel-shine);
   }
 }
 
@@ -1552,6 +1573,10 @@ tfoot tr > :last-child {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .radar-label {
+    font-size: 18px;
+  }
+
   .topbar {
     position: static;
   }
@@ -1658,8 +1683,26 @@ tfoot tr > :last-child {
     font-size: 11pt;
   }
 
+  .stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .stat dd {
+    font-size: 1.5rem;
+  }
+
+  .panel > header {
+    break-after: avoid;
+  }
+
+  .panel > header + * {
+    break-before: avoid;
+  }
+
   body::before,
   .tickets::before,
+  .ticket-lift::before,
   .topbar,
   .tabs,
   .no-print,

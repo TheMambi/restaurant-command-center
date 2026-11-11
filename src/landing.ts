@@ -65,7 +65,7 @@ function renderSamples(): void {
       const r = p.restaurant;
       const first = doFirst(p.opportunities, 1)[0];
       return html`<li>
-        <a class="sample sheet" href="/report/?r=${p.slug}">
+        <a class="sample sheet" href="/report/?r=${p.slug}" aria-label="${r.name}, ${score} out of 100, ${scoreLabel(score).toLowerCase()}. Open the report">
           <span class="sample-plate">${dial(score, `${score} out of 100`, 'sample-figure')}<span class="sample-label">${scoreLabel(score)}</span></span>
           <span class="sample-body">
             <span class="sample-name">${r.name}</span>
