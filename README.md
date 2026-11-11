@@ -1,16 +1,19 @@
 # Restaurant Command Center
 
+[![check](https://github.com/TheMambi/restaurant-command-center/actions/workflows/check.yml/badge.svg?branch=dev)](https://github.com/TheMambi/restaurant-command-center/actions/workflows/check.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-1f4e8c)](LICENSE)
+
+**[Open the live demo](https://restaurant-command-center-sable.vercel.app/)** or go straight to [the sample report](https://restaurant-command-center-sable.vercel.app/report/).
+
+[![The landing page: a kitchen ticket listing three jobs and the report's sheets on a dark steel counter, under the headline "Know what to fix first."](public/og.png)](https://restaurant-command-center-sable.vercel.app/)
+
 A report card for a restaurant's online presence. It scores how the restaurant looks online, out of 100, and leads with the three things to do first. Behind that: ratings and reviews across platforms, the Google Business Profile, the website, social media, a nearby competitor, every recommended next step and progress over time.
 
 Every restaurant is one JSON file. Drop a new file into `profiles/` and the dashboard renders it, scores it and adds it to the restaurant switcher.
 
 The site opens on a landing page: as you scroll, a kitchen ticket with this week's three actions lifts off a dark counter and the report behind it unfolds, rendered frame by frame from the app's own figures. The report itself lives at `/report/`.
 
-**Live demo:** [landing page](https://restaurant-command-center-sable.vercel.app/) and [the report](https://restaurant-command-center-sable.vercel.app/report/)
-
-![The landing page: a kitchen ticket listing three actions on a dark counter, under the headline "Know what to fix first."](docs/landing.png)
-
-![Overview of a sample restaurant: the score beside the three actions to do first](docs/overview.png)
+![Overview of a sample restaurant: the score on its plate beside the six-part wheel, and three tickets hanging from a rail](docs/overview.png)
 
 > **All data in this repository is fictional.** Osteria Lumen, Brasa Taquería, their competitors, addresses and numbers are invented for the demo. The `.example` web addresses are reserved and point nowhere.
 
