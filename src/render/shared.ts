@@ -1,5 +1,6 @@
 import { html, type SafeHtml } from '../html';
 import type { CheckItem } from '../schema';
+import { segments } from './visuals';
 
 export const statusWords = {
   pass: { css: 'is-good', mark: '✓', word: 'Done' },
@@ -13,7 +14,15 @@ export function status(css: string, mark: string, word: string): SafeHtml {
 
 export function checklist(items: CheckItem[], emptyText = 'Nothing to check yet.'): SafeHtml {
   if (items.length === 0) return html`<p class="muted">${emptyText}</p>`;
-  return html`<ul class="checklist">${items.map((item) => {
+  const count = (status: CheckItem['status']) => items.filter((i) => i.status === status).length;
+  return html`${segments(
+    [
+      { count: count('pass'), css: 'is-good', word: 'done' },
+      { count: count('partial'), css: 'is-warn', word: 'partly done' },
+      { count: count('fail'), css: 'is-bad', word: 'missing' },
+    ],
+    `${count('pass')} of ${items.length} done`,
+  )}<ul class="checklist">${items.map((item) => {
     const s = statusWords[item.status];
     return html`<li>${status(s.css, s.mark, s.word)}<span>${item.label}</span></li>`;
   })}</ul>`;
@@ -21,15 +30,15 @@ export function checklist(items: CheckItem[], emptyText = 'Nothing to check yet.
 
 export function meter(value: number, max: number, variant: '' | 'is-rival' | 'is-neutral' = ''): SafeHtml {
   const share = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
-  return html`<span class="meter" aria-hidden="true"><span class="meter-fill ${variant}" style="transform: scaleX(${share.toFixed(3)})"></span></span>`;
+  return html`<span class="meter" aria-hidden="true"><svg viewBox="0 0 100 1" preserveAspectRatio="none"><rect class="meter-fill ${variant}" width="${(share * 100).toFixed(1)}" height="1"></rect></svg></span>`;
 }
 
 export function sectionHeader(title: string, intro: string): SafeHtml {
   return html`<header><h2 class="section-title">${title}</h2><p class="section-intro">${intro}</p></header>`;
 }
 
-export function stat(label: string, value: string, note?: string): SafeHtml {
-  return html`<div class="stat"><dt>${label}</dt><dd>${value}${note && html`<span class="stat-note">${note}</span>`}</dd></div>`;
+export function stat(label: string, value: string, note?: string, visual?: SafeHtml): SafeHtml {
+  return html`<div class="stat sheet"><dt>${label}</dt><dd>${value}${note && html`<span class="stat-note">${note}</span>`}</dd>${visual}</div>`;
 }
 
 export function list(items: string[], emptyText = 'Nothing here right now.'): SafeHtml {

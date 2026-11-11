@@ -10,7 +10,7 @@ export function renderSocial(p: Profile): SafeHtml {
   return html`
     ${sectionHeader('Social media', 'Who follows the restaurant, how they respond, and how fast the team answers them.')}
 
-    <section class="card" aria-labelledby="audience-title">
+    <section class="card sheet" aria-labelledby="audience-title">
       <h3 class="block-title" id="audience-title">Accounts</h3>
       ${socials.length === 0
         ? html`<p class="muted">No social accounts in this profile yet.</p>`
@@ -26,7 +26,7 @@ export function renderSocial(p: Profile): SafeHtml {
     </section>
 
     <div class="grid-2">
-      <section class="card" aria-labelledby="growth-title">
+      <section class="card sheet" aria-labelledby="growth-title">
         <h3 class="block-title" id="growth-title">Where growth could come from</h3>
         ${p.growthIdeas.length === 0
           ? html`<p class="muted">No growth ideas noted yet.</p>`
@@ -40,14 +40,14 @@ export function renderSocial(p: Profile): SafeHtml {
           </table>`}
       </section>
 
-      <section class="card" aria-labelledby="content-title">
+      <section class="card sheet" aria-labelledby="content-title">
         <h3 class="block-title" id="content-title">Content checklist</h3>
         ${checklist(p.checklists.socialContent)}
       </section>
     </div>
 
     ${p.sampleSignals.length > 0 &&
-    html`<section class="card" aria-labelledby="signals-title">
+    html`<section class="card sheet" aria-labelledby="signals-title">
       <h3 class="block-title" id="signals-title">What monitoring would flag</h3>
       <p class="small muted">Examples written for this sample, not live alerts.</p>
       <ul class="plain-list mt-3">

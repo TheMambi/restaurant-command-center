@@ -6,13 +6,13 @@ import { checklist, meter, sectionHeader, share } from './shared';
 
 export function renderReviews(p: Profile): SafeHtml {
   const total = totalReviews(p.reviewPlatforms);
-  const tags = (items: string[], empty: string) =>
-    items.length > 0 ? html`<ul class="tags">${items.map((t) => html`<li>${t}</li>`)}</ul>` : html`<p class="muted">${empty}</p>`;
+  const tags = (items: string[], empty: string, tone: 'is-good' | 'is-bad') =>
+    items.length > 0 ? html`<ul class="tags ${tone}">${items.map((t) => html`<li>${t}</li>`)}</ul>` : html`<p class="muted">${empty}</p>`;
 
   return html`
     ${sectionHeader('Reviews', 'Where reviews come from, what diners say, and whether anyone answers.')}
 
-    <section class="card" aria-labelledby="volume-title">
+    <section class="card sheet" aria-labelledby="volume-title">
       <h3 class="block-title" id="volume-title">Reviews by platform</h3>
       <div class="table-wrap"><table>
         <thead><tr><th scope="col">Platform</th><th scope="col" class="num">Reviews</th><th scope="col" class="col-meter hide-narrow"><span class="sr-only">Share of all reviews</span></th><th scope="col" class="num">Share</th><th scope="col" class="num">Rating</th></tr></thead>
@@ -27,16 +27,16 @@ export function renderReviews(p: Profile): SafeHtml {
     </section>
 
     <div class="grid-2">
-      <section class="card" aria-labelledby="reply-title">
+      <section class="card sheet" aria-labelledby="reply-title">
         <h3 class="block-title" id="reply-title">Reply habits</h3>
         ${checklist(p.checklists.reviewResponse)}
       </section>
-      <section class="card" aria-labelledby="themes-title">
+      <section class="card sheet" aria-labelledby="themes-title">
         <h3 class="block-title" id="themes-title">What reviews mention</h3>
-        <h4 class="list-head">Praise</h4>
-        ${tags(p.reviewThemes.positive, 'No common praise noted yet.')}
-        <h4 class="list-head mt-4">Complaints</h4>
-        ${tags(p.reviewThemes.negative, 'No common complaints noted yet.')}
+        <h4 class="list-head is-good"><span class="status-mark" aria-hidden="true">✓</span>Praise</h4>
+        ${tags(p.reviewThemes.positive, 'No common praise noted yet.', 'is-good')}
+        <h4 class="list-head is-bad mt-4"><span class="status-mark" aria-hidden="true">✗</span>Complaints</h4>
+        ${tags(p.reviewThemes.negative, 'No common complaints noted yet.', 'is-bad')}
       </section>
     </div>`;
 }

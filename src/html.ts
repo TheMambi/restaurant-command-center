@@ -22,3 +22,16 @@ function render(value: Value): string {
 export function html(strings: TemplateStringsArray, ...values: Value[]): SafeHtml {
   return new SafeHtml(strings.reduce((out, str, i) => out + str + (i < values.length ? render(values[i]!) : ''), ''));
 }
+
+interface HtmlPolicy {
+  createHTML(input: string): unknown;
+}
+const factory = (globalThis as { trustedTypes?: { createPolicy(name: string, rules: { createHTML: (s: string) => string }): HtmlPolicy } }).trustedTypes;
+// The site's Content-Security-Policy (vercel.json) only lets this one policy write markup.
+const policy = factory?.createPolicy('rcc', { createHTML: (s) => s });
+
+// The only place markup enters the page. It takes SafeHtml alone, so a plain string cannot reach innerHTML.
+export function setHtml(target: Element, content: SafeHtml | SafeHtml[]): void {
+  const markup = Array.isArray(content) ? content.map((c) => c.value).join('') : content.value;
+  target.innerHTML = (policy ? policy.createHTML(markup) : markup) as string;
+}

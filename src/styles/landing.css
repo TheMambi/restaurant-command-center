@@ -1,14 +1,11 @@
-/* Landing page. One orchestrated moment: the hero's scroll sequence on the dark stage. Everything
-   after it is the ledger on paper, quiet and ruled, ending on a dark bookend. Colours and fonts
-   come from tokens.css; see DESIGN.md, "Landing page". */
-
-.landing {
-  background: var(--color-paper);
-}
+/* Landing page. One orchestrated moment: the hero's scroll sequence on the dark stage. The page
+   stays on that stage afterwards, and what follows lies on it as lit sheets: the weights, the two
+   sample plates, the rules the numbers keep. Colours and fonts come from tokens.css; see
+   DESIGN.md, "Landing page". */
 
 /* ---------- Bar ---------- */
 
-/* Solid and unblurred: a see-through bar ghosts the text under it and smears stage into paper. */
+/* Solid and unblurred: a see-through bar ghosts the text under it. */
 .landing-bar {
   position: fixed;
   inset: 0 0 auto;
@@ -16,42 +13,6 @@
   color: var(--color-stage-ink);
   background: var(--color-stage);
   border-bottom: 1px solid var(--color-stage-rule);
-  transition:
-    background-color var(--dur-ui) ease,
-    color var(--dur-ui) ease,
-    border-color var(--dur-ui) ease;
-}
-
-/* Over the paper sections the bar turns to paper and ink. */
-.landing-bar.is-on-paper {
-  color: var(--color-ink);
-  background: var(--color-paper);
-  border-bottom-color: var(--color-rule);
-}
-
-:root[data-mode='dark'] .landing-bar.is-on-paper {
-  background: var(--color-paper-2);
-}
-
-.is-on-paper .landing-nav > a:not([class]) {
-  color: var(--color-muted);
-}
-
-.is-on-paper .landing-nav > a:not([class]):hover {
-  color: var(--color-ink);
-}
-
-.is-on-paper .button-quiet {
-  color: var(--color-ink);
-  border-color: var(--color-rule);
-}
-
-.is-on-paper .button-quiet:hover {
-  border-color: var(--color-ink-2);
-}
-
-.is-on-paper :focus-visible {
-  outline-color: var(--color-focus);
 }
 
 .landing-bar-inner {
@@ -103,8 +64,12 @@
   color: var(--color-cta-ink);
 }
 
+.button-cta {
+  box-shadow: 0 10px 30px -10px var(--color-lamp-glow), 0 2px 0 oklch(0% 0 0 / 0.4);
+}
+
 .button-cta:hover {
-  background: var(--color-stage-ink);
+  background: var(--color-lamp);
 }
 
 .button-quiet {
@@ -119,12 +84,8 @@
   border-color: var(--color-stage-muted);
 }
 
-.landing :focus-visible {
-  outline-color: var(--color-stage-accent);
-}
-
-.ledger :focus-visible {
-  outline-color: var(--color-focus);
+.button-cta:focus-visible {
+  outline-offset: 4px;
 }
 
 /* ---------- Hero: a pinned stage the sequence plays on ---------- */
@@ -142,6 +103,17 @@
   height: 100vh;
   height: 100svh;
   overflow: hidden;
+}
+
+/* The lit counter at the foot of the frame eases into the stage, so the page carries on below the
+   hero without a line. It covers only the counter: the frames keep the ticket and sheets above it. */
+.hero-stage::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 16%;
+  background: linear-gradient(to bottom, transparent, var(--color-stage));
+  pointer-events: none;
 }
 
 .hero-canvas {
@@ -233,26 +205,10 @@
   background: var(--color-stage-muted);
 }
 
-/* ---------- Ledger sections on paper ---------- */
+/* ---------- Sections on the stage ---------- */
 
 .ledger {
-  padding-block: clamp(6rem, 12vw, 10rem);
-  background: var(--color-paper);
-  color: var(--color-ink);
-}
-
-/* Dark paper sits too close to the stage; the card surface keeps the change of scene visible. */
-:root[data-mode='dark'] .ledger {
-  background: var(--color-paper-2);
-}
-
-.ledger + .ledger {
-  padding-top: 0;
-}
-
-/* In dark mode the stage and the paper are close; a hairline makes the change of scene deliberate. */
-.hero + .ledger {
-  border-top: 1px solid var(--color-stage-rule);
+  padding-block: clamp(5rem, 10vw, 9rem) 0;
 }
 
 .ledger:focus {
@@ -262,7 +218,7 @@
 .ledger-title {
   font-family: var(--font-display);
   font-size: var(--text-section);
-  font-weight: 400;
+  font-weight: 380;
   line-height: 1;
   letter-spacing: -0.03em;
   max-width: 14ch;
@@ -274,21 +230,38 @@
   max-width: 38rem;
   font-size: var(--text-lg);
   line-height: 1.6;
-  color: var(--color-ink-2);
+  color: var(--color-muted);
   text-wrap: pretty;
 }
+
+/* The weights: one bar cut into six slices, each as wide as its share of the score. */
+.weights {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  padding: clamp(var(--space-5), 3vw, var(--space-7));
+}
+
+.weights-bar {
+  display: block;
+  width: 100%;
+  height: 1.25rem;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.weight-slice.is-a { fill: var(--color-accent); }
+.weight-slice.is-b { fill: var(--color-accent-2); }
 
 .parts {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-7) var(--space-6);
-  margin-top: clamp(3rem, 6vw, 5rem);
+  gap: var(--space-6) var(--space-6);
+  margin-top: var(--space-6);
 }
 
 .part {
   padding-top: var(--space-4);
-  border-top: 1px solid var(--color-rule-strong);
+  border-top: 1px solid var(--color-rule);
 }
 
 .part-weight {
@@ -301,8 +274,8 @@
 }
 
 .part-figure {
-  font-size: clamp(3.5rem, 6vw, 5rem);
-  font-weight: 350;
+  font-size: clamp(3.25rem, 5.4vw, 4.75rem);
+  font-weight: 380;
   letter-spacing: -0.04em;
 }
 
@@ -311,7 +284,7 @@
 }
 
 .part-name {
-  margin-top: var(--space-4);
+  margin-top: var(--space-3);
   font-size: var(--text-lg);
   font-weight: 600;
 }
@@ -322,94 +295,144 @@
   color: var(--color-muted);
 }
 
+/* The sample restaurants, each on its own sheet with its plate and its wheel. */
 .samples {
   list-style: none;
-  margin-top: clamp(3rem, 6vw, 5rem);
-  border-bottom: 1px solid var(--color-rule);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
 }
 
 .sample {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
-  grid-template-areas:
-    'name score open'
-    'meta score open';
-  align-items: center;
-  gap: var(--space-1) var(--space-6);
-  padding-block: var(--space-6);
-  border-top: 1px solid var(--color-rule-strong);
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+  gap: var(--space-5) var(--space-6);
+  align-items: start;
+  height: 100%;
   text-decoration: none;
+  transition: transform 420ms var(--ease-out);
+}
+
+.sample:hover {
+  transform: translateY(-6px);
+}
+
+.sample-plate {
+  display: grid;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.sample-label {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 450;
+}
+
+.sample-body {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
 .sample-name {
-  grid-area: name;
-  align-self: end;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-size: clamp(1.75rem, 2.8vw, 2.5rem);
   font-weight: 400;
   line-height: 1.05;
   letter-spacing: -0.02em;
 }
 
 .sample-meta {
-  grid-area: meta;
-  align-self: start;
+  /* Two lines whatever the address, so the two sheets' wheels line up. */
+  min-height: 3.1em;
   color: var(--color-muted);
 }
 
-.sample-score {
-  grid-area: score;
+.sample .radar {
+  margin-top: var(--space-2);
+}
+
+/* The wheel is drawn smaller here than on the report, so its words are set larger. */
+.sample .radar-label {
+  font-size: 15px;
+}
+
+.sample .radar-value {
+  font-size: 18px;
+}
+
+.sample-first {
   display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: baseline;
-  column-gap: var(--space-3);
-}
-
-.sample-figure {
-  grid-row: span 2;
-  font-family: var(--font-display);
-  font-size: clamp(3.5rem, 6vw, 5rem);
-  font-weight: 350;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  color: var(--color-accent);
-}
-
-.sample-of {
-  align-self: end;
-  color: var(--color-muted);
-}
-
-.sample-label {
-  align-self: start;
+  gap: 0.15rem;
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: 3px;
+  background: var(--color-ticket);
+  color: var(--color-ticket-ink);
   font-weight: 600;
+}
+
+.sample-first-label {
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-ticket-muted);
 }
 
 .sample-open {
-  grid-area: open;
+  margin-top: var(--space-2);
   font-weight: 600;
+  color: var(--color-accent);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.3em;
-  transition: color var(--dur-micro) ease;
-}
-
-.sample:hover .sample-open,
-.sample:hover .sample-name {
-  color: var(--color-accent);
 }
 
 .principles {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-6);
-  margin-top: clamp(3rem, 6vw, 5rem);
+  gap: var(--space-5);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
 }
 
 .principles li {
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-rule-strong);
+  padding: var(--space-5);
+}
+
+.principle-art {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  height: 6.5rem;
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-inset);
+  background: var(--color-paper-2);
+  border: 1px solid var(--color-rule);
+}
+
+.art-bar { fill: var(--color-accent); }
+.art-page { fill: var(--color-paper); stroke: var(--color-rule-strong); stroke-width: 1.5; }
+.art-rule { stroke: var(--color-rule-strong); stroke-width: 1.5; stroke-linecap: round; opacity: 0.45; }
+.art-rule.is-strong { stroke-width: 3; opacity: 1; }
+
+.art-levels span {
+  padding: 0.1rem var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.art-levels .is-on {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+  font-weight: 600;
 }
 
 .principles h3 {
@@ -417,34 +440,20 @@
   font-weight: 600;
 }
 
-.principles p {
+.principles li > p:last-child {
   margin-top: var(--space-2);
   color: var(--color-muted);
 }
 
-/* ---------- Closing bookend on the stage ---------- */
+/* ---------- Closing: back under the lamp ---------- */
 
 .closing {
-  padding-block: clamp(7rem, 14vw, 12rem);
-  background: var(--color-stage);
-  color: var(--color-stage-ink);
-}
-
-.closing .beat-actions {
-  margin-top: var(--space-7);
-}
-
-.closing .button-quiet {
-  min-height: 3rem;
-  padding-inline: var(--space-5);
-  font-size: var(--text-base);
-}
-
-/* Tall enough that the paper above never shows under the bar at the foot of the page. */
-.closing {
-  min-height: 100svh;
+  position: relative;
+  min-height: 70svh;
   display: grid;
   align-content: center;
+  padding-block: clamp(7rem, 14vw, 12rem);
+  background: radial-gradient(60rem 26rem at 50% 100%, var(--color-lamp-glow), transparent 70%);
 }
 
 .closing-title {
@@ -456,10 +465,20 @@
   max-width: 11ch;
 }
 
-.landing .footer {
-  background: var(--color-stage);
-  color: var(--color-stage-muted);
-  border-top: 1px solid var(--color-stage-rule);
+.closing-lede {
+  margin-top: var(--space-5);
+  font-size: var(--text-lg);
+  color: var(--color-muted);
+}
+
+.closing .beat-actions {
+  margin-top: var(--space-6);
+}
+
+.closing .button-quiet {
+  min-height: 3rem;
+  padding-inline: var(--space-5);
+  font-size: var(--text-base);
 }
 
 /* ---------- Reduced motion: the finished frame, words in order ---------- */
@@ -478,7 +497,7 @@
 .is-still .hero-canvas {
   bottom: auto;
   height: 100svh;
-  mask-image: linear-gradient(to bottom, var(--color-ink) 82%, transparent);
+  mask-image: linear-gradient(to bottom, black 82%, transparent);
 }
 
 .is-still .beat:not(.beat-intro, .beat-end) .beat-text {
@@ -563,26 +582,23 @@
   }
 }
 
-@media (max-width: 60rem) {
-  .parts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
+@media (max-width: 68rem) {
   .principles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .sample {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      'name name'
-      'meta meta'
-      'score open';
-    row-gap: var(--space-2);
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .sample-score {
-    margin-top: var(--space-3);
+  .sample-plate {
+    max-width: 11rem;
+  }
+}
+
+@media (max-width: 60rem) {
+  .parts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -597,22 +613,13 @@
   }
 
   .parts,
-  .principles {
+  .principles,
+  .samples {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-6);
   }
 
-  .sample {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      'name'
-      'meta'
-      'score'
-      'open';
-  }
-
-  .sample-open {
-    margin-top: var(--space-2);
+  .parts {
+    gap: var(--space-5);
   }
 }
 
@@ -660,13 +667,13 @@
 @media print {
   .landing-bar,
   .hero-canvas,
+  .hero-stage::after,
   .scroll-cue {
     display: none !important;
   }
 
   .hero,
-  .closing,
-  .landing .footer {
+  .closing {
     height: auto;
     background: none;
     color: var(--color-ink);
@@ -709,6 +716,10 @@
   .sample,
   .principles li {
     break-inside: avoid;
+  }
+
+  .samples .dial-arc {
+    animation: none !important;
   }
 
   .hero-stage {

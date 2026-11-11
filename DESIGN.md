@@ -1,119 +1,118 @@
 # DESIGN.md: Restaurant Command Center
 
-The design system for this dashboard, in the nine-section DESIGN.md format. Tokens live in [`src/styles/tokens.css`](src/styles/tokens.css); components in [`src/styles/app.css`](src/styles/app.css).
+The design system for this dashboard. Tokens live in [`src/styles/tokens.css`](src/styles/tokens.css); components in [`src/styles/app.css`](src/styles/app.css); the drawings in [`src/render/visuals.ts`](src/render/visuals.ts).
 
 ## 1. Visual theme
 
-A restaurant's report card. Warm paper and near-black ink, ruled like a ledger, with one ink blue (the colour of a fountain pen on a ledger) that marks the score, the bars and the current tab. Red, amber and green are reserved for status, so a bar never reads as a warning. The signature object is the ticket: this week's three actions printed like an order on the pass. It should feel like something an owner would print and pin by the pass, not a neon analytics console. Restraint is the point: the numbers carry the page.
+The pass during service. The page is the dark steel counter under a heat lamp, and everything the owner reads lies on it as a lit sheet: the score on its plate, this week's tickets hanging from the rail, the tables. The landing hero's rendered frames show that scene in 3D, with the week's three jobs on one ticket and the report's sheets rising behind it; the rest of the site is the same counter seen from above, where each job hangs on its own ticket.
 
-The landing page sets the same objects on a dark stage, lit like a product shot: the ticket lies on a counter under a soft warm key light, then lifts and the report unfolds behind it as the visitor scrolls. After that one moment, the page returns to paper.
+Two objects carry the identity:
+
+- **The rail of tickets.** "Do these first" is three receipt-paper tickets tucked under a steel rail, each hanging a little off square, numbered in ink blue.
+- **The score plate.** The score sits in a ring that fills clockwise like the rim of a plate, with the six parts on a wheel beside it.
 
 ## 2. Colour palette and roles
 
-All colours are OKLCH tokens. Nothing outside `tokens.css` names a colour.
+All colours are OKLCH tokens. Nothing outside `tokens.css` names a colour. The same names mean different things in two contexts, so a component never needs to know where it sits.
 
-| Token | Light | Role |
-|---|---|---|
-| `--color-paper` | warm off-white | page ground |
-| `--color-paper-2` | near white | cards |
-| `--color-paper-3` | light warm grey | meter tracks, notes |
-| `--color-ink` | warm near-black | text, strong rules |
-| `--color-ink-2` | dark warm grey | secondary text |
-| `--color-muted` | mid warm grey (4.5:1 or better) | labels, captions |
-| `--color-rule` | pale warm grey | hairlines between rows |
-| `--color-accent` | ink blue | the score, bars, selected tab, numbered actions |
-| `--color-ticket` | receipt yellow | the "Do these first" ticket |
-| `--color-rival` | neutral grey | the competitor's bars |
-| `--color-good` / `--color-warn` / `--color-bad` | green, amber, red | status marks only, always beside a word |
-| `--color-stage` | deep warm charcoal, same in both modes | the landing page's hero and closing; the rendered frames settle to it at every edge |
-| `--color-stage-ink` / `-muted` / `-rule` / `-accent` | light ink, grey, hairline and ink blue for the stage | words and controls on the stage |
-| `--color-cta` / `--color-cta-ink` | receipt paper and ink | the one call to action on the stage |
+| Context | Where | Ink | Accent |
+|---|---|---|---|
+| Stage | the page itself: bars, mastheads, tabs, section titles | light ink on warm charcoal | the lamp's ember, for controls and the open tab |
+| Sheet | any `.sheet`: cards, stat tiles, the weights, sample plates | dark ink on paper (light mode) or light ink on dark steel (dark mode) | ink blue, for data |
+| Ticket | `.ticket`, the call to action | dark ink on receipt yellow, in both modes | ink blue |
 
-Dark mode re-derives every token (paper about 17% lightness, ink about 94%, accent lighter and less saturated). The hue never moves between modes. A small script sets the mode before first paint from the saved choice or the system setting, and printing always uses light.
+| Token | Role |
+|---|---|
+| `--color-stage` | the counter; the hero frames settle to it at every edge, so never change it without a re-render |
+| `--color-lamp` | controls, the open tab, focus on the stage, the sample-data flag. Never data, never status |
+| `--color-accent` | data: the plate's rim, bars, lines, the wheel, numbered actions |
+| `--color-rival` | the competitor's bars and "even" |
+| `--color-good` / `--color-warn` / `--color-bad` and their `-soft` tints | status only, always beside a word |
+| `--color-ticket` | the tickets and the call to action |
+
+Light and dark change the sheets only. The stage, the tickets and the lamp are the same in both. Printing turns the whole page into ink on white.
 
 ## 3. Typography
 
-Type scale note: body steps (13, 14, 16, 18, 22) follow roughly a 1.125 to 1.2 ratio. The restaurant name (40 to 60) and the score (92) jump on purpose so the two things that matter most lead the page. The landing page adds two display steps: section titles up to 72 and the hero title up to 128.
-
-
-- **Fraunces** (variable, self-hosted, with its optical-size axis) for the restaurant name, the score figure, section titles and every landing headline. At display sizes the optical-size axis switches to Fraunces's high-contrast cut; set light (350 to 450) with tight tracking. Section titles inside the report are Fraunces at 28 to 38 px, weight 450.
-- **Onest** (variable, self-hosted) for everything else: labels, controls, table cells, figures. Tabular numerals everywhere.
-- Scale: 13, 14, 16, 18, 22 px; the restaurant name at `clamp(40px, 4.4vw, 60px)`; the score at 92 px. Landing: `--text-section` up to 72 px and `--text-hero` up to 128 px, both fluid.
-- Labels and table heads are sentence case, untracked, a step smaller and muted. No uppercase labels.
+- **Fraunces** (variable, self-hosted, optical-size axis) for the restaurant name, section titles, every large figure and the landing headlines. Set light (360 to 450) with tight tracking.
+- **Onest** (variable, self-hosted) for labels, controls, tables and small figures. Tabular numerals everywhere.
+- Scale: 13, 14, 16, 18, 22 px for text; the restaurant name up to 84 px; landing section titles up to 72 px and the hero title up to 128 px, all fluid.
+- Labels and table heads are sentence case, untracked and muted. No uppercase labels.
 
 ## 4. Components
 
-- **Sections sit on the paper.** A section is a title over a ruled table or list, with no box around it, like a page of a ledger. Only two objects get their own surface and lift off the page: the score card (`paper-2`, 1px rule border, 14px radius, `--shadow-lift`) and the ticket (`--shadow-ticket`, applied to a `.ticket-lift` wrapper because the ticket's perforated edge is a mask that would clip its own shadow).
-- **Controls:** pill-shaped (`--radius-control`) buttons and picker; the picker draws its own chevron. On the landing page, the call to action is receipt paper on the stage and the second action is an outlined pill.
-- **Table:** full width, 2px ink rule under the head, 1px hairlines between rows, no vertical lines. Numbers right-aligned.
-- **Meter:** 10px bar on a rounded `paper-3` track, filled with the accent from zero, drawn with `transform: scaleX`. The competitor's meter uses `--color-rival`.
-- **Status:** a mark (✓, !, ✗) in its status colour followed by the word (Done, Partly done, Missing). Colour never carries meaning alone.
-- **Stat row:** label, large figure in Fraunces, one plain-English note in Onest ("Up 9 points since May 2026"). No icons, no arrows.
-- **Ticket:** receipt-yellow paper with perforated top and bottom edges and a dashed tear line under the heading. Holds the action list: numbered in the accent, title, one-sentence description, time and cost as a definition list. Used once per page.
-- **Line chart:** inline SVG, one series, one y-axis, 2px accent line, 4 to 5 gridlines, value on the last point. A hidden table carries the same numbers for screen readers. If the axis doesn't start at zero, a caption says so.
-- **Bar chart:** inline SVG, bars from zero, at most 24px wide, value above each bar. Used for counts per month.
-- **Levels, not fake numbers:** estimates such as search demand or growth potential show as High, Medium or Low, with a note on where a real figure would come from.
+- **Sheet:** `--sheet` paper with an 18px radius, a one-pixel top highlight and a long soft shadow, so it reads as lying on the counter. Everything with data sits on one.
+- **Score plate (`dial`):** SVG ring from 0 at the top, clockwise to the score, with tick marks every 2.5 and the figure in Fraunces at the centre. Used for the overview score and the landing's sample plates.
+- **Wheel (`radar`):** the six parts on spokes, 0 at the centre and 100 at the rim, each labelled with its name and figure. The table beside it holds the same numbers and is what screen readers get.
+- **Rail and tickets:** a steel bar with three tickets under it. Each ticket has a large numeral, a dashed tear line, the action, why it ranks, and time and cost. The torn foot is a mask; the shadow is a drop shadow on the wrapper so it follows the tear.
+- **Split bar (`segments`):** one bar divided by count (done, partly done, missing; ahead, even, behind) with a sentence above it and each count in words below it.
+- **Status:** a pill in the status's soft tint holding a mark (✓, !, ✗) and the word. Colour never carries meaning alone.
+- **Stat tile:** a sheet with a label, a large Fraunces figure, one plain note and, on the Progress tab, a sparkline.
+- **Table:** 2px ink rule under the head, hairlines between rows, numbers right-aligned.
+- **Meter:** a 10px bar on a rounded track, filled from zero. The competitor's uses `--color-rival`.
+- **Line chart:** one series, one y-axis, a soft fill under the line, a ring on the latest point with its value. A hidden table carries the numbers. If the axis doesn't start at zero, a caption says so.
+- **Bar chart:** bars from zero with the value above each.
+- **Steps, milestones:** numbered stops on a line, each stop tinted by how it is going; dated stops on a line.
+- **Levels, not fake numbers:** estimates show as High, Medium or Low, with a note on where a real figure would come from.
+
+Drawings are SVG built from attributes. The site's Content-Security-Policy refuses inline styles, so nothing may use a `style` attribute.
 
 ## 5. Layout
 
-- Container capped at 76rem and centred; gutters grow on wide screens, the grid does not.
-- Top bar: wordmark, restaurant picker, light/dark toggle, print. Then the masthead (restaurant name, one-sentence description, sample-data flag) and a tab row.
-- Overview: the score card on the left, spanning two rows; the ticket and the ratings table on the right; analyst notes below. The score card also says which way the score is moving and how the restaurant stands against its competitor.
-- Two-column grids collapse to one column under 60rem.
+- Container capped at 80rem and centred.
+- Report: top bar (wordmark, restaurant picker, light/dark, print), masthead with the restaurant's name large, tab row, then the open tab's sheets.
+- Overview: the score sheet (plate, then the reading and the wheel, then the parts table), the rail of three tickets, then ratings beside the analyst notes.
+- Two-column grids collapse to one under 60rem; the score sheet drops its table to a second row under 68rem.
 
-## 6. Depth and elevation
+## 6. Depth and light
 
-Soft studio light from above, and only on the two raised objects. `--shadow-lift` pairs a tight contact shadow with a wide, faint fall-off; `--shadow-ticket` does the same as drop shadows that follow the ticket's perforated edge. In dark mode the shadows deepen and the score card gets a one-pixel top highlight, so elevation still reads as lightness. Tables, notes and everything else stay flat on the paper. Printing removes every shadow.
-
-The landing hero is the one place with real lighting: rendered frames of the ticket and the report on a brushed stainless-steel pass, lit by a warm heat lamp from the front left, a soft rectangular lamp overhead whose reflection reads as steel, and a cool rim from behind, with soft blurred shadows and the key's fall-off as the vignette (see `hero-sequence/`).
+One light, from above and a little left: a warm pool at the top of the page, a faint cool rim at the right, and brushed grain on the counter. Sheets cast a long soft shadow; tickets hang in front of them and cast a longer one. Nothing glows. Printing removes all of it.
 
 ## 7. Do's and don'ts
 
 **Do**
 - Lead with what the owner should do next.
-- Show every number with its label and unit, in tabular figures.
+- Show every number with its label and unit.
+- Keep data on sheets, so its colours always sit on a known ground.
 - Mark sample data on the page, in the footer and in the progress note.
-- Keep one accent; let neutral carry everything else.
 
 **Don't**
-- Visible gradients, glows, or a purple-to-blue anything. The only gradient is the hero frames' vignette, which settles to `--color-stage` so nobody sees an edge.
-- Coloured side stripes on notes or callouts. A note is a hairline box on `paper-2`.
-- Platform brand colours on bars or text, or the accent on anything that means good or bad.
+- Put the lamp's ember on data or status, or ink blue on anything meaning good or bad.
+- Platform brand colours on bars or text.
 - Invented precision: a 0 to 100 figure with no method behind it.
-- Dual y-axes, pies, donuts or gauges.
-- Uppercase tracked labels, emoji as icons, or decorative dots.
-- Animation for decoration. Motion answers the visitor: the landing hero plays as they scroll, its title rises in once on load, a report panel settles in (320ms) and its bars fill (720ms) when its tab is chosen, and hovers change colour in 120ms. Reduced motion turns all of it off, and the hero shows its finished frame.
+- Dual y-axes or pies. The plate's ring always runs 0 to 100.
+- Uppercase tracked labels or emoji as icons.
+- Motion for decoration. Motion answers the visitor: the landing hero plays as they scroll, a panel settles in when its tab is chosen and its bars, ring and wheel draw once, a ticket straightens under the pointer. Reduced motion turns all of it off.
 
 ## Logo
 
-A kitchen ticket on ink: three ruled lines and a short ink-blue line for the one thing to do. No gauge, no ring.
+A kitchen ticket on ink: three ruled lines and a short ink-blue line for the one thing to do.
 
 ## Landing page
 
-- **Order:** a dark bar pinned to the top; a pinned hero that plays the 120-frame sequence across about three and a half screens of scroll, with four blocks of words that fade in and out beside it; then three ledger sections on paper (the six score parts, the two sample restaurants, how the numbers stay honest); then a dark closing bookend with the call to action.
+- **Order:** a dark bar pinned to the top; a pinned hero that plays the 120-frame sequence across about three and a half screens of scroll, with four blocks of words beside it; then, on the same stage, the weights sheet (one bar cut into six slices, and the six parts), two sample restaurants each on a sheet with its plate, wheel and first job, and four rules the numbers keep, each with a small drawing; then the closing call to action under the lamp.
 - **Frames:** 16:9 frames (3200 wide on high-density screens, 2560 otherwise) cover screens wider than 1.45:1 and crop from the empty left side. Squarer and portrait screens get 4:5 frames, fitted on the right of a landscape screen or at the bottom of a portrait one, so the words never sit on the scene.
 - **Words in the hero** stay in a left column (`min(24rem, 33vw)`); on portrait screens they sit above the frame.
-- **Figures** on the landing page come from the same scoring code and config as the report. The frames themselves bake in Brasa Taquería's report; a test fails if that report changes without a re-render.
-- **Colour:** the hero and the closing use the stage tokens whatever the visitor's mode; the ledger sections follow the light or dark choice made in the report, on `--color-paper-2` in dark mode so the change of scene stays visible.
-- **Bar:** pinned and solid, with no blur or see-through (both smear or ghost whatever passes under them): stage over the hero and the closing, paper and ink over the ledger sections, switching on whatever sits just below it. The frames are composed to stay clear of it. The report's top bar is solid paper for the same reason.
-- **Frame fitting:** wide frames cover the screen. Screens wider than the frame (ultrawide, a phone held sideways) fit its height under the bar. Tall frames fit into the space the words leave (right of the column and under the bar on a landscape screen, below the words on a portrait one), and where a frame stops short of the screen its own edge carries on outward and eases into the stage. Nothing is painted over the frame.
-- **Frames as files:** AVIF (smooth in the dark counter where WebP breaks into blocks), with a WebP of the finished frame for browsers without AVIF.
+- **Figures** come from the same scoring code and config as the report, and the plates and wheels are drawn by the report's own functions. The frames bake in Brasa Taquería's report; a test fails if that report changes without a re-render.
+- **Bar:** pinned and solid, with no blur or see-through. The frames are composed to stay clear of it.
+- **Frame fitting:** wide frames cover the screen. Screens wider than the frame fit its height under the bar. Tall frames fit into the space the words leave, and where a frame stops short of the screen its own edge carries on outward and eases into the stage. Nothing is painted over the frame.
+- **Frames as files:** AVIF, with a WebP of the finished frame for browsers without AVIF.
 
 ## 8. Responsive behaviour
 
-- Under 60rem: grids stack, the picker loses its visible label (it keeps an accessible one).
-- Under 40rem: the wordmark shows only the logo, meter columns hide (the numbers stay), wide tables restack into labelled rows, stat rows stack, cards tighten, and the tab row fades at the edge to show it scrolls.
-- The tab row scrolls sideways instead of wrapping. The open tab scrolls into view clear of the edge fade, and the focus ring sits inside each tab so the row's clipping doesn't cut it.
-- Short landscape screens (a phone held sideways, under 30rem tall): the landing bar slims to 3.5rem, display sizes follow the screen's height, and each block of words centres in the space under the bar.
-- Print: every section prints in order, one section per page, on light paper, controls hidden.
+- Under 60rem: grids stack, the tickets hang one under another and hang straight, the picker loses its visible label (it keeps an accessible one).
+- Under 40rem: the wordmark shows only the logo, meter columns hide (the numbers stay), wide tables restack into labelled rows, stat tiles go two across, and the words inside drawings are set larger because the drawings scale down.
+- The tab row scrolls sideways instead of wrapping. The open tab scrolls into view clear of the edge fade.
+- Short landscape screens: the landing bar slims, display sizes follow the screen's height.
+- Print: every section in order on white, sheets as hairline boxes, tickets as dashed boxes, controls hidden.
 
 ## 9. Agent prompt guide
 
 When extending this dashboard:
 
 1. Add data to the profile schema in `src/schema.ts` first; let TypeScript types follow.
-2. Render with the `html` template in `src/html.ts` so profile text is escaped.
-3. Reuse `card`, `table`, `meter`, `status`, `stat` and `lineChart` before inventing a component.
-4. Use tokens only. If a new colour seems necessary, it is probably a status or the accent.
+2. Render with the `html` tag and put it on the page with `setHtml` (both in `src/html.ts`). Never assign to `innerHTML`.
+3. Put data on a `.sheet`. Reuse `dial`, `radar`, `segments`, `sparkline`, `meter`, `status`, `stat` and `lineChart` before inventing a component.
+4. Use tokens only. No `style` attributes: draw with SVG attributes or classes.
 5. Write screen text in plain sentences: no field names, enum values or jargon.
-6. Run `npm run check` and look at both modes and a 390px-wide screen before calling it done.
+6. Run `npm run check` and look at both modes, a 390px-wide screen and print before calling it done.

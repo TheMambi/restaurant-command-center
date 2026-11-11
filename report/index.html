@@ -11,15 +11,10 @@
   <meta property="og:url" content="https://restaurant-command-center-sable.vercel.app/report/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0f0b08">
+  <meta name="color-scheme" content="dark">
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
-  <script>
-    (() => {
-      let mode = null;
-      try { mode = localStorage.getItem('rcc-mode'); } catch {}
-      if (mode !== 'light' && mode !== 'dark') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      document.documentElement.dataset.mode = mode;
-    })();
-  </script>
+  <script src="/boot.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#panels">Skip to the report</a>

@@ -7,3 +7,6 @@ dist/
 .idea/
 .vscode/
 *.log
+.vercel/
+*.pem
+*.key

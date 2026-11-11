@@ -5,6 +5,7 @@ import { totalReviews } from '../scoring';
 import { barChart, lineChart } from './line-chart';
 import { fallingReviews } from './overview';
 import { sectionHeader, stat } from './shared';
+import { sparkline } from './visuals';
 
 function change(diff: number, unit: string, digits = 0): string {
   const size = Math.abs(diff).toFixed(digits);
@@ -53,19 +54,19 @@ export function renderHistory(p: Profile, series: HistoryPoint[]): SafeHtml {
     ${sectionHeader('Progress', `Change over the last ${span} ${span === 1 ? 'month' : 'months'}, since ${since}.${p.sampleData ? ' Sample figures.' : ''}`)}
 
     <dl class="stats">
-      ${stat('Score out of 100', String(last.overallScore), `${change(last.overallScore - first.overallScore, ' points')} since ${since}`)}
-      ${hasGoogle && stat('Google rating', stars(last.googleRating), `${change(last.googleRating - first.googleRating, ' stars', 1)} since ${since}`)}
-      ${stat('Reviews, all platforms', num(last.totalReviews), `${change(last.totalReviews - first.totalReviews, '')} since ${since}`)}
-      ${hasInstagram && stat('Instagram followers', num(last.instagramFollowers), `${change(last.instagramFollowers - first.instagramFollowers, '')} since ${since}`)}
+      ${stat('Score out of 100', String(last.overallScore), `${change(last.overallScore - first.overallScore, ' points')} since ${since}`, sparkline(series.map((x) => x.overallScore)))}
+      ${hasGoogle && stat('Google rating', stars(last.googleRating), `${change(last.googleRating - first.googleRating, ' stars', 1)} since ${since}`, sparkline(series.map((x) => x.googleRating)))}
+      ${stat('Reviews, all platforms', num(last.totalReviews), `${change(last.totalReviews - first.totalReviews, '')} since ${since}`, sparkline(series.map((x) => x.totalReviews)))}
+      ${hasInstagram && stat('Instagram followers', num(last.instagramFollowers), `${change(last.instagramFollowers - first.instagramFollowers, '')} since ${since}`, sparkline(series.map((x) => x.instagramFollowers)))}
     </dl>
 
     <div class="grid-2">
-      <section class="card" aria-labelledby="score-trend">
+      <section class="card sheet" aria-labelledby="score-trend">
         <h3 class="block-title" id="score-trend">Score by month</h3>
-        <p class="small muted">Past months show the score as recorded at the time. This month is calculated live.</p>
         ${lineChart({ labels, values: series.map((s) => s.overallScore), min: 0, max: 100, format: (v) => String(v), title: 'Online presence score by month, out of 100' })}
+        <p class="small muted mt-3">Past months show the score as recorded at the time. This month is calculated live.</p>
       </section>
-      <section class="card" aria-labelledby="reviews-trend">
+      <section class="card sheet" aria-labelledby="reviews-trend">
         <h3 class="block-title" id="reviews-trend">New reviews each month</h3>
         ${barChart({
           labels: labels.slice(1),
@@ -77,7 +78,7 @@ export function renderHistory(p: Profile, series: HistoryPoint[]): SafeHtml {
       </section>
     </div>
 
-    <section class="card" aria-labelledby="milestones-title">
+    <section class="card sheet" aria-labelledby="milestones-title">
       <h3 class="block-title" id="milestones-title">Milestones</h3>
       ${p.milestones.length === 0
         ? html`<p class="muted">No milestones recorded yet.</p>`

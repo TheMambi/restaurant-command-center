@@ -3,6 +3,7 @@ import { html, type SafeHtml } from '../html';
 import { reviewPlatformIds, socialPlatformIds, type Profile } from '../schema';
 import { evenThresholds } from '../scoring.config';
 import { meter, sectionHeader } from './shared';
+import { segments } from './visuals';
 
 type Cell = number | undefined;
 interface Row {
@@ -88,11 +89,19 @@ export function renderCompetitor(p: Profile): SafeHtml {
   return html`
     ${sectionHeader('Competitor', `${me.name} next to ${c.name}, a nearby ${me.cuisine} restaurant. Ahead on ${s.ahead} of ${s.total} measures, behind on ${s.behind}.`)}
 
-    <section class="card" aria-labelledby="compare-title">
+    <section class="card sheet" aria-labelledby="compare-title">
       <div class="block-head">
         <h3 class="block-title" id="compare-title">Side by side</h3>
         <p class="legend hide-narrow" aria-hidden="true"><span><span class="swatch"></span>${me.name}</span><span><span class="swatch is-rival"></span>${c.name}</span></p>
       </div>
+      ${segments(
+        [
+          { count: s.ahead, css: 'is-good', word: 'ahead' },
+          { count: s.total - s.ahead - s.behind, css: 'is-even', word: 'even' },
+          { count: s.behind, css: 'is-bad', word: 'behind' },
+        ],
+        `Ahead on ${s.ahead} of ${s.total} measures`,
+      )}
       <div class="table-wrap"><table class="stack-table">
         <thead><tr><th scope="col">Measure</th><th scope="col" class="num">${me.name}</th><th scope="col" class="num">${c.name}</th><th scope="col">Difference</th><th scope="col" class="col-meter-narrow hide-narrow"><span class="sr-only">Bars</span></th></tr></thead>
         <tbody>

@@ -35,7 +35,7 @@ export function renderOpportunities(p: Profile): SafeHtml {
         .map(({ o }) => o);
       return (
         items.length > 0 &&
-        html`<section class="card" aria-labelledby="h-${h.id}">
+        html`<section class="card sheet" aria-labelledby="h-${h.id}">
           <h3 class="block-title" id="h-${h.id}">${h.title}</h3>
           <div class="table-wrap"><table class="actions-table stack-table">
             <thead><tr><th scope="col">Action</th><th scope="col">Impact</th><th scope="col">Effort</th><th scope="col">Time</th><th scope="col">Cost</th></tr></thead>
@@ -55,7 +55,7 @@ export function renderOpportunities(p: Profile): SafeHtml {
       );
     })}
 
-    <section class="card" aria-labelledby="matrix-title">
+    <section class="card sheet" aria-labelledby="matrix-title">
       <h3 class="block-title" id="matrix-title">Impact and effort</h3>
       <div class="matrix">
         ${quadrants.map((q) => {

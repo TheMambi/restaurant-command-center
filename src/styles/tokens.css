@@ -1,44 +1,92 @@
 /* Design system: Restaurant Command Center
-   Direction: a restaurant's report card. Warm paper, near-black ink, ruled tables,
-   one ink-blue signal for the score, the bars and the current tab, kept apart from
-   the red, amber and green that mean status. Fraunces names the restaurant and the
-   sections; Onest carries every label, control and figure (tabular numerals).
-   Modes: light + dark. The page script sets data-mode before first paint from the
-   saved choice or the system setting, and switches to light for printing. See DESIGN.md. */
+   Direction: the pass during service. The page is the dark steel counter under a heat lamp, and
+   everything the owner reads lies on it as a lit sheet of paper: the score plate, the tickets on
+   the rail, the tables. Two contexts share one set of names. On the stage the tokens are light
+   ink on steel with the lamp's ember for controls; inside a `.sheet` (or the ticket) they are
+   dark ink on paper with ink blue for data. Fraunces names things and carries figures; Onest
+   carries labels, controls and tables.
+   Modes: light = paper sheets, dark = steel sheets. The stage is the same in both. The page
+   script sets data-mode before first paint and switches to light for printing. See DESIGN.md. */
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  --color-paper: oklch(97.2% 0.008 75);
-  --color-paper-2: oklch(99.4% 0.004 75);
-  --color-paper-3: oklch(89% 0.012 75);
-  --color-ink: oklch(20% 0.012 50);
-  --color-ink-2: oklch(32% 0.012 50);
-  --color-muted: oklch(46% 0.014 55);
-  --color-rule: oklch(88% 0.012 75);
-  --color-rule-strong: oklch(20% 0.012 50);
-
-  --color-accent: oklch(42% 0.11 255);
-  --color-accent-ink: oklch(99% 0.004 75);
-  --color-accent-soft: oklch(92% 0.03 255);
-  --color-focus: oklch(48% 0.14 255);
-  --color-rival: oklch(64% 0.012 60);
-  --color-ticket: oklch(94.5% 0.022 88);
-
-  /* The landing page's stage: the counter the hero ticket sits on. The rendered frames settle to
-     this colour at every edge, so the canvas and the page meet without a seam. Same in both modes. */
+  /* ---- The stage: the counter the rendered hero frames settle to at every edge. ---- */
   --color-stage: oklch(15.5% 0.009 60);
-  /* Receipt paper for the one call to action on the dark stage. Same in both modes. */
-  --color-cta: oklch(94.5% 0.022 88);
-  --color-cta-ink: oklch(20% 0.012 50);
+  --color-stage-2: oklch(19% 0.011 60);
+  --color-stage-3: oklch(24% 0.012 60);
   --color-stage-ink: oklch(95% 0.008 75);
   --color-stage-muted: oklch(76% 0.012 70);
   --color-stage-rule: oklch(30% 0.012 60);
-  --color-stage-accent: oklch(76% 0.1 255);
+  /* The heat lamp: controls, the open tab and the glow on the counter. Never data, never status. */
+  --color-lamp: oklch(80% 0.14 64);
+  --color-lamp-glow: oklch(72% 0.15 58 / 0.2);
+  /* The cool rim light from behind, and the steel of the ticket rail from its lit top to its shadowed foot. */
+  --color-rim-glow: oklch(62% 0.09 255 / 0.09);
+  --color-grain: oklch(100% 0 0 / 0.014);
+  --color-steel-1: oklch(70% 0.008 250);
+  --color-steel-2: oklch(46% 0.008 250);
+  --color-steel-3: oklch(30% 0.008 250);
+  --color-steel-4: oklch(20% 0.008 250);
+  --color-steel-shine: oklch(100% 0 0 / 0.35);
+  --color-shade: oklch(0% 0 0 / 0.5);
+  --color-ticket-fold: oklch(89% 0.03 88);
+  /* Receipt paper: the tickets and the one call to action. Same in both modes. */
+  --color-ticket: oklch(95% 0.03 90);
+  --color-ticket-ink: oklch(20% 0.012 50);
+  --color-ticket-muted: oklch(42% 0.02 70);
+  --color-ticket-rule: oklch(80% 0.03 88);
+  --color-ticket-accent: oklch(42% 0.11 255);
+  --color-cta: var(--color-ticket);
+  --color-cta-ink: var(--color-ticket-ink);
 
-  --color-good: oklch(47% 0.11 150);
-  --color-warn: oklch(55% 0.13 75);
-  --color-bad: oklch(52% 0.17 28);
+  /* ---- A sheet lying on the stage (light mode: paper). ---- */
+  --sheet: oklch(97% 0.011 84);
+  --sheet-2: oklch(99.2% 0.005 84);
+  --sheet-3: oklch(89.5% 0.014 82);
+  --sheet-ink: oklch(20% 0.012 50);
+  --sheet-ink-2: oklch(32% 0.012 50);
+  --sheet-muted: oklch(45% 0.014 55);
+  --sheet-rule: oklch(88% 0.013 80);
+  --sheet-rule-strong: oklch(20% 0.012 50);
+  --sheet-edge: oklch(100% 0 0 / 0.7);
+  --sheet-accent: oklch(42% 0.11 255);
+  --sheet-accent-2: oklch(58% 0.13 250);
+  --sheet-accent-soft: oklch(91% 0.035 255);
+  --sheet-focus: oklch(48% 0.14 255);
+  --sheet-rival: oklch(64% 0.012 60);
+  --sheet-good: oklch(47% 0.11 150);
+  --sheet-warn: oklch(49% 0.12 72);
+  --sheet-bad: oklch(52% 0.17 28);
+  --sheet-good-soft: oklch(92% 0.05 150);
+  --sheet-warn-soft: oklch(93% 0.06 85);
+  --sheet-bad-soft: oklch(92% 0.04 28);
+  --sheet-shadow:
+    inset 0 1px 0 var(--sheet-edge),
+    0 2px 3px oklch(0% 0 0 / 0.3),
+    0 18px 36px -14px oklch(0% 0 0 / 0.6),
+    0 44px 80px -40px oklch(0% 0 0 / 0.7);
+
+  /* ---- Context tokens. These are what components use. On the stage: ---- */
+  --color-paper: var(--color-stage);
+  --color-paper-2: var(--color-stage-2);
+  --color-paper-3: var(--color-stage-3);
+  --color-ink: var(--color-stage-ink);
+  --color-ink-2: oklch(87% 0.009 75);
+  --color-muted: var(--color-stage-muted);
+  --color-rule: var(--color-stage-rule);
+  --color-rule-strong: oklch(48% 0.012 65);
+  --color-accent: var(--color-lamp);
+  --color-accent-2: var(--color-lamp);
+  --color-accent-soft: oklch(34% 0.06 62);
+  --color-focus: var(--color-lamp);
+  --color-rival: oklch(58% 0.012 60);
+  --color-good: oklch(76% 0.13 150);
+  --color-warn: oklch(82% 0.13 85);
+  --color-bad: oklch(72% 0.15 28);
+  --color-good-soft: oklch(30% 0.05 150);
+  --color-warn-soft: oklch(32% 0.05 85);
+  --color-bad-soft: oklch(30% 0.06 28);
 
   --font-display: "Fraunces Variable", Georgia, serif;
   --font-body: "Onest Variable", ui-sans-serif, system-ui, sans-serif;
@@ -48,8 +96,7 @@
   --text-base: 1rem;
   --text-lg: 1.125rem;
   --text-title: 1.375rem;
-  --text-display: clamp(2.5rem, 4.4vw, 3.75rem);
-  --text-figure: 5.75rem;
+  --text-display: clamp(2.75rem, 6vw, 5.25rem);
   --text-section: clamp(2.5rem, 5.4vw, 4.5rem);
   --text-hero: clamp(3.25rem, 8.4vw, 8rem);
 
@@ -61,49 +108,106 @@
   --space-6: 2rem;
   --space-7: 3rem;
 
-  --radius-card: 14px;
+  --radius-card: 18px;
+  --radius-inset: 10px;
   --radius-control: 999px;
-  --container: 76rem;
+  --container: 80rem;
   --dur-micro: 120ms;
   --dur-ui: 220ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --meter-height: 10px;
   --weight-body: 400;
 
-  /* Soft studio light from above: a tight contact shadow plus a wide, faint fall-off. Used only on
-     the two objects with their own surface, the score card and the ticket. */
-  --shadow-lift:
-    0 1px 2px oklch(25% 0.02 55 / 0.06),
-    0 10px 24px -10px oklch(25% 0.02 55 / 0.16),
-    0 28px 56px -28px oklch(25% 0.02 55 / 0.22);
-  /* Offset well below the ticket so the perforations along its top edge stay clean. */
-  --shadow-ticket: drop-shadow(0 2px 1px oklch(25% 0.02 55 / 0.07)) drop-shadow(0 20px 18px oklch(25% 0.02 55 / 0.13));
+  /* The tickets hang in front of the sheets, so their shadow is longer. A drop shadow follows the
+     perforated edge that a box shadow would ignore. */
+  --shadow-ticket: drop-shadow(0 2px 2px oklch(0% 0 0 / 0.35)) drop-shadow(0 22px 22px oklch(0% 0 0 / 0.5));
 }
 
+/* Dark mode: the sheets turn to dark steel. The stage, the tickets and the lamp stay as they are. */
 :root[data-mode='dark'] {
-  color-scheme: dark;
-
-  --color-paper: oklch(17% 0.01 60);
-  --color-paper-2: oklch(21% 0.011 60);
-  --color-paper-3: oklch(32% 0.012 60);
-  --color-ink: oklch(94% 0.008 75);
-  --color-ink-2: oklch(84% 0.009 75);
-  --color-muted: oklch(72% 0.012 70);
-  --color-rule: oklch(32% 0.012 60);
-  --color-rule-strong: oklch(80% 0.01 75);
-  --color-accent: oklch(74% 0.1 255);
-  --color-accent-ink: oklch(17% 0.01 60);
-  --color-accent-soft: oklch(32% 0.05 255);
-  --color-focus: oklch(78% 0.1 255);
-  --color-rival: oklch(55% 0.012 60);
-  --color-ticket: oklch(25% 0.016 80);
-  --color-good: oklch(72% 0.12 150);
-  --color-warn: oklch(78% 0.12 80);
-  --color-bad: oklch(70% 0.14 28);
+  --sheet: oklch(23.5% 0.013 62);
+  --sheet-2: oklch(27.5% 0.014 62);
+  --sheet-3: oklch(32% 0.012 60);
+  --sheet-ink: oklch(95% 0.008 75);
+  --sheet-ink-2: oklch(86% 0.009 75);
+  --sheet-muted: oklch(74% 0.012 70);
+  --sheet-rule: oklch(31% 0.012 60);
+  --sheet-rule-strong: oklch(62% 0.012 70);
+  --sheet-edge: oklch(100% 0 0 / 0.1);
+  --sheet-accent: oklch(76% 0.11 255);
+  --sheet-accent-2: oklch(84% 0.08 250);
+  --sheet-accent-soft: oklch(33% 0.06 255);
+  --sheet-focus: oklch(80% 0.1 255);
+  --sheet-rival: oklch(56% 0.012 60);
+  --sheet-good: oklch(76% 0.13 150);
+  --sheet-warn: oklch(82% 0.13 85);
+  --sheet-bad: oklch(72% 0.15 28);
+  --sheet-good-soft: oklch(31% 0.05 150);
+  --sheet-warn-soft: oklch(33% 0.05 85);
+  --sheet-bad-soft: oklch(31% 0.06 28);
   --weight-body: 350;
-  --shadow-lift:
-    inset 0 1px 0 oklch(100% 0 0 / 0.05),
-    0 1px 2px oklch(0% 0 0 / 0.4),
-    0 18px 40px -16px oklch(0% 0 0 / 0.65);
-  --shadow-ticket: drop-shadow(0 1px 1px oklch(0% 0 0 / 0.4)) drop-shadow(0 16px 26px oklch(0% 0 0 / 0.55));
+}
+
+/* Inside a sheet the same names mean ink on paper. */
+.sheet {
+  --color-paper: var(--sheet);
+  --color-paper-2: var(--sheet-2);
+  --color-paper-3: var(--sheet-3);
+  --color-ink: var(--sheet-ink);
+  --color-ink-2: var(--sheet-ink-2);
+  --color-muted: var(--sheet-muted);
+  --color-rule: var(--sheet-rule);
+  --color-rule-strong: var(--sheet-rule-strong);
+  --color-accent: var(--sheet-accent);
+  --color-accent-2: var(--sheet-accent-2);
+  --color-accent-soft: var(--sheet-accent-soft);
+  --color-focus: var(--sheet-focus);
+  --color-rival: var(--sheet-rival);
+  --color-good: var(--sheet-good);
+  --color-warn: var(--sheet-warn);
+  --color-bad: var(--sheet-bad);
+  --color-good-soft: var(--sheet-good-soft);
+  --color-warn-soft: var(--sheet-warn-soft);
+  --color-bad-soft: var(--sheet-bad-soft);
+}
+
+/* A ticket is receipt paper in both modes. */
+.ticket {
+  --color-paper: var(--color-ticket);
+  --color-paper-2: var(--color-ticket);
+  --color-ink: var(--color-ticket-ink);
+  --color-ink-2: oklch(30% 0.014 55);
+  --color-muted: var(--color-ticket-muted);
+  --color-rule: var(--color-ticket-rule);
+  --color-rule-strong: var(--color-ticket-ink);
+  --color-accent: var(--color-ticket-accent);
+  --color-focus: var(--color-ticket-accent);
+}
+
+/* On paper the whole page is one sheet. */
+@media print {
+  :root {
+    color-scheme: light;
+    --color-paper: white;
+    --color-paper-2: white;
+    --color-paper-3: var(--sheet-3);
+    --color-ink: var(--sheet-ink);
+    --color-ink-2: var(--sheet-ink-2);
+    --color-muted: var(--sheet-muted);
+    --color-rule: var(--sheet-rule);
+    --color-rule-strong: var(--sheet-rule-strong);
+    --color-accent: var(--sheet-accent);
+    --color-accent-2: var(--sheet-accent-2);
+    --color-accent-soft: var(--sheet-accent-soft);
+    --color-rival: var(--sheet-rival);
+    --color-good: var(--sheet-good);
+    --color-warn: var(--sheet-warn);
+    --color-bad: var(--sheet-bad);
+    --color-good-soft: var(--sheet-good-soft);
+    --color-warn-soft: var(--sheet-warn-soft);
+    --color-bad-soft: var(--sheet-bad-soft);
+    --sheet: white;
+    --sheet-shadow: none;
+    --shadow-ticket: none;
+  }
 }

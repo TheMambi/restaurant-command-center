@@ -20,18 +20,18 @@ export function renderWebsite(p: Profile): SafeHtml {
     ${sectionHeader('Website', `How well ${p.restaurant.website} turns a visit into a booking or an order, and how easily search engines can read it.`)}
 
     <div class="grid-2">
-      <section class="card" aria-labelledby="path-title">
+      <section class="card sheet" aria-labelledby="path-title">
         <h3 class="block-title" id="path-title">From visit to table</h3>
         <ol class="steps">
           ${w.bookingFlow.map((step) => {
             const s = stepState[step.state];
-            return html`<li><span>${step.label}</span>${status(s.css, s.mark, s.word)}</li>`;
+            return html`<li class="${s.css}"><span>${step.label}</span>${status(s.css, s.mark, s.word)}</li>`;
           })}
         </ol>
         <p class="note mt-4"><strong>Recommendation:</strong> ${w.bookingRecommendation}</p>
       </section>
 
-      <section class="card" aria-labelledby="phone-title">
+      <section class="card sheet" aria-labelledby="phone-title">
         <h3 class="block-title" id="phone-title">On a phone</h3>
         <ul class="checklist">
           ${w.mobile.map((m) => {
@@ -42,7 +42,7 @@ export function renderWebsite(p: Profile): SafeHtml {
       </section>
     </div>
 
-    <section class="card" aria-labelledby="search-title">
+    <section class="card sheet" aria-labelledby="search-title">
       <h3 class="block-title" id="search-title">Searches worth winning</h3>
       ${w.keywords.length === 0
         ? html`<p class="muted">No search phrases researched yet.</p>`
@@ -58,7 +58,7 @@ export function renderWebsite(p: Profile): SafeHtml {
         <p class="small muted mt-3">Demand is a relative estimate. A live version would use Google Search Console impressions or a keyword tool's monthly searches.</p>`}
     </section>
 
-    <section class="card" aria-labelledby="basics-title">
+    <section class="card sheet" aria-labelledby="basics-title">
       <h3 class="block-title" id="basics-title">Search engine basics</h3>
       ${checklist(p.checklists.technicalSeo)}
     </section>`;

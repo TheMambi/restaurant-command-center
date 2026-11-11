@@ -3,7 +3,7 @@ import '@fontsource-variable/fraunces/opsz.css';
 import './styles/tokens.css';
 import './styles/app.css';
 import { monthLabel } from './format';
-import { html } from './html';
+import { html, setHtml, type SafeHtml } from './html';
 import { loadProfiles } from './profiles';
 import { renderCompetitor } from './render/competitor';
 import { renderGoogle } from './render/google';
@@ -49,23 +49,23 @@ function render(profile: Profile, active: TabId): void {
   document.title = `${r.name}: online presence report | Restaurant Command Center`;
   el('restaurant-name').textContent = r.name;
   el('restaurant-meta').textContent = describeRestaurant(profile);
-  el('masthead-note').innerHTML = html`${profile.sampleData && html`<span class="sample-flag">Sample data</span>`}Report as of ${monthLabel(profile.asOf)}`.value;
-  el('footer-text').innerHTML = html`<p>${r.name}, ${r.address}. Website: ${r.website}</p>${
+  setHtml(el('masthead-note'), html`${profile.sampleData && html`<span class="sample-flag">Sample data</span>`}Report as of ${monthLabel(profile.asOf)}`);
+  setHtml(el('footer-text'), html`<p>${r.name}, ${r.address}. Website: ${r.website}</p>${
     profile.sampleData && html`<p>A fictional restaurant. Every name and number in this report is sample data.</p>`
-  }`.value;
+  }`);
 
   const series = historySeries(profile, score);
-  const panels: Record<TabId, string> = {
-    overview: renderOverview(profile, score, breakdown, series).value,
-    google: renderGoogle(profile).value,
-    website: renderWebsite(profile).value,
-    social: renderSocial(profile).value,
-    reviews: renderReviews(profile).value,
-    competitor: renderCompetitor(profile).value,
-    opportunities: renderOpportunities(profile).value,
-    history: renderHistory(profile, series).value,
+  const panels: Record<TabId, SafeHtml> = {
+    overview: renderOverview(profile, score, breakdown, series),
+    google: renderGoogle(profile),
+    website: renderWebsite(profile),
+    social: renderSocial(profile),
+    reviews: renderReviews(profile),
+    competitor: renderCompetitor(profile),
+    opportunities: renderOpportunities(profile),
+    history: renderHistory(profile, series),
   };
-  for (const t of tabs) el(`tab-${t.id}`).innerHTML = panels[t.id];
+  for (const t of tabs) setHtml(el(`tab-${t.id}`), panels[t.id]);
   document.querySelectorAll<HTMLElement>('.table-wrap').forEach((wrap) => {
     const title = wrap.closest('section')?.querySelector('.block-title')?.textContent ?? 'Table';
     wrap.setAttribute('role', 'region');
@@ -165,7 +165,7 @@ function start(): void {
   if ((params.has('r') && params.get('r') !== profile.slug) || (requested !== null && requested !== active)) writeUrl(profile.slug, active);
 
   const switcher = el<HTMLSelectElement>('restaurant-switcher');
-  switcher.innerHTML = profiles.map((p) => html`<option value="${p.slug}">${p.restaurant.name}</option>`.value).join('');
+  setHtml(switcher, profiles.map((p) => html`<option value="${p.slug}">${p.restaurant.name}</option>`));
   switcher.value = profile.slug;
   switcher.addEventListener('change', () => {
     profile = profiles.find((p) => p.slug === switcher.value)!;
@@ -175,9 +175,7 @@ function start(): void {
   });
 
   const nav = el('nav-tabs');
-  nav.innerHTML = tabs
-    .map((t) => html`<button class="tab" role="tab" type="button" id="tabbtn-${t.id}" aria-controls="tab-${t.id}">${t.label}</button>`.value)
-    .join('');
+  setHtml(nav, tabs.map((t) => html`<button class="tab" role="tab" type="button" id="tabbtn-${t.id}" aria-controls="tab-${t.id}">${t.label}</button>`));
   const choose = (id: TabId, focus: boolean) => {
     active = id;
     selectTab(id, focus);
@@ -201,9 +199,7 @@ function start(): void {
   });
 
   const main = el('panels');
-  main.innerHTML = tabs
-    .map((t) => html`<section class="panel" id="tab-${t.id}" role="tabpanel" aria-labelledby="tabbtn-${t.id}" tabindex="0" hidden></section>`.value)
-    .join('');
+  setHtml(main, tabs.map((t) => html`<section class="panel" id="tab-${t.id}" role="tabpanel" aria-labelledby="tabbtn-${t.id}" tabindex="0" hidden></section>`));
   main.addEventListener('click', (e) => {
     const goto = (e.target as HTMLElement).closest<HTMLElement>('[data-goto]')?.dataset.goto;
     if (!isTab(goto)) return;

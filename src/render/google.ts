@@ -8,7 +8,7 @@ export function renderGoogle(p: Profile): SafeHtml {
   const header = sectionHeader('Google Business Profile', 'Where most diners decide. The listing, its stars and how complete it is.');
   const google = p.reviewPlatforms.find((r) => r.id === 'google');
   if (!google) {
-    return html`${header}<div class="card"><p>This restaurant has no Google listing in the profile yet. Claiming one is usually the first step.</p></div>`;
+    return html`${header}<div class="card sheet"><p>This restaurant has no Google listing in the profile yet. Claiming one is usually the first step.</p></div>`;
   }
   const s = p.googleStars;
   const rows = [
@@ -31,8 +31,9 @@ export function renderGoogle(p: Profile): SafeHtml {
     </dl>
 
     <div class="grid-2">
-      <section class="card" aria-labelledby="stars-title">
+      <section class="card sheet" aria-labelledby="stars-title">
         <h3 class="block-title" id="stars-title">How the stars break down</h3>
+        <p class="headline"><span class="headline-figure">${stars(google.rating)}</span><span>stars from ${num(google.reviews)} reviews. ${words}.</span></p>
         <table>
           <thead><tr><th scope="col">Stars</th><th scope="col" class="col-meter"><span class="sr-only">Share</span></th><th scope="col" class="num">Reviews</th><th scope="col" class="num">Share</th></tr></thead>
           <tbody>
@@ -43,7 +44,7 @@ export function renderGoogle(p: Profile): SafeHtml {
         </table>
       </section>
 
-      <section class="card" aria-labelledby="gbp-title">
+      <section class="card sheet" aria-labelledby="gbp-title">
         <h3 class="block-title" id="gbp-title">Profile checklist</h3>
         ${checklist(p.checklists.googleProfile)}
       </section>

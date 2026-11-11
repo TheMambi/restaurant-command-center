@@ -172,12 +172,12 @@ describe('the rendered frames', () => {
 });
 
 describe('links from before the landing page', () => {
-  const script = page.slice(page.indexOf('<script>') + 8, page.indexOf('</script>'));
+  const script = readFileSync(join(root, 'public', 'boot.js'), 'utf8');
   const run = (search: string) => {
     const replace = vi.fn();
     const storage = { getItem: () => null };
     new Function('location', 'localStorage', 'matchMedia', 'document', script)(
-      { search, replace },
+      { pathname: '/', search, replace },
       storage,
       () => ({ matches: false }),
       { documentElement: { dataset: {} } },
@@ -266,7 +266,7 @@ describe('phone layout rules in the report stylesheet', () => {
       }
       return undefined;
     };
-    for (const selector of ['  .hide-narrow', '  .stat + .stat', '  .matrix', '  .milestones li']) {
+    for (const selector of ['  .hide-narrow', '  .stat dd', '  .matrix', '  .milestones li']) {
       expect(blockOf(selector), selector).toBe('@media (max-width: 40rem)');
     }
   });

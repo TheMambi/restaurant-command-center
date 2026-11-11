@@ -2,10 +2,11 @@ import { monthLabel, num, platformName, stars } from '../format';
 import { html, type SafeHtml } from '../html';
 import type { Profile } from '../schema';
 import { actionRanking, scoreLabels, scoreWeights } from '../scoring.config';
-import { scoreLabel, type ScoreBreakdown, type ScoreKey } from '../scoring';
+import { scoreLabel, totalReviews, weightedRating, type ScoreBreakdown, type ScoreKey } from '../scoring';
 import { standing } from './competitor';
 import type { HistoryPoint } from './history';
 import { list, meter } from './shared';
+import { dial, radar } from './visuals';
 
 type Opportunity = Profile['opportunities'][number];
 
@@ -66,68 +67,79 @@ export function renderOverview(p: Profile, score: number, breakdown: ScoreBreakd
 
   return html`
     <h2 class="sr-only">Overview</h2>
-    <div class="scorecard">
-      <section class="card score-card" aria-labelledby="score-title">
+    <section class="sheet score-sheet" aria-labelledby="score-title">
+      <div class="score-plate">
         <h3 class="block-title" id="score-title">Online presence score</h3>
-        <p class="score-figure"><span class="score-number">${score}</span><span class="score-out-of">out of 100</span></p>
+        ${dial(score, `${score} out of 100`)}
         <p class="score-label">${scoreLabel(score)}</p>
+      </div>
+      <div class="score-read">
         <div class="score-context">
           <p>${trendSentence(series)} ${fallingReviews(series)} <button type="button" class="inline-link no-print" data-goto="history">See progress</button></p>
           <p>Ahead of ${p.competitor.name} on ${s.ahead} of ${s.total} measures, behind on ${s.behind}. <button type="button" class="inline-link no-print" data-goto="competitor">Compare</button></p>
           <p>Strongest area: ${scoreLabels[ranked[0]!].toLowerCase()}. Weakest: ${scoreLabels[ranked.at(-1)!].toLowerCase()}.</p>
         </div>
+        ${radar(keys.map((k) => ({ label: scoreLabels[k], value: breakdown[k] })))}
+      </div>
+      <div class="score-parts">
+        <h4 class="list-head">How the score is built</h4>
         <div class="table-wrap">
           <table>
             <caption class="sr-only">How the score is built</caption>
             <thead><tr><th scope="col">Part of the score</th><th scope="col" class="num">Weight</th><th scope="col" class="col-meter hide-narrow"><span class="sr-only">Bar</span></th><th scope="col" class="num">Score</th></tr></thead>
             <tbody>
               ${keys.map(
-                (k) => html`<tr><th scope="row">${scoreLabels[k]}</th><td class="num muted">${weightShare(k)}%</td><td class="hide-narrow">${meter(breakdown[k], 100)}</td><td class="num">${Math.round(breakdown[k])}</td></tr>`,
+                (k) => html`<tr><th scope="row">${scoreLabels[k]}</th><td class="num muted">${weightShare(k)}%</td><td class="hide-narrow">${meter(breakdown[k], 100)}</td><td class="num figure">${Math.round(breakdown[k])}</td></tr>`,
               )}
             </tbody>
           </table>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <div class="ticket-lift"><section class="ticket" aria-labelledby="first-title">
-        <div class="ticket-head">
-          <h3 class="block-title" id="first-title">Do these first</h3>
-          <span class="small muted">${actions.length} of ${p.opportunities.length} actions</span>
-        </div>
-        <ol class="action-list">
-          ${actions.map(
-            (o) => html`<li><div>
-              <p class="action-title">${o.title}</p>
-              <p class="action-desc">${o.description}</p>
-              <p class="action-why">${whyFirst(o)}</p>
-              <dl class="facts"><div><dt>Time</dt><dd>${o.time}</dd></div><div><dt>Cost</dt><dd>${o.cost}</dd></div></dl>
-            </div></li>`,
-          )}
-        </ol>
+    <section class="rail-section" aria-labelledby="first-title">
+      <div class="rail-head">
+        <h3 class="rail-title" id="first-title">Do these first</h3>
+        <p class="rail-note">${actions.length} of ${p.opportunities.length} actions, ranked by impact, effort and what is due.</p>
         <button type="button" class="link-button no-print" data-goto="opportunities">See all ${p.opportunities.length} next steps</button>
-      </section></div>
+      </div>
+      <ol class="tickets">
+        ${actions.map(
+          (o, i) => html`<li class="ticket-lift"><div class="ticket">
+            <p class="ticket-no" aria-hidden="true">${i + 1}</p>
+            <h4 class="action-title">${o.title}</h4>
+            <p class="action-desc">${o.description}</p>
+            <p class="action-why">${whyFirst(o)}</p>
+            <dl class="facts"><div><dt>Time</dt><dd>${o.time}</dd></div><div><dt>Cost</dt><dd>${o.cost}</dd></div></dl>
+          </div></li>`,
+        )}
+      </ol>
+    </section>
 
-    <section class="card ratings-card" aria-labelledby="ratings-title">
+    <div class="grid-notes">
+    <section class="card sheet ratings-card" aria-labelledby="ratings-title">
       <h3 class="block-title" id="ratings-title">Ratings by platform</h3>
+      <p class="headline"><span class="headline-figure">${stars(weightedRating(p.reviewPlatforms))}</span><span>stars across ${num(totalReviews(p.reviewPlatforms))} reviews, weighted by how many each platform has.</span></p>
       <div class="table-wrap">
         <table>
           <thead><tr><th scope="col">Platform</th><th scope="col" class="num">Rating</th><th scope="col" class="col-meter hide-narrow"><span class="sr-only">Rating out of 5</span></th><th scope="col" class="num">Reviews</th><th scope="col" class="num">Photos</th></tr></thead>
           <tbody>
             ${p.reviewPlatforms.map(
-              (r) => html`<tr><th scope="row">${platformName[r.id]}</th><td class="num">${stars(r.rating)}</td><td class="hide-narrow">${meter(r.rating, 5)}</td><td class="num">${num(r.reviews)}</td><td class="num">${r.photos === undefined ? html`<span class="missing">Not counted</span>` : num(r.photos)}</td></tr>`,
+              (r) => html`<tr><th scope="row">${platformName[r.id]}</th><td class="num figure">${stars(r.rating)}</td><td class="hide-narrow">${meter(r.rating, 5)}</td><td class="num">${num(r.reviews)}</td><td class="num">${r.photos === undefined ? html`<span class="missing">Not counted</span>` : num(r.photos)}</td></tr>`,
             )}
           </tbody>
         </table>
       </div>
+      <p class="small muted mt-3">Rating bars run from 0 to 5 stars.</p>
     </section>
-    </div>
 
-    <section class="card" aria-labelledby="summary-title">
+    <section class="card sheet" aria-labelledby="summary-title">
       <h3 class="block-title" id="summary-title">Analyst notes</h3>
       <div class="grid-3">
-        <div><h4 class="list-head">Working well</h4>${list(p.summary.strengths)}</div>
-        <div><h4 class="list-head">Could be better</h4>${list(p.summary.improvements)}</div>
-        <div><h4 class="list-head">Fix soon</h4>${list(p.summary.criticalGaps)}</div>
+        <div><h4 class="list-head is-good"><span class="status-mark" aria-hidden="true">✓</span>Working well</h4>${list(p.summary.strengths)}</div>
+        <div><h4 class="list-head is-warn"><span class="status-mark" aria-hidden="true">!</span>Could be better</h4>${list(p.summary.improvements)}</div>
+        <div><h4 class="list-head is-bad"><span class="status-mark" aria-hidden="true">✗</span>Fix soon</h4>${list(p.summary.criticalGaps)}</div>
       </div>
-    </section>`;
+    </section>
+    </div>`;
 }

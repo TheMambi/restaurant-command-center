@@ -57,6 +57,7 @@ npm install
 npm run dev       # local server with hot reload
 npm run check     # type check, tests and production build
 npm run build && npm run preview   # serve the production build
+npm run smoke     # after a build: open every view in Chrome under the production security headers
 ```
 
 ## Add a restaurant
@@ -72,8 +73,8 @@ The schema in [`src/schema.ts`](src/schema.ts) is the single definition of a pro
 ## Features
 
 - **Pick a restaurant** from the top bar. The restaurant and tab live in the address (`/report/?r=osteria-lumen&tab=competitor`), so any view can be shared as a link. Links in the older form (`/?r=…`) still open the report.
-- **Light and dark mode**, following the system setting until you choose. Both modes are designed, not inverted.
-- **Print or save as PDF** turns the whole report, every section in order, into a light-paper document an owner can keep.
+- **Light and dark mode**, following the system setting until you choose. The counter stays dark in both; light mode lays paper sheets on it, dark mode lays dark steel ones.
+- **Print or save as PDF** turns the whole report, every section in order, into ink on white paper an owner can keep.
 - **Works on a phone.** Wide tables restack into labelled rows, and bars give way to the numbers.
 - **Honest numbers.** Bars start at zero, each chart has one axis, a missing platform is named as a gap instead of drawn as zero, and estimates show as High, Medium or Low instead of made-up scores.
 - **Accessible.** Keyboard tabs (arrow keys, Home, End), visible focus, status shown in words as well as colour, charts backed by data tables for screen readers. The test suite runs axe-core on every tab; colour contrast was checked in Chrome in both modes.
@@ -83,21 +84,22 @@ The schema in [`src/schema.ts`](src/schema.ts) is the single definition of a pro
 - **Vite + TypeScript**, no framework, two pages: the landing page (`index.html`, `src/landing.ts`) and the report (`report/index.html`, `src/main.ts`). Each report tab is a small function in `src/render/` that turns a profile into HTML.
 - **The landing hero** draws 120 pre-rendered AVIF frames on a canvas as you scroll, driven by [Motion](https://motion.dev)'s `scroll()`. The frames are a three.js scene (the ticket and plates on a brushed steel pass under a heat lamp) rendered with [HyperFrames](https://github.com/heygen-com/hyperframes) from the app's colour tokens, fonts and Brasa Taquería's computed report; the source and how to re-render it are in [`hero-sequence/`](hero-sequence/README.md). With reduced motion on, the page shows the finished frame instead.
 - **Zod** validates every profile when the app loads and in the tests.
-- **Charts are hand-written SVG** (`src/render/line-chart.ts`): one series, one axis, a caption when the axis doesn't start at zero. No chart library.
-- **Tests** cover the schema, scoring, every tab's rendering, keyboard tabs and address state in a simulated browser, the landing page's frame maths and redirects, a check that the hero frames match the current figures, and axe-core accessibility checks on both pages.
+- **Charts and drawings are hand-written SVG** (`src/render/line-chart.ts`, `src/render/visuals.ts`): the score plate, the six-part wheel, split bars, sparklines, and line and bar charts with one series and one axis. No chart library.
+- **Tests** cover the schema, scoring, the security policy and its rules for markup, every tab's rendering, keyboard tabs and address state in a simulated browser, the landing page's frame maths and redirects, a check that the hero frames match the current figures, and axe-core accessibility checks on both pages.
 - **Fonts are self-hosted** from npm (Fraunces and Onest), so the page makes no outside requests.
-- Profile text is escaped before it reaches the page, so a profile can't inject markup.
+- Profile text is escaped before it reaches the page, and markup enters through one function, so a profile can't inject markup.
+- **Locked down in the browser.** A Content-Security-Policy allows scripts, styles, fonts and images from the site alone, with no inline scripts or styles and Trusted Types on; the pages can't be framed. Details in [`SECURITY.md`](SECURITY.md).
 - No backend, no tracking, no API keys.
 
 ## Design
 
-The look is documented in [`DESIGN.md`](DESIGN.md): warm paper, ink rules, one ink-blue accent kept apart from status colours, tables before cards, and one signature object, the "Do these first" ticket. It follows the craft rules of [Hallmark](https://github.com/Nutlope/hallmark) for app screens: every colour and font through a token, no visible gradients or uppercase labels, one y-axis per chart, bars that start at zero, and status that never relies on colour alone. The score card and the ticket lift off the page under soft studio light; everything else stays flat on the paper.
+The look is documented in [`DESIGN.md`](DESIGN.md): the pass during service. The page is a dark steel counter under a heat lamp, and the report lies on it as lit sheets. "Do these first" hangs as three tickets from a steel rail, and the score sits on a plate whose rim fills from 0 to 100. The lamp's ember marks controls, ink blue marks data, and red, amber and green mean status and always come with a word. Every colour and font goes through a token, labels are sentence case, each chart has one y-axis and motion only answers the visitor.
 
 ## Decisions and trade-offs
 
 - **Static and offline-first.** No backend means no accounts to secure and nothing to break on a free host. The cost: profiles are files, so updating a restaurant means a commit.
 - **One score, shown with its parts.** A single number is easy to act on and easy to distrust, so the overview always shows the weights and each part's score beside it.
-- **Lead with actions.** Owners don't need another chart; they need to know what to do this week. The ticket of three actions sits next to the score.
+- **Lead with actions.** Owners don't need another chart; they need to know what to do this week. The three tickets hang right under the score.
 - **Hand-written SVG over a chart library.** Two small chart types cost under 150 lines and cut the report's JavaScript from about 300 KB to about 140 KB. The landing page adds Motion and comes to about 190 KB.
 - **Rendered frames over live 3D or AI video.** A live three.js scene would cost every visitor a large download and a busy GPU; AI video garbles small text. The hero is rendered once from the real tokens, fonts and figures, so every label stays sharp, and it weighs about 3 to 5 MB per screen size (2560 or 3200 pixels across for wide screens, 1080 for phones). The first and last frames and every sixteenth (about 0.5 MB with the rest of the page) load at once; the rest wait for the first scroll, so a visitor who never scrolls skips them. Frames are decoded ahead of the scroll into a small window of ready bitmaps, so a scrub never waits on a decode.
 - **Vite over Next.js.** A Next.js rewrite was on the table for the landing page. Motion's framework-free API gives the same scroll-linked animation on the current stack, so the report, its tests and its hosting stayed as they were.

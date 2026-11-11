@@ -5,9 +5,11 @@ import './styles/app.css';
 import './styles/landing.css';
 import { animate, scroll, stagger } from 'motion';
 import { num } from './format';
-import { html } from './html';
+import { html, setHtml } from './html';
 import { beatOpacity, mountSequence } from './landing/sequence';
 import { loadProfiles } from './profiles';
+import { doFirst } from './render/overview';
+import { dial, radar } from './render/visuals';
 import { overallScore, scoreBreakdown, scoreLabel, type ScoreKey } from './scoring';
 import { scoreLabels, scoreTargets, scoreWeights } from './scoring.config';
 
@@ -29,32 +31,53 @@ function el<T extends HTMLElement>(id: string): T {
 function renderParts(): void {
   const keys = Object.keys(scoreWeights) as ScoreKey[];
   const total = keys.reduce((s, k) => s + scoreWeights[k], 0);
-  el('parts-list').innerHTML = keys
-    .map(
+  const share = (k: ScoreKey) => (total > 0 ? (scoreWeights[k] / total) * 100 : 0);
+  // One bar split by weight: each part's slice is as wide as its share of the score.
+  let x = 0;
+  setHtml(
+    el('weights-bar'),
+    keys.map((k, i) => {
+      const w = share(k);
+      const rect = html`<rect class="weight-slice is-${i % 2 === 0 ? 'a' : 'b'}" x="${x.toFixed(2)}" width="${Math.max(0, w - 0.4).toFixed(2)}" height="1"></rect>`;
+      x += w;
+      return rect;
+    }),
+  );
+  setHtml(
+    el('parts-list'),
+    keys.map(
       (k) => html`<li class="part">
-        <p class="part-weight"><span class="part-figure">${total > 0 ? Math.round((scoreWeights[k] / total) * 100) : 0}</span><span class="part-unit">%</span></p>
+        <p class="part-weight"><span class="part-figure">${Math.round(share(k))}</span><span class="part-unit">%</span></p>
         <h3 class="part-name">${scoreLabels[k]}</h3>
         <p class="part-note">${partNotes[k]}</p>
-      </li>`.value,
-    )
-    .join('');
+      </li>`,
+    ),
+  );
 }
 
 function renderSamples(): void {
-  el('samples-list').innerHTML = loadProfiles()
-    .map((p) => {
-      const score = overallScore(scoreBreakdown(p));
+  const keys = Object.keys(scoreWeights) as ScoreKey[];
+  setHtml(
+    el('samples-list'),
+    loadProfiles().map((p) => {
+      const breakdown = scoreBreakdown(p);
+      const score = overallScore(breakdown);
       const r = p.restaurant;
+      const first = doFirst(p.opportunities, 1)[0];
       return html`<li>
-        <a class="sample" href="/report/?r=${p.slug}">
-          <span class="sample-name">${r.name}</span>
-          <span class="sample-meta">${r.cuisine} restaurant in ${r.neighborhood}, ${r.city}</span>
-          <span class="sample-score"><span class="sample-figure">${score}</span><span class="sample-of">out of 100</span><span class="sample-label">${scoreLabel(score)}</span></span>
-          <span class="sample-open">Open the report</span>
+        <a class="sample sheet" href="/report/?r=${p.slug}">
+          <span class="sample-plate">${dial(score, `${score} out of 100`, 'sample-figure')}<span class="sample-label">${scoreLabel(score)}</span></span>
+          <span class="sample-body">
+            <span class="sample-name">${r.name}</span>
+            <span class="sample-meta">${r.cuisine} restaurant in ${r.neighborhood}, ${r.city}</span>
+            ${radar(keys.map((k) => ({ label: scoreLabels[k], value: breakdown[k] })))}
+            ${first && html`<span class="sample-first"><span class="sample-first-label">First job this week</span>${first.title}</span>`}
+            <span class="sample-open">Open the report</span>
+          </span>
         </a>
-      </li>`.value;
-    })
-    .join('');
+      </li>`;
+    }),
+  );
 }
 
 function setupHero(): void {
@@ -124,30 +147,10 @@ function setupPrint(): void {
   });
 }
 
-function setupBar(): void {
-  const bar = document.querySelector<HTMLElement>('.landing-bar');
-  if (!bar) throw new Error('Missing .landing-bar in index.html');
-  const paper = [...document.querySelectorAll<HTMLElement>('.ledger')];
-  // The bar takes the look of whatever sits just below its bottom edge.
-  const update = () => {
-    const y = bar.offsetHeight + 1;
-    bar.classList.toggle(
-      'is-on-paper',
-      paper.some((s) => {
-        const r = s.getBoundingClientRect();
-        return r.top <= y && r.bottom > y;
-      }),
-    );
-  };
-  addEventListener('scroll', update, { passive: true });
-  update();
-}
-
 try {
   renderParts();
   renderSamples();
   setupHero();
-  setupBar();
   setupPrint();
 } catch (error) {
   const box = document.createElement('div');

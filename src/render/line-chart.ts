@@ -13,6 +13,7 @@ const W = 560;
 const H = 240;
 const PAD = { top: 16, right: 16, bottom: 28, left: 48 };
 const GRID_LINES = 4;
+let chartCount = 0;
 
 function niceStep(range: number): number {
   if (range <= 0) return 1;
@@ -47,6 +48,8 @@ export function lineChart(o: LineChartOptions): SafeHtml {
   const path = o.values.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
   const lastI = o.values.length - 1;
   const truncated = lo > 0 && o.min === undefined;
+  const fade = `chart-fade-${++chartCount}`;
+  const area = `${path} L${x(lastI).toFixed(1)},${y(lo).toFixed(1)} L${x(0).toFixed(1)},${y(lo).toFixed(1)} Z`;
 
   return html`
     <figure>
@@ -58,8 +61,11 @@ export function lineChart(o: LineChartOptions): SafeHtml {
         ${o.labels.map(
           (l, i) => html`<text class="axis-text" x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="middle">${l}</text>`,
         )}
+        <defs><linearGradient id="${fade}" x1="0" y1="0" x2="0" y2="1"><stop class="fade-top" offset="0"></stop><stop class="fade-end" offset="1"></stop></linearGradient></defs>
+        ${o.values.length > 1 && html`<path class="area" d="${area}" fill="url(#${fade})"></path>`}
         <path class="series" d="${path}"></path>
-        <circle class="point" cx="${x(lastI).toFixed(1)}" cy="${y(o.values[lastI]!).toFixed(1)}" r="4"></circle>
+        ${o.values.slice(0, lastI).map((v, i) => html`<circle class="point is-past" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.5"></circle>`)}
+        <circle class="point" cx="${x(lastI).toFixed(1)}" cy="${y(o.values[lastI]!).toFixed(1)}" r="5"></circle>
         <text class="point-label" x="${(x(lastI) - 8).toFixed(1)}" y="${(y(o.values[lastI]!) - 10).toFixed(1)}" text-anchor="end">${o.format(o.values[lastI]!)}</text>
       </svg>
       ${truncated && html`<figcaption class="small muted">Axis starts at ${o.format(lo)} to show the change.</figcaption>`}

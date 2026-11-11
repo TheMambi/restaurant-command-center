@@ -6,6 +6,7 @@
   <title>Restaurant Command Center: know what to fix first</title>
   <meta name="description" content="A report card for a restaurant's online presence. It scores ratings, reviews, the Google profile, the website, social media and review replies, then leads with the three things to do first. Shown with fictional restaurants.">
   <meta name="theme-color" content="#0f0b08">
+  <meta name="color-scheme" content="dark">
   <meta property="og:title" content="Restaurant Command Center">
   <meta property="og:description" content="A report card for a restaurant's online presence, with the three things to do first. Shown with fictional restaurants.">
   <meta property="og:image" content="https://restaurant-command-center-sable.vercel.app/og.png">
@@ -18,20 +19,7 @@
   <link rel="preload" as="fetch" crossorigin href="/hero/wide/001.avif" media="(min-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference) and (max-resolution: 1dppx) and (max-width: 2600px) and (max-height: 1462px), (min-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference) and (min-resolution: 2dppx) and (max-width: 1300px) and (max-height: 731px)">
   <link rel="preload" as="fetch" crossorigin href="/hero/wide-hd/001.avif" media="(min-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference) and (min-resolution: 2dppx) and (min-width: 1301px), (min-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference) and (min-resolution: 2dppx) and (min-height: 732px)">
   <link rel="preload" as="fetch" crossorigin href="/hero/tall/001.avif" media="(max-aspect-ratio: 29/20) and (prefers-reduced-motion: no-preference)">
-  <script>
-    // Report links from before the landing page existed (/?r=…&tab=…) still open the report.
-    (() => {
-      const params = new URLSearchParams(location.search);
-      if (params.has('r') || params.has('tab')) location.replace('/report/' + location.search);
-    })();
-    // The hero is always dark; the rest of the page follows the light or dark choice made in the report.
-    (() => {
-      let mode = null;
-      try { mode = localStorage.getItem('rcc-mode'); } catch {}
-      if (mode !== 'light' && mode !== 'dark') mode = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      document.documentElement.dataset.mode = mode;
-    })();
-  </script>
+  <script src="/boot.js"></script>
 </head>
 <body class="landing">
   <a class="skip-link" href="#parts-title">Skip the animation</a>
@@ -90,14 +78,17 @@
       <div class="container">
         <h2 class="ledger-title" id="parts-title">Six parts make the score.</h2>
         <p class="ledger-lede">Each part runs from 0 to 100 and carries a weight. The report always shows the parts beside the total, so nobody has to take the number on trust.</p>
-        <ul class="parts" id="parts-list"></ul>
+        <div class="sheet weights">
+          <svg class="weights-bar" id="weights-bar" viewBox="0 0 100 1" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <ul class="parts" id="parts-list"></ul>
+        </div>
       </div>
     </section>
 
     <section class="ledger" aria-labelledby="samples-title">
       <div class="container">
         <h2 class="ledger-title" id="samples-title">Two sample restaurants.</h2>
-        <p class="ledger-lede">Both are invented for this demo, along with their competitors and every figure. Open either report and switch between them from the top bar.</p>
+        <p class="ledger-lede">Both are invented for this demo, along with their competitors and every figure. Each plate below is drawn by the same code as the report, from the same numbers.</p>
         <ul class="samples" id="samples-list"></ul>
       </div>
     </section>
@@ -106,19 +97,40 @@
       <div class="container">
         <h2 class="ledger-title" id="honest-title">Numbers you can check.</h2>
         <ul class="principles">
-          <li>
+          <li class="sheet">
+            <svg class="principle-art" viewBox="0 0 120 64" aria-hidden="true">
+              <line class="art-rule" x1="4" y1="58" x2="116" y2="58"></line>
+              <rect class="art-bar" x="12" y="34" width="16" height="24" rx="2"></rect>
+              <rect class="art-bar" x="38" y="22" width="16" height="36" rx="2"></rect>
+              <rect class="art-bar" x="64" y="28" width="16" height="30" rx="2"></rect>
+              <rect class="art-bar" x="90" y="10" width="16" height="48" rx="2"></rect>
+            </svg>
             <h3>Bars start at zero</h3>
             <p>Each chart has one axis. When an axis starts above zero, a caption says where.</p>
           </li>
-          <li>
+          <li class="sheet">
+            <p class="principle-art art-words" aria-hidden="true">
+              <span class="status is-good"><span class="status-mark">✓</span>Done</span>
+              <span class="status is-warn"><span class="status-mark">!</span>Partly done</span>
+              <span class="status is-bad"><span class="status-mark">✗</span>Missing</span>
+            </p>
             <h3>Status in words</h3>
             <p>Done, Partly done and Missing sit beside their colour, so the report reads the same in black and white.</p>
           </li>
-          <li>
+          <li class="sheet">
+            <p class="principle-art art-levels" aria-hidden="true"><span>Low</span><span>Medium</span><span class="is-on">High</span></p>
             <h3>Estimates as levels</h3>
             <p>Search demand and growth potential show as High, Medium or Low, with a note on where a real figure would come from.</p>
           </li>
-          <li>
+          <li class="sheet">
+            <svg class="principle-art" viewBox="0 0 120 64" aria-hidden="true">
+              <rect class="art-page" x="34" y="4" width="52" height="58" rx="3"></rect>
+              <line class="art-rule is-strong" x1="42" y1="16" x2="66" y2="16"></line>
+              <line class="art-rule" x1="42" y1="26" x2="78" y2="26"></line>
+              <line class="art-rule" x1="42" y1="34" x2="78" y2="34"></line>
+              <line class="art-rule" x1="42" y1="42" x2="78" y2="42"></line>
+              <line class="art-rule" x1="42" y1="50" x2="64" y2="50"></line>
+            </svg>
             <h3>Ready for paper</h3>
             <p>Print or save as PDF for a light, ordered report an owner can pin up by the pass.</p>
           </li>
@@ -129,6 +141,7 @@
     <section class="closing" aria-labelledby="closing-title">
       <div class="container">
         <h2 class="closing-title" id="closing-title">See the whole report.</h2>
+        <p class="closing-lede">Eight sections, two restaurants, light and dark, ready to print.</p>
         <p class="beat-actions">
           <a class="button-cta" href="/report/">Open the sample report</a>
           <a class="button-quiet" href="https://github.com/TheMambi/restaurant-command-center">Read the code</a>

@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+// Zod speeds up parsing by compiling code while the page runs. The site's Content-Security-Policy
+// refuses that, so parsing stays interpreted and the browser has nothing to block.
+z.config({ jitless: true });
+
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use YYYY-MM');
 const percent = z.number().min(0).max(100);
 const rating = z.number().min(0).max(5);
