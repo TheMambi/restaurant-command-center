@@ -19,8 +19,11 @@ function readTokens(mode) {
   const before = root.dataset.mode;
   root.dataset.mode = mode;
   const style = getComputedStyle(root);
-  const names = ['paper', 'paper-2', 'paper-3', 'ink', 'ink-2', 'muted', 'rule', 'rule-strong', 'accent', 'ticket', 'stage'];
-  const out = Object.fromEntries(names.map((n) => [n, style.getPropertyValue(`--color-${n}`).trim()]));
+  // The plates are sheets, so they take the sheet's colours; the ticket and the stage have their own.
+  const sheet = { paper: 'sheet', 'paper-2': 'sheet-2', 'paper-3': 'sheet-3', ink: 'sheet-ink', 'ink-2': 'sheet-ink-2', muted: 'sheet-muted', rule: 'sheet-rule', 'rule-strong': 'sheet-rule-strong', accent: 'sheet-accent' };
+  const out = Object.fromEntries(Object.entries(sheet).map(([n, token]) => [n, style.getPropertyValue(`--${token}`).trim()]));
+  out.ticket = style.getPropertyValue('--color-ticket').trim();
+  out.stage = style.getPropertyValue('--color-stage').trim();
   if (before === undefined) delete root.dataset.mode;
   else root.dataset.mode = before;
   return out;
@@ -113,7 +116,7 @@ function logo(ctx, x, y, s, c) {
   ctx.beginPath();
   ctx.roundRect(x, y, s, s, s * 0.22);
   ctx.fill();
-  ctx.fillStyle = c['paper-2'];
+  ctx.fillStyle = c.ticket;
   ctx.fillRect(x + s * 0.28, y + s * 0.2, s * 0.44, s * 0.6);
   ctx.fillStyle = c.ink;
   for (let i = 0; i < 3; i++) ctx.fillRect(x + s * 0.34, y + s * (0.3 + i * 0.12), s * 0.32, s * 0.05);
@@ -128,7 +131,7 @@ function drawTicket(ctx, w, h, c, content) {
   rule(ctx, pad, w - pad, 78, c.ink, 1.2, [5, 4]);
   let y = 120;
   content.actions.forEach((a, i) => {
-    write(ctx, String(i + 1), pad, y, { size: 23, weight: 650, color: c.accent });
+    write(ctx, String(i + 1), pad - 2, y + 4, { size: 34, weight: 420, color: c.accent, family: FONT_DISPLAY });
     const lines = wrap(ctx, a.title, w - pad * 2 - 32, `600 20px ${FONT_BODY}`);
     lines.forEach((line, j) => write(ctx, line, pad + 32, y + j * 26, { size: 20, weight: 600, color: c.ink }));
     y += (lines.length - 1) * 26 + 30;
@@ -146,16 +149,74 @@ function drawTicket(ctx, w, h, c, content) {
   write(ctx, content.asOf, w - pad, h - 32, { size: 15, color: c['ink-2'], align: 'right' });
 }
 
+// The score on its plate: a ring that fills clockwise from the top, as on the report's overview,
+// beside the six parts on a wheel.
 function drawScore(ctx, w, h, c, content) {
   const pad = 26;
   logo(ctx, pad, 21, 26, c);
   write(ctx, 'Restaurant Command Center', pad + 36, 40, { size: 15, weight: 600, color: c.ink });
   rule(ctx, pad, w - pad, 62, c.rule);
-  write(ctx, 'Online presence score', pad, 100, { size: 21, weight: 600, color: c.ink });
-  const sw = write(ctx, String(content.score), pad - 4, 216, { size: 124, weight: 500, color: c.accent, family: FONT_DISPLAY, tracking: -4 });
-  write(ctx, 'out of 100', pad + sw + 10, 214, { size: 22, color: c['ink-2'] });
-  write(ctx, content.label, pad, 254, { size: 22, weight: 600, color: c.ink });
-  write(ctx, content.trend, pad, 282, { size: 17, color: c['ink-2'] });
+  write(ctx, 'Online presence score', pad, 96, { size: 21, weight: 600, color: c.ink });
+
+  const cx = pad + 76;
+  const cy = 190;
+  const r = 68;
+  ctx.save();
+  ctx.lineWidth = 12;
+  ctx.strokeStyle = c['paper-3'];
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = c.accent;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * clamp01(content.score / 100));
+  ctx.stroke();
+  ctx.restore();
+  write(ctx, String(content.score), cx, cy + 16, { size: 58, weight: 420, color: c.ink, family: FONT_DISPLAY, tracking: -2, align: 'center' });
+  write(ctx, 'out of 100', cx, cy + 36, { size: 11, color: c['ink-2'], align: 'center' });
+
+  // The wheel: each part on its own spoke, 0 at the centre and 100 at the rim.
+  const wx = w - pad - 84;
+  const R = 62;
+  const n = content.parts.length;
+  const at = (i, radius) => [wx + Math.sin((i / n) * Math.PI * 2) * radius, cy - Math.cos((i / n) * Math.PI * 2) * radius];
+  const polygon = (radiusOf) => {
+    ctx.beginPath();
+    content.parts.forEach((p, i) => {
+      const [x, y] = at(i, radiusOf(p));
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+  };
+  ctx.save();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = c.rule;
+  for (const share of [0.25, 0.5, 0.75, 1]) {
+    polygon(() => R * share);
+    ctx.stroke();
+  }
+  content.parts.forEach((_, i) => {
+    const [x, y] = at(i, R);
+    ctx.beginPath();
+    ctx.moveTo(wx, cy);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  });
+  polygon((p) => R * clamp01(p.score / 100));
+  ctx.globalAlpha = 0.16;
+  ctx.fillStyle = c.accent;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = c.accent;
+  ctx.stroke();
+  ctx.restore();
+
+  write(ctx, content.label, pad, h - 22, { size: 20, weight: 450, color: c.ink, family: FONT_DISPLAY });
+  write(ctx, content.trend, w - pad, h - 22, { size: 14, color: c['ink-2'], align: 'right' });
 }
 
 function drawParts(ctx, w, h, c, content) {
@@ -208,6 +269,18 @@ function drawProgress(ctx, w, h, c, content) {
   }
   const pts = content.history.map((p, i) => [x0 + 10 + (i * (x1 - x0 - 20)) / (content.history.length - 1), yOf(p.score)]);
   ctx.save();
+  const fade = ctx.createLinearGradient(0, y1, 0, y0);
+  fade.addColorStop(0, c.accent);
+  fade.addColorStop(1, 'transparent');
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = fade;
+  ctx.beginPath();
+  pts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+  ctx.lineTo(pts.at(-1)[0], y0);
+  ctx.lineTo(pts[0][0], y0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
   ctx.strokeStyle = c.accent;
   ctx.lineWidth = 3;
   ctx.lineJoin = 'round';
@@ -359,7 +432,7 @@ export function createScene(THREE, { width, height, framing, content, environmen
 
   const unit = (px) => px / DESIGN_PX_PER_UNIT;
   const plateSpecs = [
-    { id: 'score', w: 410, h: 300, draw: drawScore },
+    { id: 'score', w: 410, h: 320, draw: drawScore },
     { id: 'parts', w: 410, h: 340, draw: drawParts },
     { id: 'ratings', w: 410, h: 196, draw: drawRatings },
     { id: 'progress', w: 410, h: 250, draw: drawProgress },

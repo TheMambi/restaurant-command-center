@@ -1,13 +1,13 @@
 # Hero sequence
 
-Source for the landing page's scroll animation: a "Do these first" kitchen ticket lies on a dark counter, lifts toward the camera, and the report behind it (the score, its six parts, ratings by platform and the score by month) unfolds into lit plates. It is a three.js scene inside a [HyperFrames](https://github.com/heygen-com/hyperframes) composition, rendered to 120 frames at 30 fps.
+Source for the landing page's scroll animation: a "Do these first" kitchen ticket lies on a dark counter, lifts toward the camera, and the report behind it (the score on its plate beside the six-part wheel, the parts table, ratings by platform and the score by month) unfolds into lit sheets. It is a three.js scene inside a [HyperFrames](https://github.com/heygen-com/hyperframes) composition, rendered to 120 frames at 30 fps.
 
 Nothing here ships with the site except the frames it writes to `../public/hero/`.
 
 ## What it reads
 
 - `content.json`: the figures printed on the ticket and plates, taken from Brasa Taquería's report as the app computes it. A test in `tests/landing.test.ts` recomputes them; if the profile or the scoring changes, it fails until this file is updated and the frames are re-rendered.
-- `../src/styles/tokens.css`: every colour, read at render time. The frames' edges settle to `--color-stage`, so change that token and you need a new render.
+- `../src/styles/tokens.css`: every colour, read at render time. The plates use the sheet tokens (`--sheet*`), the ticket `--color-ticket`. The frames' edges settle to `--color-stage`, so change that token and you need a new render.
 - The app's Fraunces and Onest font files.
 
 `scripts/prepare-assets.mjs` copies these, plus three.js, into `assets/` (ignored by git) because HyperFrames only resolves files inside this folder.
@@ -32,7 +32,9 @@ npm run snapshot   # five stills of the wide framing, to check before a full ren
 npm run render     # both framings to PNG, then AVIF (and an end-frame WebP) into ../public/hero/
 ```
 
-A full render takes a few minutes per framing on a laptop. Keep the terminal open until it finishes: HyperFrames stops a render whose parent process exits.
+If HyperFrames can't find a browser, point it at one: `PUPPETEER_EXECUTABLE_PATH=/path/to/chrome npm run render`.
+
+A full render takes a few minutes per framing on a laptop (about 25 minutes in all on a machine without a GPU). Keep the terminal open until it finishes: HyperFrames stops a render whose parent process exits.
 
 ## The scene
 
