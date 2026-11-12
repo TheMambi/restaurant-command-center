@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "A data-driven dashboard for a restaurant's online presence: reviews, Google profile, website, social media, competitors and next steps.",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "type": "module",
   "engines": {
     "node": ">=22.12"

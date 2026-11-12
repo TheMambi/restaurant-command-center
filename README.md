@@ -1,7 +1,7 @@
 # Restaurant Command Center
 
 [![check](https://github.com/TheMambi/restaurant-command-center/actions/workflows/check.yml/badge.svg?branch=dev)](https://github.com/TheMambi/restaurant-command-center/actions/workflows/check.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-1f4e8c)](LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-1f4e8c)](LICENSE)
 
 **[Open the live demo](https://restaurant-command-center-sable.vercel.app/)** or go straight to [the sample report](https://restaurant-command-center-sable.vercel.app/report/).
 
@@ -114,4 +114,6 @@ This demo uses hand-written profiles. A production version would fill them from 
 
 ## License
 
-Code: [MIT](LICENSE). The sample restaurants are fictional and free to reuse.
+Code: Copyright (C) 2026 The Mambí. This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See `LICENSE` for the full text.
+
+The sample restaurants are fictional and free to reuse.
