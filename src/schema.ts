@@ -45,6 +45,18 @@ const competitor = z.object({
   socialPlatforms: z.array(socialPlatform.pick({ id: true, followers: true })).refine(uniqueIds, 'Each platform appears once'),
 });
 
+export function monthsBetween(from: string, to: string): number {
+  const [fy, fm] = from.split('-').map(Number);
+  const [ty, tm] = to.split('-').map(Number);
+  return (ty! - fy!) * 12 + (tm! - fm!);
+}
+
+function addMonths(month: string, n: number): string {
+  const [y, m] = month.split('-').map(Number);
+  const index = y! * 12 + m! - 1 + n;
+  return `${String(Math.floor(index / 12)).padStart(4, '0')}-${String((index % 12) + 1).padStart(2, '0')}`;
+}
+
 export const profileSchema = z
   .object({
     slug: z.string().regex(/^[a-z0-9-]+$/),
@@ -114,7 +126,8 @@ export const profileSchema = z
       .array(
         z.object({
           month,
-          overallScore: percent,
+          // A whole number, like the score computed for the current month, so the two can be compared.
+          overallScore: percent.int(),
           totalReviews: count,
           googleRating: rating,
           instagramFollowers: count,
@@ -170,6 +183,22 @@ export const profileSchema = z
     }
     if (months.at(-1)! >= profile.asOf) {
       ctx.addIssue({ code: 'custom', path: ['history'], message: 'History holds past months only; the current month is computed' });
+    }
+    // The charts show change from one month to the next, so a skipped month would be drawn as one month's change.
+    const sequence = [...months, profile.asOf];
+    for (let i = 1; i < sequence.length; i++) {
+      const gap = monthsBetween(sequence[i - 1]!, sequence[i]!);
+      if (gap > 1) {
+        const first = addMonths(sequence[i - 1]!, 1);
+        const missing = gap === 2 ? first : `${first} to ${addMonths(sequence[i]!, -1)}`;
+        ctx.addIssue({ code: 'custom', path: ['history'], message: `History skips ${missing}; it needs every month up to the one before asOf` });
+      }
+    }
+    const asOfYear = Number(profile.asOf.slice(0, 4));
+    for (const who of ['restaurant', 'competitor'] as const) {
+      if (profile[who].yearOpened > asOfYear) {
+        ctx.addIssue({ code: 'custom', path: [who, 'yearOpened'], message: `Opened in ${profile[who].yearOpened}, after the report's year of ${asOfYear}` });
+      }
     }
   });
 

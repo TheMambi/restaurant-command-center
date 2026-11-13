@@ -1,6 +1,6 @@
 import { monthLabel, num, stars } from '../format';
 import { html, type SafeHtml } from '../html';
-import type { Profile } from '../schema';
+import { monthsBetween, type Profile } from '../schema';
 import { totalReviews } from '../scoring';
 import { barChart, lineChart } from './line-chart';
 import { fallingReviews } from './overview';
@@ -33,12 +33,6 @@ export function historySeries(p: Profile, score: number): HistoryPoint[] {
       instagramFollowers: p.socialPlatforms.find((s) => s.id === 'instagram')?.followers ?? 0,
     },
   ];
-}
-
-export function monthsBetween(from: string, to: string): number {
-  const [fy, fm] = from.split('-').map(Number);
-  const [ty, tm] = to.split('-').map(Number);
-  return (ty! - fy!) * 12 + (tm! - fm!);
 }
 
 export function renderHistory(p: Profile, series: HistoryPoint[]): SafeHtml {

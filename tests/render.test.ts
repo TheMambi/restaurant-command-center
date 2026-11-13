@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { parseProfile } from '../src/schema';
+import { monthsBetween, parseProfile } from '../src/schema';
 import { doFirst, fallingReviews, renderOverview } from '../src/render/overview';
 import { yearsGap } from '../src/render/competitor';
 import { chartRange, lineChart } from '../src/render/line-chart';
-import { monthsBetween, renderHistory, historySeries } from '../src/render/history';
+import { renderHistory, historySeries } from '../src/render/history';
 import { comparisonRows } from '../src/render/competitor';
 import { share } from '../src/render/shared';
 import { overallScore, scoreBreakdown } from '../src/scoring';

@@ -48,3 +48,4 @@ Symptom, cause and fix for traps this project has already hit. Read before touch
 | Review | Full-page screenshots show bars a quarter full | Full-page captures freeze the fill animations part-way | Capture with reduced motion turned on, or take viewport screenshots |
 | Report | On phones a difference and its word sit at opposite edges | The stacked cell is a space-between flex row, so each child spreads out | Wrap the figure and its word in one span |
 
+| Profiles | Schema rejects history with "History skips …" | The Progress charts show change from one month to the next, so a missing month would be drawn as one month's change | Add an entry for every month up to the one before `asOf`. Recorded scores are whole numbers, like the computed one |
