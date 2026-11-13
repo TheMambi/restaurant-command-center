@@ -1,6 +1,8 @@
 // Serves the production build with the headers from vercel.json and opens every view in Chrome.
 // Fails on anything the Content-Security-Policy blocks, any console error, any request to
-// another site, or inline code in the built pages. Run after `npm run build`: `npm run smoke`.
+// another site, or inline code in the built pages. It also opens the landing page with scripts
+// off and with its script held back, where the words must still read in order.
+// Run after `npm run build`: `npm run smoke`.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
@@ -38,6 +40,56 @@ for (const page of ['index.html', 'report/index.html']) {
 const tabs = ['overview', 'google', 'website', 'social', 'reviews', 'competitor', 'opportunities', 'history'];
 const views = ['/', ...['brasa-taqueria', 'osteria-lumen'].flatMap((r) => tabs.map((t) => `/report/?r=${r}&tab=${t}`))];
 
+// Run in the page. The hero before its script has run: four blocks of words, each showing, one
+// under the other, in a hero about one screen tall.
+const wordsOutOfOrder = () => {
+  const hero = document.getElementById('hero');
+  const blocks = [...hero.querySelectorAll('.beat')].map((b) => ({ box: b.getBoundingClientRect(), opacity: getComputedStyle(b).opacity }));
+  const found = blocks.length === 4 ? [] : [`${blocks.length} blocks of words in the hero instead of 4`];
+  blocks.forEach((b, i) => {
+    if (b.box.height === 0 || b.opacity !== '1') found.push(`block ${i + 1} of the hero does not show`);
+    if (i > 0 && b.box.top < blocks[i - 1].box.bottom) found.push(`block ${i + 1} of the hero overlaps the one before it`);
+  });
+  if (hero.offsetHeight > innerHeight * 1.25) found.push(`the hero is ${(hero.offsetHeight / innerHeight).toFixed(1)} screens tall`);
+  return found;
+};
+
+async function landingWithoutScript(browser) {
+  for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
+    const where = `${viewport.width}px wide`;
+    const off = await browser.newContext({ viewport, javaScriptEnabled: false });
+    const plain = await off.newPage();
+    await plain.goto(origin + '/', { waitUntil: 'load' });
+    for (const found of await plain.evaluate(wordsOutOfOrder)) problems.push(`no JavaScript, ${where}: ${found}`);
+    // Each part the script would have filled says so instead of sitting empty.
+    const silent = await plain.evaluate(() => ['hero', 'parts-list', 'samples-list'].filter((id) => !(document.getElementById(id).closest('section').querySelector('.script-note')?.getBoundingClientRect().height > 0)));
+    for (const id of silent) problems.push(`no JavaScript, ${where}: nothing says why #${id} is missing its script`);
+    await off.close();
+
+    const slow = await browser.newContext({ viewport });
+    let deliver;
+    const held = new Promise((done) => (deliver = done));
+    await slow.route('**/assets/*.js', async (route) => {
+      await held;
+      await route.continue();
+    });
+    const page = await slow.newPage();
+    await page.goto(origin + '/', { waitUntil: 'commit' });
+    await page.waitForFunction(() => document.querySelectorAll('.beat').length === 4 && getComputedStyle(document.querySelector('.landing-bar')).position === 'fixed');
+    for (const found of await page.evaluate(wordsOutOfOrder)) problems.push(`script still loading, ${where}: ${found}`);
+    deliver();
+    await page.waitForSelector('#hero.is-live', { timeout: 10000 }).catch(() => problems.push(`script loaded, ${where}: the hero never became the pinned stage`));
+    // A load error is put first in the page; the pinned bar must not cover it.
+    const covered = await page.evaluate(() => {
+      const box = Object.assign(document.createElement('div'), { className: 'load-error', textContent: 'The page could not load.' });
+      document.body.prepend(box);
+      return box.getBoundingClientRect().top < document.querySelector('.landing-bar').getBoundingClientRect().bottom;
+    });
+    if (covered) problems.push(`${where}: the bar covers the top of a load error`);
+    await slow.close();
+  }
+}
+
 const browser = await chromium.launch({ channel: 'chrome', args: ['--no-sandbox'] });
 try {
   for (const colorScheme of ['light', 'dark']) {
@@ -61,6 +113,7 @@ try {
     }
     await context.close();
   }
+  await landingWithoutScript(browser);
 } finally {
   await browser.close();
   server.close();

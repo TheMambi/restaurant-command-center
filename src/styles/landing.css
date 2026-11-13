@@ -88,26 +88,38 @@
   outline-offset: 4px;
 }
 
-/* ---------- Hero: a pinned stage the sequence plays on ---------- */
+/* ---------- Hero ---------- */
 
+/* Three states. With no class, which is how the page arrives and how it stays if its script never
+   runs, the four blocks of words read in order at their natural height. landing.ts then adds
+   is-live for the pinned stage the sequence plays on, or is-still for the finished frame beside
+   the words. */
 .hero {
   position: relative;
-  height: 440vh;
   background: var(--color-stage);
   color: var(--color-stage-ink);
 }
 
+.hero.is-live {
+  height: 440vh;
+}
+
 .hero-stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.is-live .hero-stage {
   position: sticky;
   top: 0;
   height: 100vh;
   height: 100svh;
-  overflow: hidden;
 }
 
 /* The lit counter at the foot of the frame eases into the stage, so the page carries on below the
    hero without a line. It covers only the counter: the frames keep the ticket and sheets above it. */
-.hero-stage::after {
+.is-live .hero-stage::after,
+.is-still .hero-stage::after {
   content: '';
   position: absolute;
   inset: auto 0 0;
@@ -133,8 +145,11 @@
 }
 
 .beat {
-  grid-area: 1 / 1;
   will-change: opacity, transform;
+}
+
+.is-live .beat {
+  grid-area: 1 / 1;
 }
 
 /* Faded-out blocks stay in the accessibility tree; they only stop catching clicks meant for the
@@ -203,6 +218,32 @@
   height: 2.5rem;
   margin-top: var(--space-3);
   background: var(--color-stage-muted);
+}
+
+/* A line for visitors whose browser runs no scripts; index.html wraps each one in noscript. */
+.script-note {
+  max-width: 38rem;
+  margin-top: var(--space-5);
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--color-rule-strong);
+  color: var(--color-muted);
+}
+
+/* Until the script fills them, the weights bar and the lists take no room, so a sheet that only
+   holds the line above is not half blank. */
+.weights-bar:empty,
+.parts:empty,
+.samples:empty {
+  display: none;
+}
+
+.weights .script-note {
+  margin-top: 0;
+}
+
+/* The bar is pinned over the top of the page, so a load error starts below it. */
+.landing .load-error {
+  margin-top: calc(5rem + var(--space-5));
 }
 
 /* ---------- Sections on the stage ---------- */
@@ -481,64 +522,65 @@
   font-size: var(--text-base);
 }
 
-/* ---------- Reduced motion: the finished frame, words in order ---------- */
+/* ---------- Words in order: the default, and the layout reduced motion keeps ---------- */
 
-.hero.is-still {
-  height: auto;
+.hero:not(.is-live) .hero-beats {
+  gap: var(--space-4);
+  padding-block: 6.5rem 3rem;
 }
 
-.is-still .hero-stage {
-  position: relative;
-  height: auto;
+/* With no frame beside them the words take a reading column instead of the narrow one. */
+.hero:not(.is-live, .is-still) .hero-beats {
+  grid-template-columns: minmax(0, 36rem);
+}
+
+.hero:not(.is-live) .beat-intro {
+  width: auto;
+}
+
+.hero:not(.is-live) .beat-text {
+  max-width: none;
+}
+
+.hero:not(.is-live) .hero-title,
+.hero:not(.is-live) .beat-title {
+  font-size: clamp(2.75rem, 5vw, 4.5rem);
+}
+
+.hero:not(.is-live) .scroll-cue {
+  display: none;
+}
+
+.hero:not(.is-live) .beat:not(.beat-intro) .beat-title {
+  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+}
+
+.hero:not(.is-live) .beat:not(.beat-intro) .beat-text {
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+}
+
+/* ---------- Reduced motion: the finished frame beside the words ---------- */
+
+/* These follow the rules above and weigh the same, so they win where both set a property. */
+.hero.is-still .hero-stage {
   min-height: 100svh;
 }
 
 /* The finished frame keeps one screen's height while the words run on below it. */
-.is-still .hero-canvas {
+.hero.is-still .hero-canvas {
   bottom: auto;
   height: 100svh;
   mask-image: linear-gradient(to bottom, black 82%, transparent);
 }
 
-.is-still .beat:not(.beat-intro, .beat-end) .beat-text {
+.hero.is-still .beat:not(.beat-intro, .beat-end) .beat-text {
   display: none;
 }
 
-.is-still .hero-beats {
+.hero.is-still .hero-beats {
   align-content: center;
-  gap: var(--space-4);
   min-height: 100svh;
-  padding-block: 6.5rem 3rem;
-}
-
-.is-still .beat {
-  grid-area: auto;
-}
-
-.is-still .beat-intro {
-  width: auto;
-}
-
-.is-still .beat-text {
-  max-width: none;
-}
-
-.is-still .hero-title,
-.is-still .beat-title {
-  font-size: clamp(2.75rem, 5vw, 4.5rem);
-}
-
-.is-still .scroll-cue {
-  display: none;
-}
-
-.is-still .beat:not(.beat-intro) .beat-title {
-  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
-}
-
-.is-still .beat:not(.beat-intro) .beat-text {
-  margin-top: var(--space-2);
-  font-size: var(--text-base);
 }
 
 /* ---------- Narrow and portrait screens: words on top, the frame below ---------- */
@@ -570,13 +612,13 @@
   /* The finished frame gets its own space below the words and the canvas runs the stage's full
      height, so the frame fits under the button rather than behind it. 125vw is the tall frame's
      height at full width. */
-  .is-still .hero-beats {
+  .hero.is-still .hero-beats {
     align-content: start;
     min-height: 0;
     padding-bottom: min(calc(125vw + 1rem), 75svh);
   }
 
-  .is-still .hero-canvas {
+  .hero.is-still .hero-canvas {
     bottom: 0;
     height: 100%;
   }
@@ -659,7 +701,7 @@
     display: none;
   }
 
-  .is-still .hero-beats {
+  .hero:not(.is-live) .hero-beats {
     padding-block: 4.5rem 2rem;
   }
 }
@@ -673,6 +715,7 @@
   }
 
   .hero,
+  .hero.is-live,
   .closing {
     height: auto;
     background: none;
@@ -723,12 +766,12 @@
     animation: none !important;
   }
 
-  .hero-stage {
+  .is-live .hero-stage {
     position: static;
     height: auto;
   }
 
-  .beat {
+  .is-live .beat {
     opacity: 1 !important;
     transform: none !important;
     visibility: visible !important;

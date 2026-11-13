@@ -91,6 +91,7 @@ A kitchen ticket on ink: three ruled lines and a short ink-blue line for the one
 ## Landing page
 
 - **Order:** a dark bar pinned to the top; a pinned hero that plays the 120-frame sequence across about three and a half screens of scroll, with four blocks of words beside it; then, on the same stage, the weights sheet (one bar cut into six slices, and the six parts), two sample restaurants each on a sheet with its plate, wheel and first job, and four rules the numbers keep, each with a small drawing; then the closing call to action under the lamp.
+- **Before the script:** the page arrives with the hero's four blocks of words in order at their natural height, and stays that way if the script never runs. `noscript` lines say what is missing. `landing.ts` then turns on the pinned stage (`is-live`) or, with reduced motion, the finished frame beside the words (`is-still`).
 - **Frames:** 16:9 frames (3200 wide on high-density screens, 2560 otherwise) cover screens wider than 1.45:1 and crop from the empty left side. Squarer and portrait screens get 4:5 frames, fitted on the right of a landscape screen or at the bottom of a portrait one, so the words never sit on the scene.
 - **Words in the hero** stay in a left column (`min(24rem, 33vw)`); on portrait screens they sit above the frame.
 - **Figures** come from the same scoring code and config as the report, and the plates and wheels are drawn by the report's own functions. The frames bake in Brasa Taquería's report; a test fails if that report changes without a re-render.

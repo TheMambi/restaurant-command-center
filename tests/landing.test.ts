@@ -211,6 +211,10 @@ describe('the landing page in a browser-like DOM', () => {
     await import('../src/landing');
   });
 
+  it('opts the hero in to the pinned stage from the script', () => {
+    expect(document.getElementById('hero')!.classList.contains('is-live')).toBe(true);
+  });
+
   it('lists the six score parts with their weights from the config', () => {
     const items = [...document.querySelectorAll('#parts-list .part')];
     expect(items).toHaveLength(Object.keys(scoreWeights).length);
@@ -236,6 +240,43 @@ describe('the landing page in a browser-like DOM', () => {
       rules: { 'color-contrast': { enabled: false } },
     });
     expect(result.violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+  });
+});
+
+describe('the landing page before its script runs', () => {
+  const css = readFileSync(join(root, 'src', 'styles', 'landing.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+
+  // The default once piled the four blocks of words into one grid cell over 4.4 screens of empty
+  // stage, readable only after the script had run. The pinned stage is now something the script
+  // asks for.
+  it('arrives with no state on the hero and pins it only under is-live', () => {
+    expect(page).toMatch(/<section class="hero" id="hero"/);
+    const pinning = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(([, , body]) => /440vh|position: sticky|grid-area: 1 \/ 1/.test(body!));
+    expect(pinning.length).toBeGreaterThanOrEqual(3);
+    for (const [, selector] of pinning) expect(selector!.trim()).toContain('.is-live');
+  });
+
+  it('says what is missing where scripts are off', () => {
+    expect(page).toMatch(/<div class="beat beat-intro"(?:(?!<\/div>)[\s\S])*<noscript><p class="script-note">/);
+    for (const list of ['parts-list', 'samples-list']) {
+      expect(page, list).toMatch(new RegExp(`id="${list}"></ul>\\s*<noscript><p class="script-note">`));
+    }
+  });
+});
+
+describe('the landing page when a profile fails to load', () => {
+  it('still sets up the hero and says what went wrong', async () => {
+    vi.resetModules();
+    vi.doMock('../src/profiles', () => ({
+      loadProfiles: () => {
+        throw new Error('That profile is broken');
+      },
+    }));
+    document.body.innerHTML = page.slice(page.indexOf('<body class="landing">') + 22, page.indexOf('<script type="module"'));
+    await expect(import('../src/landing')).rejects.toThrow('That profile is broken');
+    vi.doUnmock('../src/profiles');
+    expect(document.getElementById('hero')!.classList.contains('is-live')).toBe(true);
+    expect(document.querySelector('.load-error')?.textContent).toContain('That profile is broken');
   });
 });
 

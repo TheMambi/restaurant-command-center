@@ -102,7 +102,8 @@ function setupHero(): void {
     left: Math.max(0, column.offsetLeft - canvas.offsetLeft + Math.max(0, ...beats.filter((b) => !b.node.classList.contains('beat-intro')).map((b) => b.node.offsetLeft + b.node.offsetWidth)) + 24),
     top: Math.max(0, column.offsetTop - canvas.offsetTop + Math.max(0, ...beats.map((b) => b.node.offsetTop + b.node.offsetHeight)) + 16),
   });
-  hero.classList.toggle('is-still', still);
+  // The stylesheet's default is the words in order; the hero only pins or shows a frame from here on.
+  hero.classList.add(still ? 'is-still' : 'is-live');
   const sequence = mountSequence(canvas, stage, still, reserve);
   if (still) return;
 
@@ -148,9 +149,11 @@ function setupPrint(): void {
 }
 
 try {
+  // The hero first: it needs nothing from the profiles, so a profile that fails to load still
+  // leaves the page with its opening.
+  setupHero();
   renderParts();
   renderSamples();
-  setupHero();
   setupPrint();
 } catch (error) {
   const box = document.createElement('div');
