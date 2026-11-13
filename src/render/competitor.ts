@@ -2,7 +2,7 @@ import { num, platformName, signed, stars } from '../format';
 import { html, type SafeHtml } from '../html';
 import { reviewPlatformIds, socialPlatformIds, type Profile } from '../schema';
 import { evenThresholds } from '../scoring.config';
-import { meter, sectionHeader } from './shared';
+import { emptyMeter, meter, sectionHeader } from './shared';
 import { segments } from './visuals';
 
 type Cell = number | undefined;
@@ -40,10 +40,14 @@ export function comparisonRows(p: Profile): Row[] {
     const a = p.reviewPlatforms.find((r) => r.id === id);
     const b = c.reviewPlatforms.find((r) => r.id === id);
     if (!a && !b) continue;
-    rows.push({ platform: id, metric: `${platformName[id]} rating`, self: a?.rating, rival: b?.rating, kind: 'rating' });
+    // An empty cell reads as "Not listed", so it may only mean the platform is missing. A listing with no
+    // reviews has no rating, and a photo count nobody took is not a zero: those rows are left out instead.
+    if (a?.reviews !== 0 && b?.reviews !== 0) {
+      rows.push({ platform: id, metric: `${platformName[id]} rating`, self: a?.rating, rival: b?.rating, kind: 'rating' });
+    }
     rows.push({ platform: id, metric: `${platformName[id]} reviews`, self: a?.reviews, rival: b?.reviews, kind: 'count' });
-    if (a?.photos !== undefined || b?.photos !== undefined) {
-      rows.push({ platform: id, metric: `${platformName[id]} photos`, self: a?.photos, rival: b?.photos, kind: 'count' });
+    if (a?.photos !== undefined && b?.photos !== undefined) {
+      rows.push({ platform: id, metric: `${platformName[id]} photos`, self: a.photos, rival: b.photos, kind: 'count' });
     }
   }
   for (const id of socialPlatformIds) {
@@ -84,7 +88,7 @@ export function renderCompetitor(p: Profile): SafeHtml {
   const year = Number(p.asOf.slice(0, 4));
   const show = (v: Cell, kind: Row['kind']) => (v === undefined ? 'Not listed' : kind === 'rating' ? stars(v) : num(v));
   const bar = (v: Cell, max: number, variant: '' | 'is-rival') =>
-    v === undefined ? html`<span class="meter is-empty" aria-hidden="true"></span>` : meter(v, max, variant);
+    v === undefined ? emptyMeter : meter(v, max, variant);
 
   return html`
     ${sectionHeader('Competitor', `${me.name} next to ${c.name}, a nearby ${me.cuisine} restaurant. Ahead on ${s.ahead} of ${s.total} measures, behind on ${s.behind}.`)}
@@ -120,6 +124,6 @@ export function renderCompetitor(p: Profile): SafeHtml {
           <tr><th scope="row">Price range</th><td class="num" data-label="${me.name}">${me.priceRange}</td><td class="num muted" data-label="${c.name}">${c.priceRange}</td><td data-label="Difference">${me.priceRange === c.priceRange ? 'Same' : 'Different'}</td><td class="hide-narrow"></td></tr>
         </tbody>
       </table></div>
-      <p class="small muted mt-3 hide-narrow">Differences are measured from ${c.name}'s figure. Rating bars run from 0 to 5 stars; count bars compare the two restaurants on each row. A platform only one of them uses counts once in the tally above.</p>
+      <p class="small muted mt-3 hide-narrow">Differences are measured from ${c.name}'s figure. Rating bars run from 0 to 5 stars; count bars compare the two restaurants on each row. A platform only one of them uses counts once in the tally above. Ratings are compared where both have reviews, and photos where both have a count.</p>
     </section>`;
 }

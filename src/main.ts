@@ -2,7 +2,7 @@ import '@fontsource-variable/onest';
 import '@fontsource-variable/fraunces/opsz.css';
 import './styles/tokens.css';
 import './styles/app.css';
-import { monthLabel } from './format';
+import { monthLabel, yearsOpen } from './format';
 import { html, setHtml, type SafeHtml } from './html';
 import { loadProfiles } from './profiles';
 import { renderCompetitor } from './render/competitor';
@@ -38,7 +38,7 @@ function el<T extends HTMLElement>(id: string): T {
 function describeRestaurant(p: Profile): string {
   const r = p.restaurant;
   const age = Number(p.asOf.slice(0, 4)) - r.yearOpened;
-  return `${r.cuisine} restaurant in ${r.neighborhood}, ${r.city}. Open ${age} ${age === 1 ? 'year' : 'years'}, price range ${r.priceRange}.`;
+  return `${r.cuisine} restaurant in ${r.neighborhood}, ${r.city}. ${yearsOpen(age)}, price range ${r.priceRange}.`;
 }
 
 function render(profile: Profile, active: TabId): void {

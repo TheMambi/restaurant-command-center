@@ -1,8 +1,8 @@
-import { num, platformName, stars } from '../format';
+import { num, platformName } from '../format';
 import { html, type SafeHtml } from '../html';
 import type { Profile } from '../schema';
 import { totalReviews, weightedRating } from '../scoring';
-import { checklist, meter, sectionHeader, share } from './shared';
+import { checklist, meter, ratingCell, sectionHeader, share } from './shared';
 
 export function renderReviews(p: Profile): SafeHtml {
   const total = totalReviews(p.reviewPlatforms);
@@ -18,10 +18,10 @@ export function renderReviews(p: Profile): SafeHtml {
         <thead><tr><th scope="col">Platform</th><th scope="col" class="num">Reviews</th><th scope="col" class="col-meter hide-narrow"><span class="sr-only">Share of all reviews</span></th><th scope="col" class="num">Share</th><th scope="col" class="num">Rating</th></tr></thead>
         <tbody>
           ${p.reviewPlatforms.map(
-            (r) => html`<tr><th scope="row">${platformName[r.id]}</th><td class="num">${num(r.reviews)}</td><td class="hide-narrow">${meter(r.reviews, total)}</td><td class="num muted">${share(r.reviews, total)}</td><td class="num">${stars(r.rating)}</td></tr>`,
+            (r) => html`<tr><th scope="row">${platformName[r.id]}</th><td class="num">${num(r.reviews)}</td><td class="hide-narrow">${meter(r.reviews, total)}</td><td class="num muted">${share(r.reviews, total)}</td><td class="num">${ratingCell(r.rating, r.reviews)}</td></tr>`,
           )}
         </tbody>
-        <tfoot><tr><th scope="row">All platforms</th><td class="num">${num(total)}</td><td class="hide-narrow"></td><td class="num">100%</td><td class="num">${stars(weightedRating(p.reviewPlatforms))}</td></tr></tfoot>
+        <tfoot><tr><th scope="row">All platforms</th><td class="num">${num(total)}</td><td class="hide-narrow"></td><td class="num">${share(total, total)}</td><td class="num">${ratingCell(weightedRating(p.reviewPlatforms), total)}</td></tr></tfoot>
       </table></div>
       <p class="small muted mt-3">The overall rating weights each platform by how many reviews it has.</p>
     </section>

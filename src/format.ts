@@ -24,9 +24,17 @@ export function monthLabel(month: string, style: 'long' | 'short' = 'long'): str
   });
 }
 
+// A count with its noun: "1 review", "1,180 reviews".
+export const counted = (n: number, noun: string): string => `${num(n)} ${n === 1 ? noun : `${noun}s`}`;
+
+export const yearsOpen = (years: number): string => (years === 0 ? 'Opened this year' : `Open ${counted(years, 'year')}`);
+
 export function hours(h: number): string {
-  if (h < 1) return `${Math.round(h * 60)} minutes`;
-  return `${num(h)} ${h === 1 ? 'hour' : 'hours'}`;
+  // Rounded to the minute before the unit is chosen, so 59.7 minutes reads "1 hour" and never "60 minutes".
+  const minutes = Math.round(h * 60);
+  if (minutes < 1) return 'under a minute';
+  if (minutes < 60) return counted(minutes, 'minute');
+  return counted(minutes / 60, 'hour');
 }
 
 export function signed(n: number, digits = 0): string {

@@ -15,19 +15,22 @@ const PAD = { top: 16, right: 16, bottom: 28, left: 48 };
 const GRID_LINES = 4;
 let chartCount = 0;
 
-function niceStep(range: number): number {
+// With `whole`, for counts that have no fractions, steps are whole numbers: 1 at the least, and 5 where 2.5 would fall.
+function niceStep(range: number, whole = false): number {
   if (range <= 0) return 1;
   const raw = range / GRID_LINES;
+  if (whole && raw <= 1) return 1;
   const magnitude = 10 ** Math.floor(Math.log10(raw));
   const normalized = raw / magnitude;
-  const nice = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 2.5 ? 2.5 : normalized <= 5 ? 5 : 10;
+  const half = whole && magnitude === 1 ? 5 : 2.5;
+  const nice = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 2.5 ? half : normalized <= 5 ? 5 : 10;
   return nice * magnitude;
 }
 
-export function chartRange(values: number[], min?: number, max?: number): { lo: number; hi: number; step: number } {
+export function chartRange(values: number[], min?: number, max?: number, whole = false): { lo: number; hi: number; step: number } {
   const dataLo = Math.min(...values);
   const dataHi = Math.max(...values);
-  const step = niceStep((max ?? dataHi) - (min ?? dataLo) || Math.abs(dataHi) || 1);
+  const step = niceStep((max ?? dataHi) - (min ?? dataLo) || Math.abs(dataHi) || 1, whole);
   const lo = min ?? Math.floor(dataLo / step) * step;
   let hi = max ?? Math.ceil(dataHi / step) * step;
   if (hi <= lo) hi = lo + step;
@@ -84,10 +87,10 @@ interface BarChartOptions {
   format: (value: number) => string;
 }
 
-// Vertical bars from zero, one series. Used for counts per month.
+// Vertical bars from zero, one series. Used for counts per month, so its gridlines sit on whole numbers.
 export function barChart(o: BarChartOptions): SafeHtml {
   if (o.values.length === 0) return html`<p class="muted">Not enough history yet.</p>`;
-  const { lo, hi, step } = chartRange([0, ...o.values.map((v) => Math.max(0, v))], 0);
+  const { lo, hi, step } = chartRange([0, ...o.values.map((v) => Math.max(0, v))], 0, undefined, true);
   const plotW = W - PAD.left - PAD.right;
   const plotH = H - PAD.top - PAD.bottom;
   const slot = plotW / o.values.length;

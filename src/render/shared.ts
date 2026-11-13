@@ -1,3 +1,4 @@
+import { stars } from '../format';
 import { html, type SafeHtml } from '../html';
 import type { CheckItem } from '../schema';
 import { segments } from './visuals';
@@ -31,6 +32,13 @@ export function checklist(items: CheckItem[], emptyText = 'Nothing to check yet.
 export function meter(value: number, max: number, variant: '' | 'is-rival' | 'is-neutral' = ''): SafeHtml {
   const share = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
   return html`<span class="meter" aria-hidden="true"><svg viewBox="0 0 100 1" preserveAspectRatio="none"><rect class="meter-fill ${variant}" width="${(share * 100).toFixed(1)}" height="1"></rect></svg></span>`;
+}
+
+export const emptyMeter = html`<span class="meter is-empty" aria-hidden="true"></span>`;
+
+// A listing with no reviews has no rating, whatever number the profile holds for it.
+export function ratingCell(rating: number, reviews: number): SafeHtml | string {
+  return reviews > 0 ? stars(rating) : html`<span class="missing">No reviews yet</span>`;
 }
 
 export function sectionHeader(title: string, intro: string): SafeHtml {

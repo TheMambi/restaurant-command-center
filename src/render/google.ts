@@ -1,4 +1,4 @@
-import { num, stars } from '../format';
+import { counted, num, stars } from '../format';
 import { html, type SafeHtml } from '../html';
 import type { Profile } from '../schema';
 import { ratingWords } from '../scoring.config';
@@ -19,21 +19,25 @@ export function renderGoogle(p: Profile): SafeHtml {
     { label: '1 star', count: s.one },
   ];
   const negative = s.one + s.two;
-  const words = ratingWords.find((w) => google.rating >= w.min)?.label ?? '';
+  // No reviews means no rating to show or judge, whatever number the profile holds for it.
+  const rated = google.reviews > 0;
+  const words = rated ? (ratingWords.find((w) => google.rating >= w.min)?.label ?? '') : '';
 
   return html`
     ${header}
     <dl class="stats">
-      ${stat('Rating', `${stars(google.rating)} out of 5`, words)}
-      ${stat('Reviews', num(google.reviews), google.photos === undefined ? undefined : `${num(google.photos)} photos from diners`)}
-      ${stat('Five-star reviews', share(s.five, google.reviews), `${num(s.five)} reviews`)}
-      ${stat('One and two-star reviews', share(negative, google.reviews), `${num(negative)} reviews`)}
+      ${stat('Rating', rated ? `${stars(google.rating)} out of 5` : 'No reviews yet', words)}
+      ${stat('Reviews', num(google.reviews), google.photos === undefined ? undefined : `${counted(google.photos, 'photo')} from diners`)}
+      ${stat('Five-star reviews', share(s.five, google.reviews), counted(s.five, 'review'))}
+      ${stat('One and two-star reviews', share(negative, google.reviews), counted(negative, 'review'))}
     </dl>
 
     <div class="grid-2">
       <section class="card sheet" aria-labelledby="stars-title">
         <h3 class="block-title" id="stars-title">How the stars break down</h3>
-        <p class="headline"><span class="headline-figure">${stars(google.rating)}</span><span>stars from ${num(google.reviews)} reviews. ${words}.</span></p>
+        ${rated
+          ? html`<p class="headline"><span class="headline-figure">${stars(google.rating)}</span><span>stars from ${counted(google.reviews, 'review')}. ${words}.</span></p>`
+          : html`<p class="headline"><span>No reviews yet, so there are no stars to break down.</span></p>`}
         <table>
           <thead><tr><th scope="col">Stars</th><th scope="col" class="col-meter"><span class="sr-only">Share</span></th><th scope="col" class="num">Reviews</th><th scope="col" class="num">Share</th></tr></thead>
           <tbody>

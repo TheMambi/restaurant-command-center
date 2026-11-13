@@ -1,11 +1,11 @@
-import { monthLabel, num, platformName, stars } from '../format';
+import { counted, monthLabel, num, platformName, stars } from '../format';
 import { html, type SafeHtml } from '../html';
 import type { Profile } from '../schema';
-import { actionRanking, scoreLabels, scoreWeights } from '../scoring.config';
+import { actionRanking, scoreLabels, scoreLabelsInSentence, scoreWeights } from '../scoring.config';
 import { scoreLabel, totalReviews, weightedRating, type ScoreBreakdown, type ScoreKey } from '../scoring';
 import { standing } from './competitor';
 import type { HistoryPoint } from './history';
-import { list, meter } from './shared';
+import { emptyMeter, list, meter, ratingCell } from './shared';
 import { dial, radar } from './visuals';
 
 type Opportunity = Profile['opportunities'][number];
@@ -35,9 +35,12 @@ export function doFirst(opportunities: Opportunity[], limit = 3): Opportunity[] 
 const horizonWords = { now: 'due this month', soon: 'due in the next 1 to 3 months', later: 'due in 3 to 6 months' } as const;
 const impactWords = { high: 'High impact', medium: 'Medium impact', low: 'Low impact' } as const;
 
+// The gap as the profile wrote it under "Fix soon", capitals included, so a name like Google or TikTok survives.
+export const gapSentence = (gap: string): string => `Fixes: ${gap}.`;
+
 export function whyFirst(o: Opportunity): string {
   const base = `${impactWords[o.impact]}, ${o.effort === 'low' ? 'quick to do' : 'a bigger job'}, ${horizonWords[o.horizon]}.`;
-  return o.fixesGap ? `${base} Fixes: ${o.fixesGap.charAt(0).toLowerCase()}${o.fixesGap.slice(1)}.` : base;
+  return o.fixesGap ? `${base} ${gapSentence(o.fixesGap)}` : base;
 }
 
 export function trendSentence(series: HistoryPoint[]): string {
@@ -63,6 +66,14 @@ export function renderOverview(p: Profile, score: number, breakdown: ScoreBreakd
   const keys = Object.keys(scoreWeights) as ScoreKey[];
   const ranked = [...keys].sort((a, b) => breakdown[b] - breakdown[a]);
   const actions = doFirst(p.opportunities);
+  const actionCount = p.opportunities.length;
+  const railNote =
+    actions.length < actionCount
+      ? `${actions.length} of ${actionCount} actions, ranked by impact, effort and what is due.`
+      : actionCount === 1
+        ? 'The one action recommended so far.'
+        : `All ${actionCount} actions, ranked by impact, effort and what is due.`;
+  const reviewCount = totalReviews(p.reviewPlatforms);
   const s = standing(p);
 
   return html`
@@ -77,7 +88,7 @@ export function renderOverview(p: Profile, score: number, breakdown: ScoreBreakd
         <div class="score-context">
           <p>${trendSentence(series)} ${fallingReviews(series)} <button type="button" class="inline-link no-print" data-goto="history">See progress</button></p>
           <p>Ahead of ${p.competitor.name} on ${s.ahead} of ${s.total} measures, behind on ${s.behind}. <button type="button" class="inline-link no-print" data-goto="competitor">Compare</button></p>
-          <p>Strongest area: ${scoreLabels[ranked[0]!].toLowerCase()}. Weakest: ${scoreLabels[ranked.at(-1)!].toLowerCase()}.</p>
+          <p>Strongest area: ${scoreLabelsInSentence[ranked[0]!]}. Weakest: ${scoreLabelsInSentence[ranked.at(-1)!]}.</p>
         </div>
         ${radar(keys.map((k) => ({ label: scoreLabels[k], value: breakdown[k] })))}
       </div>
@@ -94,14 +105,15 @@ export function renderOverview(p: Profile, score: number, breakdown: ScoreBreakd
             </tbody>
           </table>
         </div>
+        <p class="small muted mt-3">Each part is shown rounded. The total is worked out before rounding, so it can sit a point away from what these figures add up to.</p>
       </div>
     </section>
 
     <section class="rail-section" aria-labelledby="first-title">
       <div class="rail-head">
         <h3 class="rail-title" id="first-title">Do these first</h3>
-        <p class="rail-note">${actions.length} of ${p.opportunities.length} actions, ranked by impact, effort and what is due.</p>
-        <button type="button" class="link-button no-print" data-goto="opportunities">See all ${p.opportunities.length} next steps</button>
+        <p class="rail-note">${railNote}</p>
+        <button type="button" class="link-button no-print" data-goto="opportunities">${actionCount === 1 ? 'See the next step' : `See all ${actionCount} next steps`}</button>
       </div>
       <ol class="tickets">
         ${actions.map(
@@ -119,13 +131,15 @@ export function renderOverview(p: Profile, score: number, breakdown: ScoreBreakd
     <div class="grid-notes">
     <section class="card sheet ratings-card" aria-labelledby="ratings-title">
       <h3 class="block-title" id="ratings-title">Ratings by platform</h3>
-      <p class="headline"><span class="headline-figure">${stars(weightedRating(p.reviewPlatforms))}</span><span>stars across ${num(totalReviews(p.reviewPlatforms))} reviews, weighted by how many each platform has.</span></p>
+      ${reviewCount > 0
+        ? html`<p class="headline"><span class="headline-figure">${stars(weightedRating(p.reviewPlatforms))}</span><span>stars across ${counted(reviewCount, 'review')}, weighted by how many each platform has.</span></p>`
+        : html`<p class="headline"><span>No reviews on any platform yet, so there is no rating to show.</span></p>`}
       <div class="table-wrap">
         <table>
           <thead><tr><th scope="col">Platform</th><th scope="col" class="num">Rating</th><th scope="col" class="col-meter hide-narrow"><span class="sr-only">Rating out of 5</span></th><th scope="col" class="num">Reviews</th><th scope="col" class="num">Photos</th></tr></thead>
           <tbody>
             ${p.reviewPlatforms.map(
-              (r) => html`<tr><th scope="row">${platformName[r.id]}</th><td class="num figure">${stars(r.rating)}</td><td class="hide-narrow">${meter(r.rating, 5)}</td><td class="num">${num(r.reviews)}</td><td class="num">${r.photos === undefined ? html`<span class="missing">Not counted</span>` : num(r.photos)}</td></tr>`,
+              (r) => html`<tr><th scope="row">${platformName[r.id]}</th><td class="num figure">${ratingCell(r.rating, r.reviews)}</td><td class="hide-narrow">${r.reviews > 0 ? meter(r.rating, 5) : emptyMeter}</td><td class="num">${num(r.reviews)}</td><td class="num">${r.photos === undefined ? html`<span class="missing">Not counted</span>` : num(r.photos)}</td></tr>`,
             )}
           </tbody>
         </table>

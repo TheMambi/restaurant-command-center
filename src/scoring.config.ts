@@ -27,6 +27,16 @@ export const scoreLabels: Record<keyof typeof scoreWeights, string> = {
   responsiveness: 'Review replies',
 };
 
+// The same names inside a sentence, where only a brand keeps its capital.
+export const scoreLabelsInSentence: Record<keyof typeof scoreWeights, string> = {
+  reputation: 'ratings',
+  reviewVolume: 'review volume',
+  googleProfile: 'Google profile',
+  website: 'website and search',
+  social: 'social media',
+  responsiveness: 'review replies',
+};
+
 // Score bands for the label under the overall score, highest first.
 export const scoreBands = [
   { min: 80, label: 'Strong presence' },

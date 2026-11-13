@@ -798,9 +798,10 @@ tfoot tr > :last-child {
   padding-right: 0;
 }
 
-/* Words standing in for a missing figure may wrap where a number would not. */
+/* Words standing in for a missing figure may wrap where a number would not, and never take a figure's weight. */
 .num .missing {
   white-space: normal;
+  font-weight: 400;
 }
 
 .col-meter {

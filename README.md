@@ -45,7 +45,7 @@ The overall score is a weighted average of six parts, each from 0 to 100. Weight
 | Social media | 10 | Per platform: half followers against a 5,000 target, half engagement against a 5% target. No social accounts scores 0 |
 | Review replies | 15 | Share of the reply checklist done |
 
-The current month's score is always computed from the profile. Past months come from the profile's `history` as they were recorded at the time, and the Progress tab says so. Strengths, gaps and recommendations are analyst notes written into each profile. The app ranks the recommendations and picks the three to do first: impact counts most, bigger jobs cost a point, anything due this month gets a nudge, and any action that closes a "Fix soon" gap gets a larger one. The schema refuses a "Fix soon" gap that no action due now or soon addresses. The weights live in `actionRanking` in the scoring config.
+The current month's score is always computed from the profile. It is rounded once, from the unrounded parts, so the rounded parts on screen can add up to a point more or less; the overview says so under the table. Past months come from the profile's `history` as they were recorded at the time, and the Progress tab says so. Strengths, gaps and recommendations are analyst notes written into each profile. The app ranks the recommendations and picks the three to do first: impact counts most, bigger jobs cost a point, anything due this month gets a nudge, and any action that closes a "Fix soon" gap gets a larger one. The schema refuses a "Fix soon" gap that no action due now or soon addresses. The weights live in `actionRanking` in the scoring config.
 
 The targets suit a busy neighborhood restaurant. Change them in the config file to fit a different market.
 
@@ -66,7 +66,7 @@ npm run smoke     # after a build: open every view in Chrome under the productio
 ## Add a restaurant
 
 1. Copy `profiles/_template.json` to `profiles/<your-restaurant>.json`. Files starting with `_` are ignored by the app.
-2. Fill it in. `slug` becomes the address: `/report/?r=<slug>`. Keep `sampleData` set to `true` for invented data; the page then says so in the header and footer. `history` takes one entry for every month up to the one before `asOf`, each with that month's score as a whole number.
+2. Fill it in. `slug` becomes the address: `/report/?r=<slug>`. Keep `sampleData` set to `true` for invented data; the page then says so in the header and footer. `history` takes one entry for every month up to the one before `asOf`, each with that month's score as a whole number. For a platform with no reviews yet, enter 0 reviews and a rating of 0: the report says "No reviews yet" where the rating would go.
 3. Run `npm run check`. If something is off (a rating above 5, star counts that don't add up to the Google review total, history months out of order or skipped), the tests name the field and the problem.
 
 The tests require `sampleData: true` on every committed profile. That guard keeps real restaurant data out of this public repo. To use real data, keep it in a private fork and drop that one test.
@@ -79,7 +79,7 @@ The schema in [`src/schema.ts`](src/schema.ts) is the single definition of a pro
 - **Light and dark mode**, following the system setting until you choose. The counter stays dark in both; light mode lays paper sheets on it, dark mode lays dark steel ones.
 - **Print or save as PDF** turns the whole report, every section in order, into ink on white paper an owner can keep.
 - **Works on a phone.** Wide tables restack into labelled rows, and bars give way to the numbers.
-- **Honest numbers.** Bars start at zero, each chart has one axis, a missing platform is named as a gap instead of drawn as zero, and estimates show as High, Medium or Low instead of made-up scores.
+- **Honest numbers.** Bars start at zero, each chart has one axis, a missing platform is named as a gap instead of drawn as zero, a listing with no reviews shows no rating, the competitor table compares a figure only when both restaurants have it, and estimates show as High, Medium or Low instead of made-up scores.
 - **Accessible.** Keyboard tabs (arrow keys, Home, End), visible focus, status shown in words as well as colour, charts backed by data tables for screen readers. The test suite runs axe-core on every tab; colour contrast was checked in Chrome in both modes.
 
 ## How it is built

@@ -1,6 +1,6 @@
 import { html, type SafeHtml } from '../html';
 import type { Profile } from '../schema';
-import { actionValue, doFirst } from './overview';
+import { actionValue, doFirst, gapSentence } from './overview';
 import { sectionHeader } from './shared';
 
 type Opportunity = Profile['opportunities'][number];
@@ -42,7 +42,7 @@ export function renderOpportunities(p: Profile): SafeHtml {
             <tbody>
               ${items.map(
                 (o) => html`<tr>
-                  <th scope="row">${o.title}${ticket.has(o) && html` <span class="on-ticket">On this week's ticket</span>`}<span class="row-note">${o.description}${o.fixesGap && html` Fixes: ${o.fixesGap.charAt(0).toLowerCase()}${o.fixesGap.slice(1)}.`}</span></th>
+                  <th scope="row">${o.title}${ticket.has(o) && html` <span class="on-ticket">On this week's ticket</span>`}<span class="row-note">${o.description}${o.fixesGap && html` ${gapSentence(o.fixesGap)}`}</span></th>
                   <td data-label="Impact"><span class="impact is-${o.impact}">${impactWords[o.impact]}</span></td>
                   <td data-label="Effort">${effortWords[o.effort]}</td>
                   <td data-label="Time">${o.time}</td>
