@@ -13,7 +13,12 @@ const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 // under the words, so squarer screens get the 4:5 frames instead.
 export const WIDE_FROM = 1.45;
 
-export const framingFor = (width: number, height: number): Framing => (height > 0 && width / height >= WIDE_FROM ? 'wide' : 'tall');
+// A phone held sideways: the screens the stylesheet's short-landscape block covers (30rem). They
+// get the tall frames beside the words, like a squarer screen. The 2560 frames were three times
+// what such a screen can show, and a phone that turns then keeps the set it already has.
+export const SHORT_UP_TO = 480;
+
+export const framingFor = (width: number, height: number): Framing => (height > SHORT_UP_TO && width / height >= WIDE_FROM ? 'wide' : 'tall');
 
 // The 3200 set only where the 2560 set would be stretched. Bigger frames cost decode time and
 // memory on every scrub, so a retina laptop window that needs 2560 or less gets the 2560 set.
@@ -24,6 +29,19 @@ export function frameSetFor(width: number, height: number, dpr: number): FrameSe
 }
 
 export const framingOf = (set: FrameSet): Framing => (set === 'tall' ? 'tall' : 'wide');
+
+// Bytes of decoded frames to hold at once. A phone or tablet reloads a tab that holds too much, and
+// those are the screens that get the tall frames. Only Chromium reports the device's memory, so the
+// tall set keeps to the small budget in every browser, and so does any device reporting 4 GB or less.
+export function memoryBudget(set: FrameSet, deviceMemory?: number): number {
+  const small = set === 'tall' || (deviceMemory !== undefined && deviceMemory <= 4);
+  return (small ? 64 : 256) * 1024 * 1024;
+}
+
+// How many decoded frames a budget allows: never fewer than six, which a scrub needs to stay ahead
+// of the scroll, and never more than 24.
+export const framesToKeep = (frameWidth: number, frameHeight: number, budget: number): number =>
+  Math.max(6, Math.min(24, Math.floor(budget / Math.max(1, frameWidth * frameHeight * 4))));
 
 export const frameUrl = (set: FrameSet, index: number): string => `/hero/${set}/${String(index + 1).padStart(3, '0')}.avif`;
 
@@ -86,8 +104,8 @@ export interface Reserve {
 }
 
 // Wide frames cover screens up to their own shape and crop mostly from the empty left side, where
-// the words sit. On wider screens (ultrawide, a phone held sideways) they fit the height under the
-// bar instead and sit centred like the page's column, so the ticket and the top plates stay whole.
+// the words sit. On wider screens (ultrawide) they fit the height under the bar instead and sit
+// centred like the page's column, so the ticket and the top plates stay whole.
 // Tall frames fit into the space the words leave: right of the column and under the bar on a
 // landscape screen, below the block on a portrait one. A floor keeps the frame from shrinking to
 // nothing.
@@ -141,7 +159,7 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
   // 50 to 130 ms per new frame on a retina MacBook, so the hero ran at about 15 frames a second. A
   // decoded bitmap draws inside a 60 Hz frame. All 120 decoded would take over a gigabyte, so only a
   // window around the wanted frame stays decoded, sized from a memory budget.
-  const MEMORY_BUDGET = 256 * 1024 * 1024;
+  const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
   const MAX_DECODING = 3;
   let files: (Blob | undefined)[] = [];
   let ready = new Map<number, ImageBitmap>();
@@ -221,8 +239,10 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
     raf = requestAnimationFrame(draw);
   };
 
-  // A load or decode started for an earlier frame set (before a resize) is dropped when it lands.
+  // A load or decode started for an earlier frame set (before a resize) is dropped when it lands,
+  // and requests still on their way for that set are called off.
   let generation = 0;
+  let requests = new AbortController();
 
   // Keep the window around the wanted frame decoded: close what fell out of it, then start decodes
   // for the nearest missing frames whose files have arrived.
@@ -245,7 +265,7 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
         (frame) => {
           if (mine !== generation) return frame.close();
           decoding.delete(i);
-          keep = Math.max(6, Math.min(24, Math.floor(MEMORY_BUDGET / (frame.width * frame.height * 4))));
+          keep = framesToKeep(frame.width, frame.height, memoryBudget(set, deviceMemory));
           ready.set(i, frame);
           schedule();
           pump();
@@ -267,7 +287,7 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
 
   function fetchFrame(i: number, url: string, onFail?: () => void): void {
     const mine = generation;
-    fetch(url)
+    fetch(url, { signal: requests.signal })
       .then((response) => (response.ok ? response.blob() : Promise.reject(new Error(`${response.status} ${url}`))))
       .then(
         (file) => {
@@ -285,6 +305,8 @@ export function mountSequence(canvas: HTMLCanvasElement, background: string, sti
   // rest wait for the first scroll, so a visitor who never scrolls downloads about a tenth.
   function load(): void {
     generation++;
+    requests.abort();
+    requests = new AbortController();
     files = [];
     for (const frame of ready.values()) frame.close();
     ready = new Map();

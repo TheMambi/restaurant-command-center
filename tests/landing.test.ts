@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import axe from 'axe-core';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { monthLabel, platformName } from '../src/format';
-import { beatOpacity, decodeWindow, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameSetFor, frameUrl, framingFor, loadOrder, nearestLoaded } from '../src/landing/sequence';
+import { beatOpacity, decodeWindow, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameSetFor, framesToKeep, frameUrl, framingFor, loadOrder, memoryBudget, mountSequence, nearestLoaded } from '../src/landing/sequence';
 import { loadProfiles } from '../src/profiles';
 import { historySeries } from '../src/render/history';
 import { doFirst, trendSentence } from '../src/render/overview';
@@ -117,6 +117,34 @@ describe('the scroll sequence helpers', () => {
     expect(endFrameFallbackUrl('tall')).toBe('/hero/tall/end.webp');
   });
 
+  it('gives a phone held sideways the tall frames, not the desktop ones', () => {
+    expect(frameSetFor(844, 390, 3)).toBe('tall');
+    expect(frameSetFor(932, 430, 3)).toBe('tall');
+    expect(frameSetFor(667, 375, 2)).toBe('tall');
+    // A small laptop window or a tablet on its side is taller than a phone and keeps the wide frames.
+    expect(frameSetFor(960, 600, 2)).toBe('wide');
+    expect(frameSetFor(1280, 720, 1)).toBe('wide');
+  });
+
+  it('holds fewer decoded frames on phones and on devices short of memory', () => {
+    const MB = 1024 * 1024;
+    expect(memoryBudget('tall')).toBe(64 * MB);
+    expect(memoryBudget('tall', 8)).toBe(64 * MB);
+    expect(memoryBudget('wide')).toBe(256 * MB);
+    expect(memoryBudget('wide-hd', 8)).toBe(256 * MB);
+    expect(memoryBudget('wide', 4)).toBe(64 * MB);
+    // A phone's 1080 by 1350 frames: eleven of them, 61 MB, where it used to hold 24.
+    const onPhone = framesToKeep(1080, 1350, memoryBudget('tall'));
+    expect(onPhone).toBe(11);
+    expect(onPhone * 1080 * 1350 * 4).toBeLessThanOrEqual(64 * MB);
+    // Desktops are as before, and no budget takes the window under six or over 24.
+    expect(framesToKeep(2560, 1440, memoryBudget('wide', 8))).toBe(18);
+    expect(framesToKeep(3200, 1800, memoryBudget('wide-hd'))).toBe(11);
+    expect(framesToKeep(2560, 1440, memoryBudget('wide', 4))).toBe(6);
+    expect(framesToKeep(64, 64, memoryBudget('wide'))).toBe(24);
+    expect(framesToKeep(0, 0, memoryBudget('tall'))).toBe(24);
+  });
+
   it('fades each block of words in and out inside its range', () => {
     expect(beatOpacity(0, 0, 0.12)).toBe(1);
     expect(beatOpacity(0.12, 0, 0.12)).toBe(0);
@@ -131,6 +159,37 @@ describe('the scroll sequence helpers', () => {
     for (let p = 0; p <= 1; p += 0.0025) {
       const visible = ranges.filter(([from, to]) => beatOpacity(p, from, to) > 0.01);
       expect(visible.length, `at ${p.toFixed(4)}`).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+describe('the scroll sequence when the screen changes shape', () => {
+  it('calls off the requests for the frame set it replaces', () => {
+    const asked: { url: string; signal: AbortSignal }[] = [];
+    vi.stubGlobal('fetch', (url: string, init?: RequestInit) => {
+      asked.push({ url, signal: init!.signal! });
+      return new Promise<Response>(() => {});
+    });
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const canvas = { getContext: () => ({}), clientWidth: 0, clientHeight: 0 } as unknown as HTMLCanvasElement;
+    const screen = { width: innerWidth, height: innerHeight };
+    try {
+      Object.assign(window, { innerWidth: 390, innerHeight: 844 });
+      mountSequence(canvas, 'black', false, () => ({ left: 0, top: 0, bar: 0 }));
+      const upright = [...asked];
+      expect(upright.length).toBeGreaterThan(1);
+      expect(upright.every((r) => r.url.startsWith('/hero/tall/') && !r.signal.aborted)).toBe(true);
+
+      Object.assign(window, { innerWidth: 1440, innerHeight: 900 });
+      dispatchEvent(new Event('resize'));
+      const after = asked.slice(upright.length);
+      expect(upright.every((r) => r.signal.aborted)).toBe(true);
+      expect(after.length).toBeGreaterThan(1);
+      expect(after.every((r) => r.url.startsWith('/hero/wide/') && !r.signal.aborted)).toBe(true);
+    } finally {
+      Object.assign(window, { innerWidth: screen.width, innerHeight: screen.height });
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
     }
   });
 });
