@@ -67,9 +67,10 @@ npm run smoke     # after a build: open every view in Chrome under the productio
 
 1. Copy `profiles/_template.json` to `profiles/<your-restaurant>.json`. Files starting with `_` are ignored by the app.
 2. Fill it in. `slug` becomes the address: `/report/?r=<slug>`. Keep `sampleData` set to `true` for invented data; the page then says so in the header and footer. `history` takes one entry for every month up to the one before `asOf`, each with that month's score as a whole number. For a platform with no reviews yet, enter 0 reviews and a rating of 0: the report says "No reviews yet" where the rating would go.
-3. Run `npm run check`. If something is off (a rating above 5, star counts that don't add up to the Google review total, history months out of order or skipped), the tests name the field and the problem.
+3. Run `npm run check`. If something is off (a misspelled key, a rating above 5, star counts that don't add up to the Google review total, history months out of order or skipped), the build stops and names the field and the problem. `npm run dev` and `npm run build` run the same check, so a broken profile cannot reach the live site.
+4. A new sample restaurant in a new made-up city: add the city to `inventedCities` in `tests/profiles.test.ts`.
 
-The tests require `sampleData: true` on every committed profile. That guard keeps real restaurant data out of this public repo. To use real data, keep it in a private fork and drop that one test.
+The tests require three things of every committed profile: `sampleData: true`, a website ending in `.example` (a reserved ending no real site can have), and a city from a short list of made-up places. CI can also search the repo for names on a private deny-list (`scripts/deny-list.mjs`, read from the repository secret `REAL_NAME_DENY_LIST`). These checks catch a copied file; they cannot tell an invented name from a real one, so the rule still needs a person: only fictional restaurants here. To use real data, keep it in a private fork and drop those tests.
 
 The schema in [`src/schema.ts`](src/schema.ts) is the single definition of a profile. TypeScript types come from it, so the code and the data can't drift apart.
 

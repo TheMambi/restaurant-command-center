@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { html, SafeHtml } from '../src/html';
+import { html, setHtml, type SafeHtml } from '../src/html';
 import { loadProfiles } from '../src/profiles';
 import { renderCompetitor } from '../src/render/competitor';
 import { renderGoogle } from '../src/render/google';
@@ -80,7 +80,18 @@ describe('pages the policy can serve', () => {
     const files = readdirSync(join(root, 'src'), { recursive: true, encoding: 'utf8' }).filter((f) => f.endsWith('.ts') && f !== 'html.ts');
     expect(files.length).toBeGreaterThan(10);
     for (const file of files) {
-      expect(read('src', file), file).not.toMatch(/innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\(|new Function/);
+      expect(read('src', file), file).not.toMatch(/innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\(|new Function|new SafeHtml/);
+    }
+  });
+
+  // Profiles are checked when the site is built (vite.config.ts). A value imported from the schema
+  // would put the whole validator back into the pages; types cost nothing.
+  it('keep the profile validator out of the browser', () => {
+    const files = readdirSync(join(root, 'src'), { recursive: true, encoding: 'utf8' }).filter((f) => f.endsWith('.ts') && f !== 'schema.ts');
+    for (const file of files) {
+      const source = read('src', file);
+      expect(source, file).not.toMatch(/import\s+(?!type\b)[^;]*from\s+'(\.\.?\/)+schema'/);
+      expect(source, file).not.toMatch(/from\s+'zod'/);
     }
   });
 });
@@ -94,7 +105,20 @@ describe('the html tag', () => {
   });
 
   it('passes its own output through untouched', () => {
-    expect(html`${new SafeHtml('<i>ok</i>')}`.value).toBe('<i>ok</i>');
+    expect(html`${html`<i>ok</i>`}`.value).toBe('<i>ok</i>');
+  });
+
+  it('is the only way to make markup setHtml will write', () => {
+    const target = { innerHTML: '' } as Element;
+    const lookalike = { value: '<img>', toString: () => '<img>' };
+    // @ts-expect-error an object shaped like SafeHtml is not one
+    expect(() => setHtml(target, lookalike)).toThrow(/html tag/);
+    // @ts-expect-error nor is a plain string
+    expect(() => setHtml(target, '<img>')).toThrow(/html tag/);
+    expect(() => setHtml(target, [html`<b>ok</b>`, lookalike as unknown as SafeHtml])).toThrow(/html tag/);
+    expect(target.innerHTML).toBe('');
+    setHtml(target, html`<b>ok</b>`);
+    expect(target.innerHTML).toBe('<b>ok</b>');
   });
 });
 

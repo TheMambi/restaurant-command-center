@@ -1,12 +1,22 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parseProfile } from '../src/schema';
+import { parseProfile, type Profile } from '../src/schema';
 import { overallScore, scoreBreakdown } from '../src/scoring';
 
 const dir = join(import.meta.dirname, '..', 'profiles');
 const files = readdirSync(dir).filter((f) => f.endsWith('.json'));
 const load = (file: string) => JSON.parse(readFileSync(join(dir, file), 'utf8')) as unknown;
+
+// Made-up places the sample profiles may use. A new sample restaurant adds its city here.
+const inventedCities = ['Riverton', 'City'];
+
+function realDataSigns(profile: Profile): string[] {
+  const signs: string[] = [];
+  if (!profile.restaurant.website.endsWith('.example')) signs.push(`website "${profile.restaurant.website}" does not end in .example`);
+  if (!inventedCities.includes(profile.restaurant.city)) signs.push(`city "${profile.restaurant.city}" is not on the list of invented places`);
+  return signs;
+}
 
 describe('every profile in /profiles', () => {
   it.each(files)('%s passes the schema', (file) => {
@@ -21,6 +31,19 @@ describe('every profile in /profiles', () => {
 
   it.each(files)('%s is labeled as sample data', (file) => {
     expect(parseProfile(load(file), file).sampleData).toBe(true);
+  });
+
+  // The flag above is one the profile sets on itself. These two are not: a website under the
+  // reserved .example ending cannot belong to a real business, and the places are made up.
+  it.each(files)('%s has an invented website and place', (file) => {
+    expect(realDataSigns(parseProfile(load(file), file))).toEqual([]);
+  });
+
+  it('a copy with a real-looking website and city is caught, whatever its sample flag says', () => {
+    const copy = parseProfile(load('brasa-taqueria.json'), 'copy');
+    const real = { ...copy, restaurant: { ...copy.restaurant, website: 'example.com', city: 'Springfield' } };
+    expect(real.sampleData).toBe(true);
+    expect(realDataSigns(real)).toHaveLength(2);
   });
 
   it('slugs are unique', () => {
@@ -81,5 +104,54 @@ describe('schema rejects broken profiles', () => {
       { id: 'yelp', rating: 4, reviews: 10 },
     ];
     expect(() => parseProfile({ ...base, reviewPlatforms }, 'broken')).toThrow(/appears once/);
+  });
+
+  it('names a misspelled key instead of dropping it', () => {
+    const reviewPlatforms = [{ id: 'google', rating: 4.7, reviews: 640, photo: 12 }];
+    expect(() => parseProfile({ ...base, reviewPlatforms }, 'broken')).toThrow(/reviewPlatforms\.0: .*"photo"/);
+    expect(() => parseProfile({ ...base, somethingElse: 1 }, 'broken')).toThrow(/"somethingElse"/);
+    expect(() => parseProfile({ ...base, restaurant: { ...(base.restaurant as object), phone: '555' } }, 'broken')).toThrow(/restaurant: .*"phone"/);
+    expect(() => parseProfile({ ...base, competitor: { ...(base.competitor as object), socialPlatforms: [{ id: 'x', followers: 1, post: 2 }] } }, 'broken')).toThrow(/"post"/);
+  });
+
+  // Built here so no script-scheme address sits in the repo as a literal.
+  const scheme = ['java', 'script'].join('');
+  it.each([`${scheme}:alert(document.domain)`, 'data:text/html,hello', 'https://osterialumen.example', 'osterialumen.example/menu', 'osteria lumen.example'])(
+    'flags a website that is not a bare host name: %s',
+    (website) => {
+      const broken = { ...base, restaurant: { ...(base.restaurant as object), website } };
+      expect(() => parseProfile(broken, 'broken')).toThrow(/restaurant\.website/);
+    },
+  );
+
+  it('flags text too long to be a name or a sentence', () => {
+    const broken = { ...base, restaurant: { ...(base.restaurant as object), name: 'a'.repeat(1_000_000) } };
+    expect(() => parseProfile(broken, 'broken')).toThrow(/restaurant\.name/);
+  });
+
+  it.each([['a right-to-left override', '\u202e'], ['a null character', '\u0000'], ['a zero-width space', '\u200b'], ['a line break', '\n']])(
+    'flags text holding %s',
+    (_what, ch) => {
+      const broken = { ...base, restaurant: { ...(base.restaurant as object), name: `Osteria${ch}Lumen` } };
+      expect(() => parseProfile(broken, 'broken')).toThrow(/restaurant\.name/);
+    },
+  );
+
+  it('flags a list far longer than a report can show', () => {
+    const row = { label: 'Business claimed and verified', status: 'pass' };
+    const checklists = { ...(base.checklists as object), googleProfile: Array.from({ length: 20_000 }, () => row) };
+    expect(() => parseProfile({ ...base, checklists }, 'broken')).toThrow(/checklists\.googleProfile/);
+  });
+
+  it('flags a reply time longer than a month', () => {
+    const socialPlatforms = [{ id: 'instagram', followers: 3100, posts: 10, engagementRate: 1, responseHours: 1e308 }];
+    expect(() => parseProfile({ ...base, socialPlatforms }, 'broken')).toThrow(/socialPlatforms\.0\.responseHours/);
+  });
+
+  it('flags a milestone dated after the report', () => {
+    const milestones = [{ month: '9999-12', title: 'Far ahead', note: 'Not yet' }];
+    expect(() => parseProfile({ ...base, milestones }, 'broken')).toThrow(/milestones\.0\.month/);
+    const thisMonth = [{ month: base.asOf, title: 'Now', note: 'Fine' }];
+    expect(() => parseProfile({ ...base, milestones: thisMonth }, 'fine')).not.toThrow();
   });
 });

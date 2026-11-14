@@ -1,14 +1,10 @@
-import { parseProfile, type Profile } from './schema';
+import type { Profile } from './schema';
 
-// Files starting with an underscore (like the template) are not shown in the app.
-const files = import.meta.glob<unknown>('../profiles/[!_]*.json', { eager: true, import: 'default' });
+// Files starting with an underscore (like the template) are not shown in the app. The build checks
+// each file against the schema and hands over the parsed result (vite.config.ts), so nothing is
+// validated in the browser.
+const files = import.meta.glob<Profile>('../profiles/[!_]*.json', { eager: true, import: 'default' });
 
 export function loadProfiles(): Profile[] {
-  const profiles = Object.entries(files)
-    .map(([path, raw]) => parseProfile(raw, path))
-    .sort((a, b) => a.restaurant.name.localeCompare(b.restaurant.name));
-  if (profiles.length === 0) throw new Error('No restaurant profiles found in /profiles');
-  const slugs = new Set(profiles.map((p) => p.slug));
-  if (slugs.size !== profiles.length) throw new Error('Two profiles share the same slug');
-  return profiles;
+  return Object.values(files).sort((a, b) => a.restaurant.name.localeCompare(b.restaurant.name));
 }

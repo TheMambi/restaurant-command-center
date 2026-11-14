@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { counted, hours, yearsOpen } from '../src/format';
-import { monthsBetween, parseProfile, type Profile } from '../src/schema';
+import { counted, hours, monthsBetween, yearsOpen } from '../src/format';
+import { parseProfile, type Profile } from '../src/schema';
 import { doFirst, fallingReviews, renderOverview, whyFirst } from '../src/render/overview';
 import { yearsGap } from '../src/render/competitor';
 import { barChart, chartRange, lineChart } from '../src/render/line-chart';

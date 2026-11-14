@@ -843,10 +843,6 @@ tfoot tr > :last-child {
   fill: var(--color-rival);
 }
 
-.meter-fill.is-neutral {
-  fill: var(--color-ink-2);
-}
-
 .meter.is-empty {
   background: none;
 }

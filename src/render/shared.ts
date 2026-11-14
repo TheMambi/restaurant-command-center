@@ -29,7 +29,7 @@ export function checklist(items: CheckItem[], emptyText = 'Nothing to check yet.
   })}</ul>`;
 }
 
-export function meter(value: number, max: number, variant: '' | 'is-rival' | 'is-neutral' = ''): SafeHtml {
+export function meter(value: number, max: number, variant: '' | 'is-rival' = ''): SafeHtml {
   const share = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
   return html`<span class="meter" aria-hidden="true"><svg viewBox="0 0 100 1" preserveAspectRatio="none"><rect class="meter-fill ${variant}" width="${(share * 100).toFixed(1)}" height="1"></rect></svg></span>`;
 }

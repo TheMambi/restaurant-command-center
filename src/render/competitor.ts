@@ -1,6 +1,7 @@
 import { num, platformName, signed, stars } from '../format';
 import { html, type SafeHtml } from '../html';
-import { reviewPlatformIds, socialPlatformIds, type Profile } from '../schema';
+import { reviewPlatformIds, socialPlatformIds } from '../platforms';
+import type { Profile } from '../schema';
 import { evenThresholds } from '../scoring.config';
 import { emptyMeter, meter, sectionHeader } from './shared';
 import { segments } from './visuals';

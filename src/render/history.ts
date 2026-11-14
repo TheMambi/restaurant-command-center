@@ -1,6 +1,6 @@
-import { monthLabel, num, stars } from '../format';
+import { monthLabel, monthsBetween, num, stars } from '../format';
 import { html, type SafeHtml } from '../html';
-import { monthsBetween, type Profile } from '../schema';
+import type { HistoryPoint, Profile } from '../schema';
 import { totalReviews } from '../scoring';
 import { barChart, lineChart } from './line-chart';
 import { fallingReviews } from './overview';
@@ -11,14 +11,6 @@ export function change(diff: number, unit: string, digits = 0): string {
   const size = Number(Math.abs(diff).toFixed(digits));
   if (size === 0) return 'No change';
   return `${diff > 0 ? 'Up' : 'Down'} ${size.toLocaleString('en-US', { minimumFractionDigits: digits })}${unit}`;
-}
-
-export interface HistoryPoint {
-  month: string;
-  overallScore: number;
-  totalReviews: number;
-  googleRating: number;
-  instagramFollowers: number;
 }
 
 // The current month is computed from the profile so the last point always matches the overview.

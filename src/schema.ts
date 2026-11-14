@@ -1,35 +1,45 @@
 import { z } from 'zod';
+import { monthsBetween } from './format';
+import { reviewPlatformIds, socialPlatformIds } from './platforms';
 
-// Zod speeds up parsing by compiling code while the page runs. The site's Content-Security-Policy
-// refuses that, so parsing stays interpreted and the browser has nothing to block.
+// Profiles are checked when the site is built (vite.config.ts), so this file runs in Node and never
+// ships. Should it ever be imported into a page: Zod speeds up parsing by compiling code as it runs,
+// which the site's Content-Security-Policy refuses, so parsing stays interpreted.
 z.config({ jitless: true });
 
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use YYYY-MM');
 const percent = z.number().min(0).max(100);
 const rating = z.number().min(0).max(5);
 const count = z.number().int().min(0);
-const text = z.string().trim().min(1);
+// Control characters and the invisible ones that reorder or hide text have no place in a name or a sentence.
+const text = z
+  .string()
+  .trim()
+  .min(1)
+  .max(200)
+  .regex(/^[^\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]*$/, 'Remove the control or invisible characters');
 const level = z.enum(['high', 'medium', 'low']);
+const year = z.number().int().min(1800);
+// Far more rows than a report can show; a longer list is a mistake or an attack on the page.
+const list = <T extends z.ZodType>(item: T) => z.array(item).max(60);
 
-export const reviewPlatformIds = ['google', 'yelp', 'tripadvisor'] as const;
-export const socialPlatformIds = ['instagram', 'tiktok', 'x', 'facebook'] as const;
-
-const reviewPlatform = z.object({
+const reviewPlatform = z.strictObject({
   id: z.enum(reviewPlatformIds),
   rating,
   reviews: count,
   photos: count.optional(),
 });
 
-const socialPlatform = z.object({
+const socialPlatform = z.strictObject({
   id: z.enum(socialPlatformIds),
   followers: count,
   posts: count,
   engagementRate: percent,
-  responseHours: z.number().positive().optional(),
+  // Up to 30 days. Anything longer is not a reply time.
+  responseHours: z.number().positive().max(720).optional(),
 });
 
-const checkItem = z.object({
+const checkItem = z.strictObject({
   label: text,
   status: z.enum(['pass', 'partial', 'fail']),
 });
@@ -37,19 +47,13 @@ const checkItem = z.object({
 const uniqueIds = <T extends { id: string }>(items: T[]) =>
   new Set(items.map((item) => item.id)).size === items.length;
 
-const competitor = z.object({
+const competitor = z.strictObject({
   name: text,
-  yearOpened: z.number().int().min(1800),
+  yearOpened: year,
   priceRange: z.enum(['$', '$$', '$$$', '$$$$']),
-  reviewPlatforms: z.array(reviewPlatform).refine(uniqueIds, 'Each platform appears once'),
-  socialPlatforms: z.array(socialPlatform.pick({ id: true, followers: true })).refine(uniqueIds, 'Each platform appears once'),
+  reviewPlatforms: list(reviewPlatform).refine(uniqueIds, 'Each platform appears once'),
+  socialPlatforms: list(socialPlatform.pick({ id: true, followers: true })).refine(uniqueIds, 'Each platform appears once'),
 });
-
-export function monthsBetween(from: string, to: string): number {
-  const [fy, fm] = from.split('-').map(Number);
-  const [ty, tm] = to.split('-').map(Number);
-  return (ty! - fy!) * 12 + (tm! - fm!);
-}
 
 function addMonths(month: string, n: number): string {
   const [y, m] = month.split('-').map(Number);
@@ -58,40 +62,42 @@ function addMonths(month: string, n: number): string {
 }
 
 export const profileSchema = z
-  .object({
-    slug: z.string().regex(/^[a-z0-9-]+$/),
+  .strictObject({
+    slug: z.string().max(60).regex(/^[a-z0-9-]+$/),
     sampleData: z.boolean(),
     asOf: month,
-    restaurant: z.object({
+    restaurant: z.strictObject({
       name: text,
       cuisine: text,
       neighborhood: text,
       city: text,
       address: text,
-      website: text,
-      yearOpened: z.number().int().min(1800),
+      // A bare host name. An address with a scheme could one day end up in a link, and escaping
+      // does not make a script scheme safe.
+      website: z.string().max(100).regex(/^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i, 'Use a host name alone, like yourrestaurant.example'),
+      yearOpened: year,
       priceRange: z.enum(['$', '$$', '$$$', '$$$$']),
     }),
-    reviewPlatforms: z.array(reviewPlatform).min(1).refine(uniqueIds, 'Each platform appears once'),
-    socialPlatforms: z.array(socialPlatform).refine(uniqueIds, 'Each platform appears once'),
-    googleStars: z.object({ five: count, four: count, three: count, two: count, one: count }),
-    summary: z.object({
-      strengths: z.array(text).min(1),
-      improvements: z.array(text).min(1),
-      criticalGaps: z.array(text),
+    reviewPlatforms: list(reviewPlatform).min(1).refine(uniqueIds, 'Each platform appears once'),
+    socialPlatforms: list(socialPlatform).refine(uniqueIds, 'Each platform appears once'),
+    googleStars: z.strictObject({ five: count, four: count, three: count, two: count, one: count }),
+    summary: z.strictObject({
+      strengths: list(text).min(1),
+      improvements: list(text).min(1),
+      criticalGaps: list(text),
     }),
-    checklists: z.object({
-      googleProfile: z.array(checkItem).min(1),
-      technicalSeo: z.array(checkItem).min(1),
-      reviewResponse: z.array(checkItem).min(1),
-      socialContent: z.array(checkItem),
+    checklists: z.strictObject({
+      googleProfile: list(checkItem).min(1),
+      technicalSeo: list(checkItem).min(1),
+      reviewResponse: list(checkItem).min(1),
+      socialContent: list(checkItem),
     }),
-    website: z.object({
-      mobile: z.array(z.object({ label: text, rating: z.enum(['good', 'fair', 'poor']) })).min(1),
-      bookingFlow: z.array(z.object({ label: text, state: z.enum(['ok', 'warning', 'drop-off']) })).min(2),
+    website: z.strictObject({
+      mobile: list(z.strictObject({ label: text, rating: z.enum(['good', 'fair', 'poor']) })).min(1),
+      bookingFlow: list(z.strictObject({ label: text, state: z.enum(['ok', 'warning', 'drop-off']) })).min(2),
       bookingRecommendation: text,
-      keywords: z.array(
-        z.object({
+      keywords: list(
+        z.strictObject({
           phrase: text,
           demand: level,
           intent: text,
@@ -99,21 +105,21 @@ export const profileSchema = z
         }),
       ),
     }),
-    sampleSignals: z.array(
-      z.object({ tone: z.enum(['positive', 'negative']), platform: text, message: text }),
+    sampleSignals: list(
+      z.strictObject({ tone: z.enum(['positive', 'negative']), platform: text, message: text }),
     ),
-    growthIdeas: z.array(
-      z.object({ title: text, platform: z.enum(socialPlatformIds), potential: level, note: text }),
+    growthIdeas: list(
+      z.strictObject({ title: text, platform: z.enum(socialPlatformIds), potential: level, note: text }),
     ),
-    reviewThemes: z.object({ positive: z.array(text), negative: z.array(text) }),
+    reviewThemes: z.strictObject({ positive: list(text), negative: list(text) }),
     competitor,
     opportunities: z
       .array(
-        z.object({
+        z.strictObject({
           title: text,
           description: text,
           horizon: z.enum(['now', 'soon', 'later']),
-          impact: z.enum(['high', 'medium', 'low']),
+          impact: level,
           effort: z.enum(['low', 'high']),
           time: text,
           cost: text,
@@ -124,7 +130,7 @@ export const profileSchema = z
       .min(1),
     history: z
       .array(
-        z.object({
+        z.strictObject({
           month,
           // A whole number, like the score computed for the current month, so the two can be compared.
           overallScore: percent.int(),
@@ -134,8 +140,8 @@ export const profileSchema = z
         }),
       )
       .min(1),
-    milestones: z.array(
-      z.object({ month, title: text, note: text }),
+    milestones: list(
+      z.strictObject({ month, title: text, note: text }),
     ),
   })
   .superRefine((profile, ctx) => {
@@ -200,12 +206,18 @@ export const profileSchema = z
         ctx.addIssue({ code: 'custom', path: [who, 'yearOpened'], message: `Opened in ${profile[who].yearOpened}, after the report's year of ${asOfYear}` });
       }
     }
+    profile.milestones.forEach((m, i) => {
+      if (m.month > profile.asOf) {
+        ctx.addIssue({ code: 'custom', path: ['milestones', i, 'month'], message: `${m.month} is after the report's month of ${profile.asOf}` });
+      }
+    });
   });
 
 export type Profile = z.infer<typeof profileSchema>;
 export type ReviewPlatform = z.infer<typeof reviewPlatform>;
-export type SocialPlatform = z.infer<typeof socialPlatform>;
 export type CheckItem = z.infer<typeof checkItem>;
+export type Opportunity = Profile['opportunities'][number];
+export type HistoryPoint = Profile['history'][number];
 
 export function parseProfile(raw: unknown, source: string): Profile {
   const result = profileSchema.safeParse(raw);

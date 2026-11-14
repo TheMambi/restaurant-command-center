@@ -2,6 +2,7 @@ import '@fontsource-variable/onest';
 import '@fontsource-variable/fraunces/opsz.css';
 import './styles/tokens.css';
 import './styles/app.css';
+import { el, showLoadError } from './dom';
 import { monthLabel, yearsOpen } from './format';
 import { html, setHtml, type SafeHtml } from './html';
 import { loadProfiles } from './profiles';
@@ -28,12 +29,6 @@ const tabs = [
 ] as const;
 type TabId = (typeof tabs)[number]['id'];
 const isTab = (v: string | null | undefined): v is TabId => tabs.some((t) => t.id === v);
-
-function el<T extends HTMLElement>(id: string): T {
-  const found = document.getElementById(id);
-  if (!found) throw new Error(`Missing #${id} in index.html`);
-  return found as T;
-}
 
 function describeRestaurant(p: Profile): string {
   const r = p.restaurant;
@@ -207,10 +202,6 @@ function start(): void {
 try {
   start();
 } catch (error) {
-  const box = document.createElement('div');
-  box.className = 'load-error';
-  box.setAttribute('role', 'alert');
-  box.textContent = `The report could not load.\n\n${error instanceof Error ? error.message : String(error)}`;
-  document.body.prepend(box);
+  showLoadError('The report', error);
   throw error;
 }

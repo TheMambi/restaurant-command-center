@@ -1,14 +1,11 @@
 import { counted, monthLabel, num, platformName, stars } from '../format';
 import { html, type SafeHtml } from '../html';
-import type { Profile } from '../schema';
+import type { HistoryPoint, Opportunity, Profile } from '../schema';
 import { actionRanking, scoreLabels, scoreLabelsInSentence, scoreWeights } from '../scoring.config';
 import { scoreLabel, totalReviews, weightedRating, type ScoreBreakdown, type ScoreKey } from '../scoring';
 import { standing } from './competitor';
-import type { HistoryPoint } from './history';
 import { emptyMeter, list, meter, ratingCell } from './shared';
 import { dial, radar } from './visuals';
-
-type Opportunity = Profile['opportunities'][number];
 
 const weightTotal = Object.values(scoreWeights).reduce((a, b) => a + b, 0);
 const weightShare = (k: ScoreKey) => (weightTotal > 0 ? Math.round((scoreWeights[k] / weightTotal) * 100) : 0);

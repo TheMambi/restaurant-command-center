@@ -275,10 +275,6 @@
   padding-block: clamp(5rem, 10vw, 9rem) 0;
 }
 
-.ledger:focus {
-  outline: none;
-}
-
 .ledger-title {
   font-family: var(--font-display);
   font-size: var(--text-section);

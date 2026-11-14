@@ -3,6 +3,7 @@ import '@fontsource-variable/fraunces/opsz.css';
 import './styles/tokens.css';
 import './styles/app.css';
 import './styles/landing.css';
+import { el, showLoadError } from './dom';
 import { num } from './format';
 import { html, setHtml } from './html';
 import { beatOpacity, heroProgress, mountSequence } from './landing/sequence';
@@ -20,12 +21,6 @@ export const partNotes: Record<ScoreKey, string> = {
   social: `Followers against ${num(scoreTargets.followersPerPlatform)} and engagement against ${scoreTargets.engagementRatePercent}% on each platform.`,
   responsiveness: 'Share of the review reply checklist done.',
 };
-
-function el<T extends HTMLElement>(id: string): T {
-  const found = document.getElementById(id);
-  if (!found) throw new Error(`Missing #${id} in index.html`);
-  return found as T;
-}
 
 function renderParts(): void {
   const keys = Object.keys(scoreWeights) as ScoreKey[];
@@ -141,10 +136,6 @@ try {
   renderParts();
   renderSamples();
 } catch (error) {
-  const box = document.createElement('div');
-  box.className = 'load-error';
-  box.setAttribute('role', 'alert');
-  box.textContent = `The page could not load.\n\n${error instanceof Error ? error.message : String(error)}`;
-  document.body.prepend(box);
+  showLoadError('The page', error);
   throw error;
 }

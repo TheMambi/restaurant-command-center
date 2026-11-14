@@ -1,9 +1,7 @@
 import { html, type SafeHtml } from '../html';
-import type { Profile } from '../schema';
+import type { Opportunity, Profile } from '../schema';
 import { actionValue, doFirst, gapSentence } from './overview';
-import { sectionHeader } from './shared';
-
-type Opportunity = Profile['opportunities'][number];
+import { levelWords, sectionHeader } from './shared';
 
 const horizons = [
   { id: 'now', title: 'This month' },
@@ -11,7 +9,6 @@ const horizons = [
   { id: 'later', title: 'In 3 to 6 months' },
 ] as const;
 
-const impactWords = { high: 'High', medium: 'Medium', low: 'Low' } as const;
 const effortWords = { low: 'Quick', high: 'Bigger job' } as const;
 
 export const quadrants = [
@@ -43,7 +40,7 @@ export function renderOpportunities(p: Profile): SafeHtml {
               ${items.map(
                 (o) => html`<tr>
                   <th scope="row">${o.title}${ticket.has(o) && html` <span class="on-ticket">On this week's ticket</span>`}<span class="row-note">${o.description}${o.fixesGap && html` ${gapSentence(o.fixesGap)}`}</span></th>
-                  <td data-label="Impact"><span class="impact is-${o.impact}">${impactWords[o.impact]}</span></td>
+                  <td data-label="Impact"><span class="impact is-${o.impact}">${levelWords[o.impact]}</span></td>
                   <td data-label="Effort">${effortWords[o.effort]}</td>
                   <td data-label="Time">${o.time}</td>
                   <td data-label="Cost">${o.cost}</td>

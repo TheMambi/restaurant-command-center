@@ -1,4 +1,4 @@
-import type { reviewPlatformIds, socialPlatformIds } from './schema';
+import type { reviewPlatformIds, socialPlatformIds } from './platforms';
 
 type PlatformId = (typeof reviewPlatformIds)[number] | (typeof socialPlatformIds)[number];
 
@@ -22,6 +22,12 @@ export function monthLabel(month: string, style: 'long' | 'short' = 'long'): str
     year: style === 'long' ? 'numeric' : undefined,
     timeZone: 'UTC',
   });
+}
+
+export function monthsBetween(from: string, to: string): number {
+  const [fy, fm] = from.split('-').map(Number);
+  const [ty, tm] = to.split('-').map(Number);
+  return (ty! - fy!) * 12 + (tm! - fm!);
 }
 
 // A count with its noun: "1 review", "1,180 reviews".

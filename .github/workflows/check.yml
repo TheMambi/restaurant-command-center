@@ -29,6 +29,11 @@ jobs:
       - run: npm audit --audit-level=high
       # The hero's render tool has its own lockfile. Nothing from it ships, but it runs on the owner's machine.
       - run: npm audit --audit-level=high --prefix hero-sequence
+      # Real names the owner keeps out of this repo, held in a repository secret. Skipped when the
+      # secret is not set, as it is for pull requests from forks.
+      - run: node scripts/deny-list.mjs
+        env:
+          REAL_NAME_DENY_LIST: ${{ secrets.REAL_NAME_DENY_LIST }}
       - run: npm run check
       # The built site, in the runner's Chrome, under the same security headers the host sends.
       - run: npm run smoke
