@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { monthsBetween } from './format';
-import { reviewPlatformIds, socialPlatformIds } from './platforms';
+import { monthsBetween } from './format.ts';
+import { reviewPlatformIds, socialPlatformIds } from './platforms.ts';
 
 // Profiles are checked when the site is built (vite.config.ts), so this file runs in Node and never
 // ships. Should it ever be imported into a page: Zod speeds up parsing by compiling code as it runs,

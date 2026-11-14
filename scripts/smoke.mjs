@@ -114,7 +114,22 @@ async function landingAccessibility(browser) {
   }
 }
 
-const browser = await chromium.launch({ channel: 'chrome', args: ['--no-sandbox'] });
+// Chrome keeps its sandbox wherever it can. CI runners cannot give it one, so only they turn it off.
+const launched = await chromium.launch({ channel: 'chrome', args: process.env.CI ? ['--no-sandbox'] : [] });
+// Every page opens in a context that refuses requests to anywhere but the local build, so a build
+// that calls out is reported and nothing leaves the machine.
+const browser = {
+  newContext: async (options) => {
+    const context = await launched.newContext(options);
+    await context.route('**', (route) => {
+      const url = route.request().url();
+      if (url.startsWith(origin) || url.startsWith('data:') || url.startsWith('blob:')) return route.continue();
+      problems.push(`outside request to ${url}`);
+      return route.abort();
+    });
+    return context;
+  },
+};
 try {
   for (const colorScheme of ['light', 'dark']) {
     const context = await browser.newContext({ colorScheme, viewport: { width: 1280, height: 800 } });
@@ -122,7 +137,6 @@ try {
     let view = '';
     page.on('console', (m) => m.type() === 'error' && problems.push(`${colorScheme} ${view}: ${m.text()}`));
     page.on('pageerror', (e) => problems.push(`${colorScheme} ${view}: ${e.message}`));
-    page.on('request', (r) => r.url().startsWith(origin) || r.url().startsWith('data:') || r.url().startsWith('blob:') || problems.push(`${colorScheme} ${view}: outside request to ${r.url()}`));
     page.on('response', (r) => r.status() >= 400 && problems.push(`${colorScheme} ${view}: ${r.status()} ${r.url()}`));
     for (view of views) {
       await page.goto(origin + view, { waitUntil: 'load' });
@@ -152,7 +166,7 @@ try {
   await landingWithoutScript(browser);
   await landingAccessibility(browser);
 } finally {
-  await browser.close();
+  await launched.close();
   server.close();
 }
 

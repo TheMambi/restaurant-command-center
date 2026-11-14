@@ -12,7 +12,7 @@ obvious one-liner), use judgment — not every change needs the full rigor.
 
 - **Project:** Restaurant Command Center. A public portfolio piece: a report card for a restaurant's online presence, rendered from one JSON profile per restaurant. Fictional sample restaurants only.
 - **Stack:** Vite + TypeScript (no framework), Zod, Vitest with jsdom and axe-core, hand-written SVG charts, self-hosted Fraunces and Onest fonts, Motion for the landing page's scroll. npm. Two pages: the landing page (`index.html`) and the report (`report/index.html`).
-- **Hero frames:** `public/hero/` holds 120 rendered frames per framing. Their source is `hero-sequence/` (three.js in a HyperFrames composition, its own `package.json`); re-render after changing `--color-stage` or Brasa Taquería's figures.
+- **Hero frames:** `public/hero/` holds 120 rendered frames per framing. Their source is `hero-sequence/` (three.js in a HyperFrames composition, its own `package.json`); re-render after changing `--color-stage` or Brasa Taquería's figures. A render writes the frames to `public/hero/<id>/`, where the id comes from the frames' bytes.
 - **Hosting:** static build (`dist/`) on Vercel. No backend, database, cache or env vars.
 - **Default branch:** `dev`. `main` is production; merge to it only with the owner's OK.
 - **Session-start reading, in order:** `README.md` (what it is, scoring method, decisions), `DESIGN.md` (the design system), `docs/PITFALLS.md` (known traps), `src/schema.ts` (the data contract), `src/scoring.config.ts` (every tunable number). Confirm where the project stands before changing anything.
@@ -21,7 +21,7 @@ obvious one-liner), use judgment — not every change needs the full rigor.
 
 ### Project rules (override the baseline below where they conflict)
 
-- **Never real restaurant data (HARD).** This repo is public. Profiles must be fictional and marked `"sampleData": true`; a test enforces it. Never add names, addresses, ratings, photos, logos or scraped data from a real business, and never mention the private source project in commits, code or docs. Private material kept beside the code on the owner's Mac is listed in `.git/info/exclude`; check `git status` before every commit and never stage it.
+- **Never real restaurant data (HARD).** This repo is public. Profiles must be fictional and marked `"sampleData": true`; a test enforces it. Never add names, addresses, ratings, photos, logos or scraped data from a real business.
 - **Data flows one way.** Profile JSON → `parseProfile` (Zod) → scoring and insight functions → `render/*` → `html` tag. Add fields to the schema first and let types follow. All profile text goes through the escaping `html` tag, and markup reaches the page only through `setHtml` (`src/html.ts`); never assign to `innerHTML`.
 - **Numbers live in config.** Score weights, targets, bands, the "Do these first" ranking and comparison thresholds live in `src/scoring.config.ts`. Change them there, then update README's scoring table and the sample profiles' recorded history if scores shift.
 - **Design system.** Follow `DESIGN.md`: the page is a dark stage and data sits on `.sheet`s; colours and fonts only through tokens in `src/styles/tokens.css`; the lamp's ember for controls, ink blue for data, neither on anything meaning good or bad; status always shows a word beside its colour; bars start at zero; one y-axis per chart; estimates as High/Medium/Low, never invented 0 to 100 figures.

@@ -1,4 +1,4 @@
-import type { reviewPlatformIds, socialPlatformIds } from './platforms';
+import type { reviewPlatformIds, socialPlatformIds } from './platforms.ts';
 
 type PlatformId = (typeof reviewPlatformIds)[number] | (typeof socialPlatformIds)[number];
 

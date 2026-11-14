@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
+import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import axe from 'axe-core';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { monthLabel, platformName } from '../src/format';
-import { beatOpacity, decodeWindow, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameSetFor, framesToKeep, frameUrl, framingFor, heroProgress, loadOrder, memoryBudget, mountSequence, nearestLoaded } from '../src/landing/sequence';
+import { beatOpacity, decodeWindow, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameSetFor, framesToKeep, frameUrl, framingFor, HERO_RENDER, heroProgress, loadOrder, memoryBudget, mountSequence, nearestLoaded } from '../src/landing/sequence';
 import { loadProfiles } from '../src/profiles';
 import { historySeries } from '../src/render/history';
 import { doFirst, trendSentence } from '../src/render/overview';
@@ -107,14 +108,14 @@ describe('the scroll sequence helpers', () => {
     expect(framingFor(1024, 768)).toBe('tall');
     expect(framingFor(390, 844)).toBe('tall');
     expect(framingFor(100, 0)).toBe('tall');
-    expect(frameUrl('wide', 0)).toBe('/hero/wide/001.avif');
+    expect(frameUrl('wide', 0)).toBe(`/hero/${HERO_RENDER}/wide/001.avif`);
     expect(frameSetFor(1920, 1080, 1)).toBe('wide');
     expect(frameSetFor(1440, 900, 2)).toBe('wide-hd');
     // A retina window that needs 2556 pixels across gets the lighter 2560 set.
     expect(frameSetFor(1224, 719, 2)).toBe('wide');
     expect(frameSetFor(3840, 2160, 1)).toBe('wide-hd');
     expect(frameSetFor(390, 844, 3)).toBe('tall');
-    expect(endFrameFallbackUrl('tall')).toBe('/hero/tall/end.webp');
+    expect(endFrameFallbackUrl('tall')).toBe(`/hero/${HERO_RENDER}/tall/end.webp`);
   });
 
   it('gives a phone held sideways the tall frames, not the desktop ones', () => {
@@ -198,14 +199,14 @@ describe('the scroll sequence when the screen changes shape', () => {
       mountSequence(canvas, 'black', false, () => ({ left: 0, top: 0, bar: 0 }));
       const upright = [...asked];
       expect(upright.length).toBeGreaterThan(1);
-      expect(upright.every((r) => r.url.startsWith('/hero/tall/') && !r.signal.aborted)).toBe(true);
+      expect(upright.every((r) => r.url.startsWith(`/hero/${HERO_RENDER}/tall/`) && !r.signal.aborted)).toBe(true);
 
       Object.assign(window, { innerWidth: 1440, innerHeight: 900 });
       dispatchEvent(new Event('resize'));
       const after = asked.slice(upright.length);
       expect(upright.every((r) => r.signal.aborted)).toBe(true);
       expect(after.length).toBeGreaterThan(1);
-      expect(after.every((r) => r.url.startsWith('/hero/wide/') && !r.signal.aborted)).toBe(true);
+      expect(after.every((r) => r.url.startsWith(`/hero/${HERO_RENDER}/wide/`) && !r.signal.aborted)).toBe(true);
     } finally {
       Object.assign(window, { innerWidth: screen.width, innerHeight: screen.height });
       vi.unstubAllGlobals();
@@ -217,7 +218,7 @@ describe('the scroll sequence when the screen changes shape', () => {
 describe('the rendered frames', () => {
   for (const set of ['wide', 'wide-hd', 'tall'] as const) {
     it(`has all ${FRAME_COUNT} frames in the ${set} set`, () => {
-      const dir = join(root, 'public', 'hero', set);
+      const dir = join(root, 'public', 'hero', HERO_RENDER, set);
       expect(existsSync(dir)).toBe(true);
       const files = readdirSync(dir).filter((f) => f.endsWith('.avif')).sort();
       expect(files).toHaveLength(FRAME_COUNT);
@@ -226,6 +227,17 @@ describe('the rendered frames', () => {
       expect(existsSync(join(dir, 'end.webp'))).toBe(true);
     });
   }
+
+  // The host tells browsers to keep a frame for a year, which is only safe while a new render gets
+  // new addresses. The id is made from the frames' bytes, so frames changed without a new id fail here.
+  it('sit at an address made from their own bytes, named the same everywhere', () => {
+    const id = execFileSync('node', [join(root, 'hero-sequence', 'scripts', 'frames-id.mjs')], { encoding: 'utf8' }).trim();
+    expect(HERO_RENDER).toBe(id);
+    const links = [...readFileSync(join(root, 'index.html'), 'utf8').matchAll(/href="\/hero\/([^/"]+)\//g)].map((m) => m[1]);
+    expect(links).toEqual([id, id, id]);
+    const rules = (JSON.parse(readFileSync(join(root, 'vercel.json'), 'utf8')) as { headers: { source: string; headers: { key: string; value: string }[] }[] }).headers;
+    expect(rules.find((r) => r.source === '/hero/(.*)')!.headers[0]!.value).toBe('public, max-age=31536000, immutable');
+  });
 
   it('were drawn from the figures the app computes for the sample shown', () => {
     const p = loadProfiles().find((x) => x.slug === 'brasa-taqueria')!;

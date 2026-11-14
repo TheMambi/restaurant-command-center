@@ -4,7 +4,7 @@
 
 export const FRAME_COUNT = 120;
 export type Framing = 'wide' | 'tall';
-// Each set is a folder under /hero/. Wide frames come in two sizes from one render.
+// Each set is a folder under /hero/<render id>/. Wide frames come in two sizes from one render.
 export type FrameSet = 'wide' | 'wide-hd' | 'tall';
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
@@ -43,10 +43,15 @@ export function memoryBudget(set: FrameSet, deviceMemory?: number): number {
 export const framesToKeep = (frameWidth: number, frameHeight: number, budget: number): number =>
   Math.max(6, Math.min(24, Math.floor(budget / Math.max(1, frameWidth * frameHeight * 4))));
 
-export const frameUrl = (set: FrameSet, index: number): string => `/hero/${set}/${String(index + 1).padStart(3, '0')}.avif`;
+// Made from the frames' own bytes and written by hero-sequence/scripts/frames-id.mjs after a render.
+// Every frame address carries it, so the host can tell browsers to keep frames for good (vercel.json)
+// and a new render can never mix with a cached old one.
+export const HERO_RENDER = '23d415db';
+
+export const frameUrl = (set: FrameSet, index: number): string => `/hero/${HERO_RENDER}/${set}/${String(index + 1).padStart(3, '0')}.avif`;
 
 // The finished frame as WebP, for a browser that can't decode AVIF.
-export const endFrameFallbackUrl = (set: FrameSet): string => `/hero/${set}/end.webp`;
+export const endFrameFallbackUrl = (set: FrameSet): string => `/hero/${HERO_RENDER}/${set}/end.webp`;
 
 export function frameIndex(progress: number, count = FRAME_COUNT): number {
   return Math.round(clamp01(progress) * (count - 1));

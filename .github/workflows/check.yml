@@ -4,6 +4,9 @@ on:
   push:
     branches: [dev, main]
   pull_request:
+  # Weekly, so a new advisory is reported in a week with no pushes.
+  schedule:
+    - cron: '17 6 * * 1'
 
 permissions:
   contents: read

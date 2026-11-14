@@ -2,7 +2,9 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
-import { parseProfile } from './src/schema';
+// Written with their extensions, here and in the files the schema imports, so Node can load this
+// config without a bundler.
+import { parseProfile } from './src/schema.ts';
 
 const profilesDir = resolve(import.meta.dirname, 'profiles');
 

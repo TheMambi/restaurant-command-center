@@ -2,7 +2,7 @@
 
 Source for the landing page's scroll animation: a "Do these first" kitchen ticket lies on a dark counter, lifts toward the camera, and the report behind it (the score on its plate beside the six-part wheel, the parts table, ratings by platform and the score by month) unfolds into lit sheets. It is a three.js scene inside a [HyperFrames](https://github.com/heygen-com/hyperframes) composition, rendered to 120 frames at 30 fps.
 
-Nothing here ships with the site except the frames it writes to `../public/hero/`.
+Nothing here ships with the site except the frames it writes to `../public/hero/<id>/`.
 
 ## What it reads
 
@@ -29,8 +29,16 @@ Run in the repo root first (`npm ci`), then:
 cd hero-sequence
 npm ci
 npm run snapshot   # five stills of the wide framing, to check before a full render
-npm run render     # both framings to PNG, then AVIF (and an end-frame WebP) into ../public/hero/
+npm run render     # both framings to PNG, then AVIF (and an end-frame WebP) into ../public/hero/<id>/
 ```
+
+The render ends with `scripts/frames-id.mjs --stamp`. It names the new frames' folder after an id made from their bytes, removes the render it replaces, and writes the id into `../src/landing/sequence.ts` and the preload links in `../index.html`. Commit those two files with the frames. Browsers keep a frame for a year, so frames must never change under an id; a test in `tests/landing.test.ts` checks that.
+
+`scripts/render.sh` runs the copy of HyperFrames that `npm ci` installed and stops if it is missing. `scripts/encode.mjs` empties its target folder first and refuses a target outside `../public/hero/`.
+
+## The undici override
+
+`package.json` forces `undici` to 7.30.2 because hyperframes 0.9.23 asks for exactly 7.25.0. Dependabot does not update overrides. When hyperframes is updated, delete the override, run `npm install`, and keep it deleted if `npm ls undici` shows 7.30.2 or newer and `npm audit` is clean.
 
 If HyperFrames can't find a browser, point it at one: `PUPPETEER_EXECUTABLE_PATH=/path/to/chrome npm run render`.
 

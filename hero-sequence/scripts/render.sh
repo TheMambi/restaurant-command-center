@@ -2,10 +2,18 @@
 # Renders both framings to PNG frames, then writes the AVIF frames the landing page loads.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-out=../public/hero
+# Encoded beside the current render, then renamed to an id made from the new frames' bytes.
+out=../public/hero/next
+# The installed copy only. npx would fetch and run whatever version the registry has that day.
+hyperframes=./node_modules/.bin/hyperframes
+if [ ! -x "$hyperframes" ]; then
+  echo "hyperframes not found: run npm ci in hero-sequence first" >&2
+  exit 1
+fi
 rm -rf frames && mkdir -p frames
-npx hyperframes render . --format png-sequence --fps 30 --quality delivery -o frames/wide
-npx hyperframes render . -c tall.html --format png-sequence --fps 30 --quality delivery -o frames/tall
+"$hyperframes" render . --format png-sequence --fps 30 --quality delivery -o frames/wide
+"$hyperframes" render . -c tall.html --format png-sequence --fps 30 --quality delivery -o frames/tall
 node scripts/encode.mjs frames/wide "$out/wide-hd" 3200
 node scripts/encode.mjs frames/wide "$out/wide" 2560
 node scripts/encode.mjs frames/tall "$out/tall" 1080
+node scripts/frames-id.mjs --stamp

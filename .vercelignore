@@ -1,0 +1,13 @@
+# Only what the build reads is uploaded to the host. Anything else in this folder, tracked or
+# not, stays on the machine.
+/*
+!/index.html
+!/report
+!/src
+!/public
+!/profiles
+!/package.json
+!/package-lock.json
+!/tsconfig.json
+!/vite.config.ts
+!/vercel.json
