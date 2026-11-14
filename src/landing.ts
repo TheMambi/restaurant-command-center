@@ -135,26 +135,12 @@ function setupHero(): void {
   animate('.beat-intro .beat-text, .scroll-cue', { opacity: [0, 1] }, { duration: 0.9, delay: 0.55 });
 }
 
-// The page prints on light paper whatever mode the visitor uses, like the report.
-function setupPrint(): void {
-  const root = document.documentElement;
-  let before: string | undefined;
-  addEventListener('beforeprint', () => {
-    before = root.dataset.mode;
-    root.dataset.mode = 'light';
-  });
-  addEventListener('afterprint', () => {
-    if (before) root.dataset.mode = before;
-  });
-}
-
 try {
   // The hero first: it needs nothing from the profiles, so a profile that fails to load still
   // leaves the page with its opening.
   setupHero();
   renderParts();
   renderSamples();
-  setupPrint();
 } catch (error) {
   const box = document.createElement('div');
   box.className = 'load-error';

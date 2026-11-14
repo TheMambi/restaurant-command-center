@@ -6,7 +6,7 @@
    dark ink on paper with ink blue for data. Fraunces names things and carries figures; Onest
    carries labels, controls and tables.
    Modes: light = paper sheets, dark = steel sheets. The stage is the same in both. The page
-   script sets data-mode before first paint and switches to light for printing. See DESIGN.md. */
+   script sets data-mode before first paint; print always uses the light values. See DESIGN.md. */
 
 :root {
   color-scheme: dark;
@@ -123,29 +123,32 @@
   --shadow-ticket: drop-shadow(0 2px 2px oklch(0% 0 0 / 0.35)) drop-shadow(0 22px 22px oklch(0% 0 0 / 0.5));
 }
 
-/* Dark mode: the sheets turn to dark steel. The stage, the tickets and the lamp stay as they are. */
-:root[data-mode='dark'] {
-  --sheet: oklch(23.5% 0.013 62);
-  --sheet-2: oklch(27.5% 0.014 62);
-  --sheet-3: oklch(32% 0.012 60);
-  --sheet-ink: oklch(95% 0.008 75);
-  --sheet-ink-2: oklch(86% 0.009 75);
-  --sheet-muted: oklch(74% 0.012 70);
-  --sheet-rule: oklch(31% 0.012 60);
-  --sheet-rule-strong: oklch(62% 0.012 70);
-  --sheet-edge: oklch(100% 0 0 / 0.1);
-  --sheet-accent: oklch(76% 0.11 255);
-  --sheet-accent-2: oklch(84% 0.08 250);
-  --sheet-accent-soft: oklch(33% 0.06 255);
-  --sheet-focus: oklch(80% 0.1 255);
-  --sheet-rival: oklch(56% 0.012 60);
-  --sheet-good: oklch(76% 0.13 150);
-  --sheet-warn: oklch(82% 0.13 85);
-  --sheet-bad: oklch(72% 0.15 28);
-  --sheet-good-soft: oklch(31% 0.05 150);
-  --sheet-warn-soft: oklch(33% 0.05 85);
-  --sheet-bad-soft: oklch(31% 0.06 28);
-  --weight-body: 350;
+/* Dark mode: the sheets turn to dark steel. The stage, the tickets and the lamp stay as they are.
+   Screen only: on paper the light values above apply whatever the mode, with no script involved. */
+@media screen {
+  :root[data-mode='dark'] {
+    --sheet: oklch(23.5% 0.013 62);
+    --sheet-2: oklch(27.5% 0.014 62);
+    --sheet-3: oklch(32% 0.012 60);
+    --sheet-ink: oklch(95% 0.008 75);
+    --sheet-ink-2: oklch(86% 0.009 75);
+    --sheet-muted: oklch(74% 0.012 70);
+    --sheet-rule: oklch(31% 0.012 60);
+    --sheet-rule-strong: oklch(62% 0.012 70);
+    --sheet-edge: oklch(100% 0 0 / 0.1);
+    --sheet-accent: oklch(76% 0.11 255);
+    --sheet-accent-2: oklch(84% 0.08 250);
+    --sheet-accent-soft: oklch(33% 0.06 255);
+    --sheet-focus: oklch(80% 0.1 255);
+    --sheet-rival: oklch(56% 0.012 60);
+    --sheet-good: oklch(76% 0.13 150);
+    --sheet-warn: oklch(82% 0.13 85);
+    --sheet-bad: oklch(72% 0.15 28);
+    --sheet-good-soft: oklch(31% 0.05 150);
+    --sheet-warn-soft: oklch(33% 0.05 85);
+    --sheet-bad-soft: oklch(31% 0.06 28);
+    --weight-body: 350;
+  }
 }
 
 /* Inside a sheet the same names mean ink on paper. */

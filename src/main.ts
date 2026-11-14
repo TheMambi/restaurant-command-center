@@ -144,15 +144,6 @@ function setupMode(): void {
       // Storage can be unavailable in private browsing; the choice still applies for this visit.
     }
   });
-  // Reports print on paper, so printing always uses the light colours.
-  let before: string | undefined;
-  window.addEventListener('beforeprint', () => {
-    before = root.dataset.mode;
-    root.dataset.mode = 'light';
-  });
-  window.addEventListener('afterprint', () => {
-    if (before) root.dataset.mode = before;
-  });
 }
 
 function start(): void {

@@ -133,6 +133,13 @@ try {
       } else if (!(await page.locator('.panel:not([hidden]) .sheet').count())) {
         problems.push(`${colorScheme} ${view}: the tab rendered nothing`);
       }
+      // On paper both modes are dark ink on white from the stylesheet alone: no print event fires here.
+      if (view === '/' || view.endsWith('tab=overview')) {
+        await page.emulateMedia({ media: 'print' });
+        const pale = await page.evaluate(() => [...document.querySelectorAll('#restaurant-name, .sheet, .ledger-title')].some((el) => Number(/oklch\(([\d.]+)/.exec(getComputedStyle(el).color)?.[1] ?? 1) > 0.5));
+        if (pale) problems.push(`${colorScheme} ${view}: print leaves light text on white`);
+        await page.emulateMedia({ media: null });
+      }
       await page.waitForTimeout(150);
     }
     await context.close();

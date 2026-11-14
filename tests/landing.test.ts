@@ -380,6 +380,21 @@ describe('styles that survive the production build', () => {
   });
 });
 
+describe('printing in dark mode', () => {
+  // Dark values once applied on paper too, and only a script listener that flipped the mode
+  // before printing kept the text from coming out near-white on white.
+  it('keeps the dark sheet colours to the screen, with no script involved', () => {
+    const css = readFileSync(join(root, 'src', 'styles', 'tokens.css'), 'utf8');
+    const dark = css.indexOf(":root[data-mode='dark']");
+    expect(css.lastIndexOf('@media', dark)).toBe(css.lastIndexOf('@media screen {', dark));
+    expect(css.slice(css.lastIndexOf('@media screen {', dark), dark)).not.toContain('}');
+    expect(css.match(/data-mode='dark'/g)).toHaveLength(1);
+    for (const file of ['main.ts', 'landing.ts']) {
+      expect(readFileSync(join(root, 'src', file), 'utf8'), file).not.toMatch(/beforeprint|afterprint/);
+    }
+  });
+});
+
 describe('phone layout rules in the report stylesheet', () => {
   // A new media block once landed inside the 40rem block and silently moved its rules to 23rem.
   it('keeps the phone rules under the 40rem breakpoint', () => {
