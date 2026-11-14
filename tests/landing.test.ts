@@ -292,6 +292,19 @@ describe('the landing page in a browser-like DOM', () => {
     });
   });
 
+  // An aria-label on the card once replaced its visible words with a shorter name, so a screen
+  // reader never heard the cuisine, the place or the first job, and voice control could not use them.
+  it('names each sample card by the words on it', () => {
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('#samples-list a')];
+    loadProfiles().forEach((p, i) => {
+      const link = links[i]!;
+      expect(link.hasAttribute('aria-label')).toBe(false);
+      for (const words of [p.restaurant.name, p.restaurant.cuisine, p.restaurant.neighborhood, doFirst(p.opportunities, 1)[0]!.title, 'Open the report']) {
+        expect(link.textContent).toContain(words);
+      }
+    });
+  });
+
   it('has no accessibility violations axe can find', async () => {
     const result = await axe.run(document.body, {
       runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'best-practice'],
@@ -320,6 +333,23 @@ describe('the landing page before its script runs', () => {
     for (const list of ['parts-list', 'samples-list']) {
       expect(page, list).toMatch(new RegExp(`id="${list}"></ul>\\s*<noscript><p class="script-note">`));
     }
+  });
+});
+
+describe('what the landing page says about the samples', () => {
+  // The profiles folder decides how many restaurants there are and which name sorts first, so the
+  // page's fixed words and links must not.
+  it('opens the restaurant the hero shows from every link to the report', () => {
+    const shown = JSON.parse(readFileSync(join(root, 'hero-sequence', 'content.json'), 'utf8')).restaurant;
+    const profile = loadProfiles().find((p) => p.restaurant.name === shown)!;
+    const links = [...page.matchAll(/href="(\/report\/[^"]*)"/g)].map((m) => m[1]);
+    expect(links).toHaveLength(3);
+    expect(new Set(links)).toEqual(new Set([`/report/?r=${profile.slug}`]));
+  });
+
+  it('does not count the restaurants or the report sections in fixed words', () => {
+    const words = page.slice(page.indexOf('<body')).replace(/<[^>]+>/g, ' ');
+    expect(words).not.toMatch(/\b(both|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+(are\s+|sample\s+)?(invented|restaurants?|sections?)\b/i);
   });
 });
 

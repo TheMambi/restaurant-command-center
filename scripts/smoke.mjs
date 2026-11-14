@@ -1,10 +1,10 @@
 // Serves the production build with the headers from vercel.json and opens every view in Chrome.
 // Fails on anything the Content-Security-Policy blocks, any console error, any request to
 // another site, or inline code in the built pages. It also opens the landing page with scripts
-// off and with its script held back, where the words must still read in order.
+// off and with its script held back, where the words must still read in order, and runs axe on it.
 // Run after `npm run build`: `npm run smoke`.
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { chromium } from 'playwright-core';
 
@@ -38,7 +38,12 @@ for (const page of ['index.html', 'report/index.html']) {
 }
 
 const tabs = ['overview', 'google', 'website', 'social', 'reviews', 'competitor', 'opportunities', 'history'];
-const views = ['/', ...['brasa-taqueria', 'osteria-lumen'].flatMap((r) => tabs.map((t) => `/report/?r=${r}&tab=${t}`))];
+// Every restaurant in profiles/, as the app lists them: files starting with an underscore are left out.
+const slugs = [];
+for (const file of (await readdir(join(root, 'profiles'))).sort()) {
+  if (file.endsWith('.json') && !file.startsWith('_')) slugs.push(JSON.parse(await readFile(join(root, 'profiles', file), 'utf8')).slug);
+}
+const views = ['/', ...slugs.flatMap((r) => tabs.map((t) => `/report/?r=${r}&tab=${t}`))];
 
 // Run in the page. The hero before its script has run: four blocks of words, each showing, one
 // under the other, in a hero about one screen tall.
@@ -90,6 +95,25 @@ async function landingWithoutScript(browser) {
   }
 }
 
+// axe in a real browser sees layout and colour, which the jsdom run in the tests cannot. The
+// context skips the Content-Security-Policy so axe can be put into the page; the policy is checked
+// by every other visit.
+async function landingAccessibility(browser) {
+  const axe = await readFile(join(root, 'node_modules', 'axe-core', 'axe.min.js'), 'utf8');
+  for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
+    for (const colorScheme of ['light', 'dark']) {
+      const context = await browser.newContext({ viewport, colorScheme, bypassCSP: true });
+      const page = await context.newPage();
+      await page.goto(origin + '/', { waitUntil: 'load' });
+      await page.waitForSelector('#samples-list a');
+      await page.evaluate(axe);
+      const violations = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((v) => `${v.id} (${v.help}) at ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`));
+      for (const violation of violations) problems.push(`axe, ${viewport.width}px wide, ${colorScheme}: ${violation}`);
+      await context.close();
+    }
+  }
+}
+
 const browser = await chromium.launch({ channel: 'chrome', args: ['--no-sandbox'] });
 try {
   for (const colorScheme of ['light', 'dark']) {
@@ -114,6 +138,7 @@ try {
     await context.close();
   }
   await landingWithoutScript(browser);
+  await landingAccessibility(browser);
 } finally {
   await browser.close();
   server.close();
@@ -123,4 +148,4 @@ if (problems.length > 0) {
   console.error(`Smoke test failed:\n${[...new Set(problems)].join('\n')}`);
   process.exit(1);
 }
-console.log(`Smoke test passed: ${views.length} views in light and dark, no blocked content, console errors or outside requests.`);
+console.log(`Smoke test passed: ${views.length} views of ${slugs.length} restaurants in light and dark, no blocked content, console errors or outside requests.`);
