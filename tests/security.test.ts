@@ -16,7 +16,7 @@ import { overallScore, scoreBreakdown } from '../src/scoring';
 
 const root = join(import.meta.dirname, '..');
 const read = (...path: string[]) => readFileSync(join(root, ...path), 'utf8');
-const pages = [read('index.html'), read('report', 'index.html')];
+const pages = [read('index.html'), read('report', 'index.html'), read('404.html')];
 
 const headers = (JSON.parse(read('vercel.json')) as { headers: { source: string; headers: { key: string; value: string }[] }[] }).headers;
 const siteWide = headers.find((h) => h.source === '/(.*)')!.headers;
@@ -93,6 +93,44 @@ describe('pages the policy can serve', () => {
       expect(source, file).not.toMatch(/import\s+(?!type\b)[^;]*from\s+'(\.\.?\/)+schema'/);
       expect(source, file).not.toMatch(/from\s+'zod'/);
     }
+  });
+});
+
+describe('licences and addresses', () => {
+  const manifest = JSON.parse(read('package.json')) as { license: string; dependencies: Record<string, string> };
+
+  it('names every dependency in the third-party notices', () => {
+    const notices = read('public', 'THIRD-PARTY-NOTICES.txt');
+    for (const name of Object.keys(manifest.dependencies)) expect(notices, name).toContain(name);
+    expect(notices).toContain('SIL OPEN FONT LICENSE Version 1.1');
+    expect(read('index.html')).toContain('href="/THIRD-PARTY-NOTICES.txt"');
+  });
+
+  it('states one licence identifier everywhere', () => {
+    expect(manifest.license).toBe('AGPL-3.0-or-later');
+    expect((JSON.parse(read('hero-sequence', 'package.json')) as { license: string }).license).toBe(manifest.license);
+    expect(read('README.md')).toContain('AGPL--3.0--or--later');
+    expect(read('index.html')).toContain(manifest.license);
+    for (const file of ['README.md', 'index.html']) expect(read(file).replace(/AGPL-{1,2}3\.0-{1,2}or-{1,2}later/g, ''), file).not.toMatch(/AGPL-{1,2}3\.0/);
+  });
+
+  // The production address is typed by hand in the share tags, the canonical links and the README.
+  it('writes the site address the same way in every place, with a canonical link on each page', () => {
+    const origins = [read('index.html'), read('report', 'index.html'), read('README.md')].flatMap((text) => text.match(/https:\/\/[a-z0-9-]+\.vercel\.app/g) ?? []);
+    expect(origins.length).toBeGreaterThan(6);
+    expect(new Set(origins).size).toBe(1);
+    expect(read('index.html')).toContain(`<link rel="canonical" href="${origins[0]}/">`);
+    expect(read('report', 'index.html')).toContain(`<link rel="canonical" href="${origins[0]}/report/">`);
+  });
+
+  it('has a not-found page that leads home', () => {
+    expect(read('404.html')).toContain('href="/"');
+    expect(read('.vercelignore')).toContain('!/404.html');
+  });
+
+  it('does not say the demo reads live data', () => {
+    expect(read('index.html')).not.toMatch(/It reads/);
+    expect(read('src', 'render', 'history.ts')).not.toMatch(/calculated live/);
   });
 });
 

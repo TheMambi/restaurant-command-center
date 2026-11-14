@@ -31,7 +31,7 @@ await new Promise((done) => server.listen(0, '127.0.0.1', done));
 const origin = `http://127.0.0.1:${server.address().port}`;
 
 const problems = [];
-for (const page of ['index.html', 'report/index.html']) {
+for (const page of ['index.html', 'report/index.html', '404.html']) {
   const markup = await readFile(join(dist, page), 'utf8');
   if (/<script(?![^>]*\ssrc=)[^>]*>/.test(markup)) problems.push(`${page}: inline script in the build`);
   if (/<style[\s>]|\sstyle=/.test(markup)) problems.push(`${page}: inline style in the build`);
@@ -43,7 +43,7 @@ const slugs = [];
 for (const file of (await readdir(join(root, 'profiles'))).sort()) {
   if (file.endsWith('.json') && !file.startsWith('_')) slugs.push(JSON.parse(await readFile(join(root, 'profiles', file), 'utf8')).slug);
 }
-const views = ['/', ...slugs.flatMap((r) => tabs.map((t) => `/report/?r=${r}&tab=${t}`))];
+const views = ['/', '/404.html', ...slugs.flatMap((r) => tabs.map((t) => `/report/?r=${r}&tab=${t}`))];
 
 // Run in the page. The hero before its script has run: four blocks of words, each showing, one
 // under the other, in a hero about one screen tall.
@@ -104,11 +104,13 @@ async function landingAccessibility(browser) {
     for (const colorScheme of ['light', 'dark']) {
       const context = await browser.newContext({ viewport, colorScheme, bypassCSP: true });
       const page = await context.newPage();
-      await page.goto(origin + '/', { waitUntil: 'load' });
-      await page.waitForSelector('#samples-list a');
+      for (const address of ['/', '/404.html']) {
+      await page.goto(origin + address, { waitUntil: 'load' });
+      if (address === '/') await page.waitForSelector('#samples-list a');
       await page.evaluate(axe);
       const violations = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'] })).violations.map((v) => `${v.id} (${v.help}) at ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`));
-      for (const violation of violations) problems.push(`axe, ${viewport.width}px wide, ${colorScheme}: ${violation}`);
+      for (const violation of violations) problems.push(`axe, ${address}, ${viewport.width}px wide, ${colorScheme}: ${violation}`);
+      }
       await context.close();
     }
   }
@@ -148,7 +150,18 @@ try {
           await page.waitForTimeout(share === 0.6 ? 1200 : 300);
           const shown = await page.evaluate(() => [...document.querySelectorAll('.beat')].map((b) => getComputedStyle(b).opacity).join(' '));
           if (shown !== [0, 1, 2, 3].map((i) => (i === showing ? '1' : '0')).join(' ')) problems.push(`${colorScheme} ${view}: ${share} of the way down the hero the blocks of words show as ${shown}`);
+          // A frame was drawn: a canvas that stayed empty, or filled with the stage colour alone, is one colour throughout.
+          const colours = await page.evaluate(() => {
+            const canvas = document.getElementById('hero-canvas');
+            const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+            const seen = new Set();
+            for (let i = 0; i < pixels.length; i += 4 * 997) seen.add(`${pixels[i]},${pixels[i + 1]},${pixels[i + 2]},${pixels[i + 3]}`);
+            return seen.size;
+          });
+          if (colours < 50) problems.push(`${colorScheme} ${view}: ${share} of the way down the hero the canvas shows ${colours} colours, so no frame was drawn`);
         }
+      } else if (view === '/404.html') {
+        if (!(await page.locator('a[href="/"]').isVisible())) problems.push(`${colorScheme} ${view}: no visible link home`);
       } else if (!(await page.locator('.panel:not([hidden]) .sheet').count())) {
         problems.push(`${colorScheme} ${view}: the tab rendered nothing`);
       }
@@ -174,4 +187,4 @@ if (problems.length > 0) {
   console.error(`Smoke test failed:\n${[...new Set(problems)].join('\n')}`);
   process.exit(1);
 }
-console.log(`Smoke test passed: ${views.length} views of ${slugs.length} restaurants in light and dark, no blocked content, console errors or outside requests.`);
+console.log(`Smoke test passed: ${views.length - 1} views of ${slugs.length} restaurants in light and dark, no blocked content, console errors or outside requests.`);

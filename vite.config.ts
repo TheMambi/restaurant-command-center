@@ -36,6 +36,7 @@ export default defineConfig({
       input: {
         landing: resolve(import.meta.dirname, 'index.html'),
         report: resolve(import.meta.dirname, 'report/index.html'),
+        notFound: resolve(import.meta.dirname, '404.html'),
       },
     },
   },

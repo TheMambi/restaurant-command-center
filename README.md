@@ -1,7 +1,7 @@
 # Restaurant Command Center
 
 [![check](https://github.com/TheMambi/restaurant-command-center/actions/workflows/check.yml/badge.svg?branch=dev)](https://github.com/TheMambi/restaurant-command-center/actions/workflows/check.yml)
-[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-1f4e8c)](LICENSE)
+[![License: AGPL-3.0-or-later](https://img.shields.io/badge/license-AGPL--3.0--or--later-1f4e8c)](LICENSE)
 
 **[Open the live demo](https://restaurant-command-center-sable.vercel.app/)** or go straight to [the sample report](https://restaurant-command-center-sable.vercel.app/report/).
 
@@ -81,13 +81,13 @@ The schema in [`src/schema.ts`](src/schema.ts) is the single definition of a pro
 - **Print or save as PDF** turns the whole report, every section in order, into ink on white paper an owner can keep.
 - **Works on a phone.** Wide tables restack into labelled rows, and bars give way to the numbers.
 - **Honest numbers.** Bars start at zero, each chart has one axis, a missing platform is named as a gap instead of drawn as zero, a listing with no reviews shows no rating, the competitor table compares a figure only when both restaurants have it, and estimates show as High, Medium or Low instead of made-up scores.
-- **Accessible.** Keyboard tabs (arrow keys, Home, End), visible focus, status shown in words as well as colour, charts backed by data tables for screen readers. The test suite runs axe-core on every tab; colour contrast was checked in Chrome in both modes.
+- **Accessible.** Keyboard tabs (arrow keys, Home, End), visible focus, status shown in words as well as colour, charts backed by data tables for screen readers. The test suite runs axe-core on every tab without layout, and `npm run smoke` runs it again in Chrome on the landing page, where it sees layout and colour contrast, at desktop and phone widths in both modes. Contrast on the report's tabs was checked by hand.
 
 ## How it is built
 
 - **Vite + TypeScript**, no framework, two pages: the landing page (`index.html`, `src/landing.ts`) and the report (`report/index.html`, `src/main.ts`). Each report tab is a small function in `src/render/` that turns a profile into HTML.
 - **The landing hero** draws 120 pre-rendered AVIF frames on a canvas as you scroll, driven by one passive scroll listener; the opening words settle in with CSS keyframes. The frames are a three.js scene (the ticket and plates on a brushed steel pass under a heat lamp) rendered with [HyperFrames](https://github.com/heygen-com/hyperframes) from the app's colour tokens, fonts and Brasa Taquería's computed report; the source and how to re-render it are in [`hero-sequence/`](hero-sequence/README.md). With reduced motion on, the page shows the finished frame instead.
-- **Zod** validates every profile when the app loads and in the tests.
+- **Zod** validates every profile when the site is built and in the tests. It is not sent to the browser.
 - **Charts and drawings are hand-written SVG** (`src/render/line-chart.ts`, `src/render/visuals.ts`): the score plate, the six-part wheel, split bars, sparklines, and line and bar charts with one series and one axis. No chart library.
 - **Tests** cover the schema, scoring, the security policy and its rules for markup, every tab's rendering, keyboard tabs and address state in a simulated browser, the landing page's frame maths and redirects, a check that the hero frames match the current figures, and axe-core accessibility checks on both pages.
 - **Fonts are self-hosted** from npm (Fraunces and Onest), so the page makes no outside requests.
@@ -113,8 +113,28 @@ The look is documented in [`DESIGN.md`](DESIGN.md): the pass during service. The
 
 This demo uses hand-written profiles. A production version would fill them from official sources only: the Google Business Profile API for the owner's own listing, Yelp Fusion and the Tripadvisor Content API within their display and caching rules, and the owner's own exports from Instagram, TikTok and Facebook. Each of those has terms on storing and showing data, so read them before you automate anything.
 
+### Before any real data goes in
+
+None of this is built. These are the rules a production version would start from, written down so the report's shape does not get ahead of what the platforms allow. The terms below were not re-read for this note: check each platform's current terms before writing an import.
+
+| Figures | Source | What to store | Attribution |
+|---|---|---|---|
+| The restaurant's own Google listing | Google Business Profile API, with the owner's sign-in | Monthly history is kept for these first-party figures only | As Google's terms require |
+| The restaurant's own social accounts | The owner's exports from Instagram, TikTok and Facebook | Monthly follower and post counts | None needed for the owner's own data |
+| Yelp and Tripadvisor ratings | Yelp Fusion, Tripadvisor Content API | Whatever their caching limits allow and no longer; no monthly series unless the terms permit one | The logo, link and wording each platform requires, on every tab that shows its rating |
+| A competitor's ratings and review counts | Entered by a person with a source and a date, or fetched when the report is opened and not stored | No stored history | As for the platform the figure came from |
+| A competitor's follower counts | Entered by a person from the public profile, with a date | No stored history | None |
+
+Two parts of today's report would need changes first: the competitor entry in `src/schema.ts` has no source or date fields, and the Competitor and Reviews tabs show platform ratings with no attribution.
+
+## Changing the site's address
+
+The production address is typed by hand in nine places: the `og:image`, `og:url` and canonical tags in `index.html` and `report/index.html`, and three links at the top of this file. Change them together; a test fails if they disagree.
+
 ## License
 
 Code: Copyright (C) 2026 The Mambí. This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See `LICENSE` for the full text.
 
-The sample restaurants are fictional and free to reuse.
+The sample restaurants in `profiles/` are fictional. No separate licence is stated for them, so they fall under the same AGPL-3.0-or-later terms as the rest of the repository.
+
+The site ships the Fraunces and Onest fonts under the SIL Open Font License 1.1. Their notices, and the notice for Zod, which checks profiles at build time, are in [`public/THIRD-PARTY-NOTICES.txt`](public/THIRD-PARTY-NOTICES.txt). After adding a dependency, add its notice there; a test checks the file names each one.

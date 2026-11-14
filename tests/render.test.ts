@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { counted, hours, monthsBetween, yearsOpen } from '../src/format';
+import { counted, hours, monthLabel, monthsBetween, num, platformName, signed, stars, yearsOpen } from '../src/format';
 import { parseProfile, type Profile } from '../src/schema';
 import { doFirst, fallingReviews, renderOverview, whyFirst } from '../src/render/overview';
 import { yearsGap } from '../src/render/competitor';
@@ -65,7 +65,31 @@ describe('helpers', () => {
   });
 });
 
+describe('format helpers', () => {
+  it('writes numbers, ratings and months the way the report shows them', () => {
+    expect(num(1180)).toBe('1,180');
+    expect(stars(4)).toBe('4.0');
+    expect(monthLabel('2026-01')).toBe('January 2026');
+    expect(monthLabel('2026-12', 'short')).toBe('Dec');
+    expect(platformName.tiktok).toBe('TikTok');
+  });
+
+  it('signs a difference and never writes a signed zero', () => {
+    expect(signed(0.3, 1)).toBe('+0.3');
+    expect(signed(-2)).toBe('−2');
+    expect(signed(-0.04, 1)).toBe('0');
+  });
+});
+
 describe('rendering', () => {
+  it('renders the template\'s competitor tab with its one shared platform', async () => {
+    const { default: template } = await import('../profiles/_template.json');
+    const out = renderCompetitor(parseProfile(template, 'template')).value;
+    expect(out).toContain('Nearby Competitor');
+    expect(out).toContain('Google');
+    expect(out).not.toMatch(/undefined|NaN/);
+  });
+
   it('renders the template profile without throwing', () => {
     const t = parseProfile(template, 'template');
     const b = scoreBreakdown(t);

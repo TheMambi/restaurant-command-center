@@ -52,7 +52,7 @@ export function renderHistory(p: Profile, series: HistoryPoint[]): SafeHtml {
       <section class="card sheet" aria-labelledby="score-trend">
         <h3 class="block-title" id="score-trend">Score by month</h3>
         ${lineChart({ labels, values: series.map((s) => s.overallScore), min: 0, max: 100, format: (v) => String(v), title: 'Online presence score by month, out of 100' })}
-        <p class="small muted mt-3">Past months show the score as recorded at the time. This month is calculated live.</p>
+        <p class="small muted mt-3">Past months show the score as recorded at the time. This month is worked out from the current figures.</p>
       </section>
       <section class="card sheet" aria-labelledby="reviews-trend">
         <h3 class="block-title" id="reviews-trend">New reviews each month</h3>
