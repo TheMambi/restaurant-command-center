@@ -141,6 +141,11 @@ export function beatOpacity(progress: number, from: number, to: number, fade = 0
   return Math.min(fadeIn, fadeOut);
 }
 
+// How far the hero has scrolled: 0 when its top meets the top of the screen, 1 when its bottom
+// meets the bottom.
+export const heroProgress = (scrollTop: number, heroTop: number, heroHeight: number, screenHeight: number): number =>
+  clamp01((scrollTop - heroTop) / Math.max(1, heroHeight - screenHeight));
+
 export interface Sequence {
   show(progress: number): void;
 }

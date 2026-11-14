@@ -152,6 +152,29 @@
   grid-area: 1 / 1;
 }
 
+/* The opening words settle in when the stage goes live. The reduced-motion rule in app.css turns
+   animations off, and that state never goes live anyway. */
+.is-live .hero-title .line {
+  animation: hero-line 1.1s var(--ease-out) 0.15s both;
+}
+
+.is-live .hero-title .line + .line {
+  animation-delay: 0.27s;
+}
+
+.is-live .beat-intro .beat-text,
+.is-live .scroll-cue {
+  animation: hero-words 0.9s ease-out 0.55s both;
+}
+
+@keyframes hero-line {
+  from { opacity: 0; transform: translateY(0.35em); }
+}
+
+@keyframes hero-words {
+  from { opacity: 0; }
+}
+
 /* Faded-out blocks stay in the accessibility tree; they only stop catching clicks meant for the
    block on top. A link focused inside one scrolls the hero to where it shows (landing.ts). */
 .beat.is-off {

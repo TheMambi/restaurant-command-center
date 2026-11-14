@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import axe from 'axe-core';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { monthLabel, platformName } from '../src/format';
-import { beatOpacity, decodeWindow, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameSetFor, framesToKeep, frameUrl, framingFor, loadOrder, memoryBudget, mountSequence, nearestLoaded } from '../src/landing/sequence';
+import { beatOpacity, decodeWindow, endFrameFallbackUrl, FRAME_COUNT, fitRect, frameIndex, frameSetFor, framesToKeep, frameUrl, framingFor, heroProgress, loadOrder, memoryBudget, mountSequence, nearestLoaded } from '../src/landing/sequence';
 import { loadProfiles } from '../src/profiles';
 import { historySeries } from '../src/render/history';
 import { doFirst, trendSentence } from '../src/render/overview';
@@ -143,6 +143,26 @@ describe('the scroll sequence helpers', () => {
     expect(framesToKeep(2560, 1440, memoryBudget('wide', 4))).toBe(6);
     expect(framesToKeep(64, 64, memoryBudget('wide'))).toBe(24);
     expect(framesToKeep(0, 0, memoryBudget('tall'))).toBe(24);
+  });
+
+  it('reads the hero scroll as 0 at its top and 1 at its end, and holds outside it', () => {
+    // A hero 3520px tall on an 800px screen scrolls for 2720px.
+    expect(heroProgress(0, 0, 3520, 800)).toBe(0);
+    expect(heroProgress(1360, 0, 3520, 800)).toBe(0.5);
+    expect(heroProgress(2720, 0, 3520, 800)).toBe(1);
+    expect(heroProgress(5000, 0, 3520, 800)).toBe(1);
+    // Pushed down the page by 230px, as when a load error sits above it.
+    expect(heroProgress(100, 230, 3520, 800)).toBe(0);
+    expect(heroProgress(230 + 680, 230, 3520, 800)).toBe(0.25);
+    // A hero no taller than the screen has nothing to scroll and must not divide by zero.
+    expect(heroProgress(10, 0, 800, 800)).toBe(1);
+    expect(heroProgress(0, 0, 800, 800)).toBe(0);
+  });
+
+  it('needs no animation library', () => {
+    const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+    expect(Object.keys({ ...manifest.dependencies, ...manifest.devDependencies })).not.toContain('motion');
+    expect(readFileSync(join(root, 'src', 'landing.ts'), 'utf8')).not.toMatch(/from 'motion'/);
   });
 
   it('fades each block of words in and out inside its range', () => {

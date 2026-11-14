@@ -3,10 +3,9 @@ import '@fontsource-variable/fraunces/opsz.css';
 import './styles/tokens.css';
 import './styles/app.css';
 import './styles/landing.css';
-import { animate, scroll, stagger } from 'motion';
 import { num } from './format';
 import { html, setHtml } from './html';
-import { beatOpacity, mountSequence } from './landing/sequence';
+import { beatOpacity, heroProgress, mountSequence } from './landing/sequence';
 import { loadProfiles } from './profiles';
 import { doFirst } from './render/overview';
 import { dial, radar } from './render/visuals';
@@ -116,8 +115,15 @@ function setupHero(): void {
       b.node.classList.toggle('is-off', o < 0.02);
     }
   };
-  scroll(show, { target: hero, offset: ['start start', 'end end'] });
-  show(0);
+  // One reading of the scroll per frame, however many scroll events arrive in it.
+  let frame = 0;
+  const follow = () => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => show(heroProgress(scrollY, hero.offsetTop, hero.offsetHeight, innerHeight)));
+  };
+  addEventListener('scroll', follow, { passive: true });
+  addEventListener('resize', follow);
+  show(heroProgress(scrollY, hero.offsetTop, hero.offsetHeight, innerHeight));
 
   // A keyboard user who tabs to a link inside a beat that is scrolled out of view lands where it shows.
   hero.addEventListener('focusin', (e) => {
@@ -126,13 +132,6 @@ function setupHero(): void {
     const length = hero.offsetHeight - innerHeight;
     scrollTo({ top: hero.offsetTop + length * (beat.from + (Math.min(1, beat.to) - beat.from) / 2), behavior: 'instant' });
   });
-
-  animate(
-    '.hero-title .line',
-    { opacity: [0, 1], transform: ['translateY(0.35em)', 'translateY(0)'] },
-    { duration: 1.1, delay: stagger(0.12, { startDelay: 0.15 }), ease: [0.16, 1, 0.3, 1] },
-  );
-  animate('.beat-intro .beat-text, .scroll-cue', { opacity: [0, 1] }, { duration: 0.9, delay: 0.55 });
 }
 
 try {

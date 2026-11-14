@@ -127,9 +127,14 @@ try {
     for (view of views) {
       await page.goto(origin + view, { waitUntil: 'load' });
       if (view === '/') {
-        // Scroll the hero so its frames load and draw under the policy too.
-        await page.evaluate(() => scrollTo(0, document.getElementById('hero').offsetHeight * 0.6));
-        await page.waitForTimeout(1200);
+        // Scroll the hero so its frames load and draw under the policy too. At each stop the block of
+        // words for that part of the scroll must be the one showing.
+        for (const [share, showing] of [[0.6, 2], [1, 3], [0, 0]]) {
+          await page.evaluate((share) => scrollTo(0, (document.getElementById('hero').offsetHeight - innerHeight) * share), share);
+          await page.waitForTimeout(share === 0.6 ? 1200 : 300);
+          const shown = await page.evaluate(() => [...document.querySelectorAll('.beat')].map((b) => getComputedStyle(b).opacity).join(' '));
+          if (shown !== [0, 1, 2, 3].map((i) => (i === showing ? '1' : '0')).join(' ')) problems.push(`${colorScheme} ${view}: ${share} of the way down the hero the blocks of words show as ${shown}`);
+        }
       } else if (!(await page.locator('.panel:not([hidden]) .sheet').count())) {
         problems.push(`${colorScheme} ${view}: the tab rendered nothing`);
       }
