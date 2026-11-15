@@ -125,8 +125,9 @@ Non-negotiable in every repo.
 - **Commit messages:** conventional prefixes (`feat:`, `fix:`, `docs:`, `chore:`,
   `refactor:`, `test:`, `style:`), optionally scoped. Subject ≤72 chars,
   imperative mood, no trailing period. Body explains the *why*, not the *what*.
-- **No AI attribution.** Never add `Co-Authored-By`, "Generated with Claude
-  Code," or any agent metadata to commits or PRs. No emojis in commit messages.
+- **AI attribution.** Commits an AI agent writes or co-writes end with a
+  `Co-Authored-By` trailer naming the model. Leave older commits as they are;
+  never rewrite history to add or remove one. No emojis in commit messages.
 
 ---
 
